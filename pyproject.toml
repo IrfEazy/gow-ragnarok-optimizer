@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
 [project]
 name = "gow-optimizer"
 version = "0.1.0"
@@ -20,6 +24,25 @@ gow-web = "gow_optimizer.web:main"
 
 [dependency-groups]
 dev = ["pytest>=8.3.5", "types-PyYAML>=6.0.12.20250915"]
+
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["gow_optimizer"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"gow_optimizer/templates" = "gow_optimizer/templates"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/gow_optimizer",
+  "/tests",
+  "/data",
+  "/README.md",
+  "/config.yaml",
+  "/main.py",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
