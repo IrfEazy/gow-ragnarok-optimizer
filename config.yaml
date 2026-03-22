@@ -1,0 +1,143 @@
+# ============================================================
+# God of War Ragnarök — Configurazione Build Optimizer
+# ============================================================
+
+# --- Scraping vs CSV ---
+# true  = riscarica tutto dal web e aggiorna i CSV
+# false = carica i CSV salvati (molto più veloce)
+force_scrape: false
+
+# --- File CSV ---
+armor_csv: data/all_pieces.csv
+weapons_csv: data/all_weapons.csv
+
+# --- Normalizzazione nomi materiali (typo/plurali nel DB) ---
+mat_aliases:
+  Smouldering Embers: Smoldering Embers
+  Petrified Bones: Petrified Bone
+  Whispering Slabs: Whispering Slab
+  Asgardian Ingots: Asgardian Ingot
+  Dwaren Steel: Dwarven Steel
+  s Broken Cuirass: "Lunda's Broken Cuirass"
+  s Broken Bracers: "Lunda's Broken Bracers"
+  s Broken Belt: "Lunda's Broken Belt"
+
+# ============================================================
+# INVENTARIO — Armature possedute (nome esatto, livello attuale)
+# ============================================================
+# Formato:
+#   - name: "..."
+#     level: N
+#     craft: true/false   (true = pezzo da craftare, costo iniziale incluso)
+
+chest_pieces:
+  - { name: "Lunda's Lost Cuirass", level: 5, craft: true }
+  - { name: "Spiritual Shoulder Straps", level: 4, craft: true }
+  - { name: "Sol's Spaulders of Courage", level: 4, craft: false }
+  - { name: "Spaulders of Enlightenment", level: 3, craft: true }
+  - { name: "Fortified Husk Cuirass", level: 3, craft: true }
+  - { name: "Nidavellir's Finest Plackart", level: 2, craft: true }
+  - { name: "Cloak of the Black Bear", level: 2, craft: false }
+  - { name: "Vidar's Pauldron of Might", level: 1, craft: true }
+  - { name: "Shoulder Guard of Survival", level: 1, craft: false }
+  - { name: "Spiritual Shoulder Straps", level: 4, craft: false }
+
+wrist_pieces:
+  - { name: "Sol's Wraps of Courage", level: 4, craft: true }
+  - { name: "Gauntlets of Radiance", level: 4, craft: true }
+  - { name: "Spiritual Wraps", level: 5, craft: false }
+  - { name: "Bracers of Enlightenment", level: 3, craft: true }
+  - { name: "Wraps of the Black Bear", level: 3, craft: false }
+  - { name: "Nidavellir's Finest Arm Guards", level: 2, craft: true }
+  - { name: "Vidar's Bracers of Might", level: 1, craft: true }
+  - { name: "Fortified Husk Arm Guards", level: 1, craft: true }
+  - { name: "Wraps of Survival", level: 1, craft: false }
+
+waist_pieces:
+  - { name: "Lunda's Lost Belt", level: 5, craft: true }
+  - { name: "Sol's Belt of Courage", level: 4, craft: true }
+  - { name: "Belt of Radiance", level: 4, craft: false }
+  - { name: "Spiritual Belt", level: 5, craft: false }
+  - { name: "Belt of Enlightenment", level: 3, craft: true }
+  - { name: "Belt of the Black Bear", level: 3, craft: false }
+  - { name: "Nidavellir's Finest Waist Guard", level: 2, craft: true }
+  - { name: "Vidar's Belt of Might", level: 1, craft: true }
+  - { name: "Fortified Husk Girdle", level: 1, craft: true }
+  - { name: "Belt of Survival", level: 1, craft: false }
+
+# ============================================================
+# INVENTARIO — Armi possedute (nome esatto, livello attuale)
+# ============================================================
+
+axe_attachments:
+  - { name: "Grip of the Fallen Alchemist", level: 5, craft: false }
+  - { name: "Grip of Weighted Recovery", level: 4, craft: true }
+  - { name: "Stonecutter's Knob", level: 4, craft: false }
+  - { name: "Haur's Lucky Knob", level: 3, craft: false }
+  - { name: "Wooden Knob", level: 3, craft: false }
+  - { name: "The Furious Maul", level: 2, craft: true }
+
+blades_attachments:
+  - { name: "Hardened War Handles", level: 5, craft: false }
+  - { name: "Pommels of Brutal Might", level: 4, craft: true }
+  - { name: "Pommels of Agile Deceit", level: 4, craft: false }
+  - { name: "Steel Handles", level: 4, craft: false }
+  - { name: "Radiant Warden Handles", level: 3, craft: false }
+  - { name: "Cursed Empress Handles", level: 2, craft: false }
+
+spear_attachments: []
+  # Draupnir Spear non ancora sbloccata
+
+shield_attachments:
+  - { name: "Rond of Affliction", level: 5, craft: false }
+  - { name: "Rond of Expedition", level: 3, craft: false }
+  - { name: "Rond of Volition", level: 1, craft: false }
+  - { name: "Rond of Aggravation", level: 2, craft: false }
+
+# ============================================================
+# RISORSE DISPONIBILI
+# ============================================================
+
+resource_budget:
+  Hacksilver: 7801
+  # ── Materiali base ──
+  Forged Iron: 68
+  Dwarven Steel: 15
+  Asgardian Ingot: 1
+  Rawhide: 48
+  Stonewood: 14
+  Slag Deposits: 35
+  Honed Metal: 14
+  # ── Materiali rari / boss ──
+  Dragon Tooth: 4
+  Bonded Leather: 35
+  Hardened Remnants: 0
+  Tempered Remnants: 0
+  Fortified Remnants: 0
+  Petrified Bone: 0
+  Lindwyrm Scales: 0
+  Dragon Claw: 0
+  # ── Cristalli / Embers ──
+  Gleaming Crystal: 0
+  Shining Crystal: 0
+  Sparkling Crystal: 0
+  Celestial Fossil: 0
+  Glowing Embers: 0
+  Smoldering Embers: 0
+  Blazing Embers: 0
+  Sovereign Coals: 0
+  # ── Materiali speciali ──
+  Nidavellir Ore: 6
+  Dust of Realms: 5
+  Whispering Slab: 62
+  Essence of Hel: 0
+  Luminous Alloy: 0
+  Purified Crystalline: 0
+  Forsaken Breath: 0
+  Divine Ashes: 0
+  Skap Slag: 0
+  Mountain Root: 0
+  # ── Materiali quest Lunda ──
+  "Lunda's Broken Cuirass": 0
+  "Lunda's Broken Bracers": 0
+  "Lunda's Broken Belt": 0

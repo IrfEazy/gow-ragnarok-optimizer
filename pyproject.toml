@@ -1,0 +1,26 @@
+[project]
+name = "gow-optimizer"
+version = "0.1.0"
+description = "God of War Ragnarök — Build Optimizer"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "beautifulsoup4>=4.12.3",
+  "flask>=3.1.0",
+  "lxml>=5.3.0",
+  "pandas>=2.2.3",
+  "pyyaml>=6.0.2",
+  "requests>=2.32.3",
+  "types-requests>=2.32.4.20260107",
+]
+
+[project.scripts]
+gow-cli = "gow_optimizer.cli:main"
+gow-web = "gow_optimizer.web:main"
+
+[dependency-groups]
+dev = ["pytest>=8.3.5", "types-PyYAML>=6.0.12.20250915"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

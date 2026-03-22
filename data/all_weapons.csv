@@ -1,0 +1,440 @@
+Category,Weapon Name,Level,Strength,Upgrade_Hacksilver,Upgrade_Rawhide,Upgrade_Stonewood,Upgrade_Petrified Bone,Runic,Vitality,Cooldown,Luck,Upgrade_Whispering Slab,Upgrade_Hardened Remnants,Upgrade_Skap Slag,Upgrade_Glowing Embers,Upgrade_Celestial Fossil,Upgrade_Petrified Bones,Upgrade_Whispering Slabs,Defense,Upgrade_Essence of Hel,Upgrade_Divine Ashes,Upgrade_Sovereign Coals,Upgrade_Gleaming Crystal,Upgrade_Lindwyrm Scales,Upgrade_Slag Deposits,Upgrade_Honed Metal,Upgrade_Luminous Alloy,Upgrade_Dust of Realms,Upgrade_Fortified Remnants,Upgrade_Blazing Embers,Upgrade_Forsaken Breath,Upgrade_Shining Crystal,Total Stats
+Leviathan Axe,Wooden Knob,2.0,4.0,400.0,3.0,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,4.0
+Leviathan Axe,Wooden Knob,3.0,8.0,800.0,6.0,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,8.0
+Leviathan Axe,Wooden Knob,4.0,11.0,2400.0,,2.0,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,11.0
+Leviathan Axe,Wooden Knob,5.0,15.0,4000.0,,5.0,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,15.0
+Leviathan Axe,Wooden Knob,6.0,18.0,6000.0,,,1.0,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,18.0
+Leviathan Axe,Wooden Knob,7.0,22.0,9000.0,,,2.0,13.0,13.0,13.0,13.0,,,,,,,,0.0,,,,,,,,,,,,,,74.0
+Leviathan Axe,Wooden Knob,8.0,25.0,12000.0,,,3.0,15.0,15.0,15.0,15.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,85.0
+Leviathan Axe,Wooden Knob,9.0,29.0,16000.0,,,,17.0,17.0,17.0,17.0,20.0,10.0,,,,,,0.0,,,,,,,,,,,,,,97.0
+Leviathan Axe,Wooden Knob,9.1,32.0,17000.0,,,,19.0,19.0,19.0,19.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,108.0
+Leviathan Axe,Wooden Knob,9.2,36.0,18000.0,,,,21.0,21.0,21.0,21.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,120.0
+Leviathan Axe,Wooden Knob,9.3,39.0,19000.0,,,,23.0,23.0,23.0,23.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,131.0
+Leviathan Axe,Wooden Knob,10.0,43.0,20000.0,,,,26.0,26.0,26.0,26.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,147.0
+Leviathan Axe,The Furious Maul,1.0,2.0,,,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,2.0
+Leviathan Axe,The Furious Maul,2.0,7.0,400.0,3.0,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,7.0
+Leviathan Axe,The Furious Maul,3.0,12.0,800.0,6.0,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,12.0
+Leviathan Axe,The Furious Maul,4.0,18.0,2400.0,,2.0,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,18.0
+Leviathan Axe,The Furious Maul,5.0,26.0,4000.0,,5.0,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,26.0
+Leviathan Axe,The Furious Maul,6.0,36.0,6000.0,,,1.0,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,36.0
+Leviathan Axe,The Furious Maul,7.0,47.0,9000.0,,,2.0,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,47.0
+Leviathan Axe,The Furious Maul,8.0,55.0,12000.0,,,3.0,0.0,0.0,0.0,0.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,55.0
+Leviathan Axe,The Furious Maul,9.0,63.0,16000.0,,,,0.0,0.0,0.0,0.0,20.0,10.0,,,,,,0.0,,,,,,,,,,,,,,63.0
+Leviathan Axe,The Furious Maul,9.1,70.0,17000.0,,,,0.0,0.0,0.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,70.0
+Leviathan Axe,The Furious Maul,9.2,78.0,18000.0,,,,0.0,0.0,0.0,0.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,78.0
+Leviathan Axe,The Furious Maul,9.3,86.0,19000.0,,,,0.0,0.0,0.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,86.0
+Leviathan Axe,The Furious Maul,10.0,94.0,20000.0,,,,0.0,0.0,0.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,94.0
+Leviathan Axe,Grip of Darkdale,1.0,3.0,,,,,0.0,0.0,2.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,5.0
+Leviathan Axe,Grip of Darkdale,2.0,6.0,400.0,3.0,,,0.0,0.0,3.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,9.0
+Leviathan Axe,Grip of Darkdale,3.0,11.0,800.0,6.0,,,0.0,0.0,6.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,17.0
+Leviathan Axe,Grip of Darkdale,4.0,17.0,2400.0,,2.0,,0.0,0.0,9.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,26.0
+Leviathan Axe,Grip of Darkdale,5.0,22.0,4000.0,,5.0,,0.0,0.0,12.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,34.0
+Leviathan Axe,Grip of Darkdale,6.0,27.0,6000.0,,,,0.0,0.0,14.0,0.0,,,,,,1.0,,0.0,,,,,,,,,,,,,,41.0
+Leviathan Axe,Grip of Darkdale,7.0,32.0,9000.0,,,,0.0,0.0,17.0,0.0,,,,,,2.0,,0.0,,,,,,,,,,,,,,49.0
+Leviathan Axe,Grip of Darkdale,8.0,38.0,12000.0,,,,0.0,0.0,20.0,0.0,,,,,,3.0,10.0,0.0,,,,,,,,,,,,,,58.0
+Leviathan Axe,Grip of Darkdale,9.0,43.0,16000.0,,,,0.0,0.0,23.0,0.0,,10.0,,,,,20.0,0.0,,,,,,,,,,,,,,66.0
+Leviathan Axe,Grip of Darkdale,9.1,48.0,17000.0,,,,0.0,0.0,26.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,74.0
+Leviathan Axe,Grip of Darkdale,9.2,53.0,18000.0,,,,0.0,0.0,28.0,0.0,,,20.0,,,,5.0,0.0,,,,,,,,,,,,,,81.0
+Leviathan Axe,Grip of Darkdale,9.3,59.0,19000.0,,,,0.0,0.0,31.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,90.0
+Leviathan Axe,Grip of Darkdale,10.0,64.0,20000.0,,,,0.0,0.0,34.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,98.0
+Leviathan Axe,Haur's Lucky Knob,2.0,4.0,600.0,,,,0.0,0.0,0.0,5.0,,,,,,,,0.0,,,,,,,,,,,,,,9.0
+Leviathan Axe,Haur's Lucky Knob,3.0,8.0,800.0,6.0,,,0.0,0.0,0.0,9.0,,,,,,,,0.0,,,,,,,,,,,,,,17.0
+Leviathan Axe,Haur's Lucky Knob,4.0,11.0,2400.0,,2.0,,0.0,0.0,0.0,13.0,,,,,,,,0.0,,,,,,,,,,,,,,24.0
+Leviathan Axe,Haur's Lucky Knob,5.0,15.0,4000.0,,5.0,,0.0,0.0,0.0,17.0,,,,,,,,0.0,,,,,,,,,,,,,,32.0
+Leviathan Axe,Haur's Lucky Knob,6.0,18.0,6000.0,,,1.0,0.0,0.0,0.0,22.0,,,,,,,,0.0,,,,,,,,,,,,,,40.0
+Leviathan Axe,Haur's Lucky Knob,7.0,22.0,9000.0,,,2.0,0.0,0.0,0.0,26.0,,,,,,,,0.0,,,,,,,,,,,,,,48.0
+Leviathan Axe,Haur's Lucky Knob,8.0,25.0,12000.0,,,3.0,0.0,0.0,0.0,30.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,55.0
+Leviathan Axe,Haur's Lucky Knob,9.0,29.0,16000.0,,,,0.0,0.0,0.0,34.0,20.0,10.0,,,,,,0.0,,,,,,,,,,,,,,63.0
+Leviathan Axe,Haur's Lucky Knob,9.1,32.0,17000.0,,,,0.0,0.0,0.0,38.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,70.0
+Leviathan Axe,Haur's Lucky Knob,9.2,36.0,18000.0,,,,0.0,0.0,0.0,43.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,79.0
+Leviathan Axe,Haur's Lucky Knob,9.3,39.0,19000.0,,,,0.0,0.0,0.0,47.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,86.0
+Leviathan Axe,Haur's Lucky Knob,10.0,43.0,20000.0,,,,0.0,0.0,0.0,51.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,94.0
+Leviathan Axe,Fortified Frost Knob,2.0,4.0,,,,,0.0,0.0,5.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,9.0
+Leviathan Axe,Fortified Frost Knob,3.0,8.0,800.0,6.0,,,0.0,0.0,9.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,17.0
+Leviathan Axe,Fortified Frost Knob,4.0,11.0,2400.0,,2.0,,0.0,0.0,13.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,24.0
+Leviathan Axe,Fortified Frost Knob,5.0,15.0,4000.0,,5.0,,0.0,0.0,17.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,32.0
+Leviathan Axe,Fortified Frost Knob,6.0,18.0,6000.0,,,1.0,0.0,0.0,22.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,40.0
+Leviathan Axe,Fortified Frost Knob,7.0,22.0,9000.0,,,2.0,0.0,0.0,26.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,48.0
+Leviathan Axe,Fortified Frost Knob,8.0,25.0,12000.0,,,3.0,0.0,0.0,30.0,0.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,55.0
+Leviathan Axe,Fortified Frost Knob,9.0,29.0,16000.0,,,,0.0,0.0,34.0,0.0,20.0,10.0,,,,,,0.0,,,,,,,,,,,,,,63.0
+Leviathan Axe,Fortified Frost Knob,9.1,32.0,17000.0,,,,0.0,0.0,38.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,70.0
+Leviathan Axe,Fortified Frost Knob,9.2,36.0,18000.0,,,,0.0,0.0,43.0,0.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,79.0
+Leviathan Axe,Fortified Frost Knob,9.3,39.0,19000.0,,,,0.0,0.0,47.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,86.0
+Leviathan Axe,Fortified Frost Knob,10.0,43.0,20000.0,,,,0.0,0.0,51.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,94.0
+Leviathan Axe,Stonecutter's Knob,4.0,18.0,2400.0,,,,0.0,0.0,0.0,0.0,,,,,,,,9.0,,,,,,,,,,,,,,27.0
+Leviathan Axe,Stonecutter's Knob,5.0,23.0,4000.0,,5.0,,0.0,0.0,0.0,0.0,,,,,,,,12.0,,,,,,,,,,,,,,35.0
+Leviathan Axe,Stonecutter's Knob,6.0,29.0,6000.0,,,1.0,0.0,0.0,0.0,0.0,,,,,,,,14.0,,,,,,,,,,,,,,43.0
+Leviathan Axe,Stonecutter's Knob,7.0,34.0,9000.0,,,2.0,0.0,0.0,0.0,0.0,,,,,,,,17.0,,,,,,,,,,,,,,51.0
+Leviathan Axe,Stonecutter's Knob,8.0,40.0,12000.0,,,3.0,0.0,0.0,0.0,0.0,10.0,,,,,,,20.0,,,,,,,,,,,,,,60.0
+Leviathan Axe,Stonecutter's Knob,9.0,46.0,16000.0,,,,0.0,0.0,0.0,0.0,20.0,10.0,,,,,,23.0,,,,,,,,,,,,,,69.0
+Leviathan Axe,Stonecutter's Knob,9.1,51.0,17000.0,,,,0.0,0.0,0.0,0.0,,,10.0,,,,,26.0,,,,,,,,,,,,,,77.0
+Leviathan Axe,Stonecutter's Knob,9.2,57.0,18000.0,,,,0.0,0.0,0.0,0.0,5.0,,20.0,,,,,28.0,,,,,,,,,,,,,,85.0
+Leviathan Axe,Stonecutter's Knob,9.3,62.0,19000.0,,,,0.0,0.0,0.0,0.0,,,30.0,10.0,,,,31.0,,,,,,,,,,,,,,93.0
+Leviathan Axe,Stonecutter's Knob,10.0,68.0,20000.0,,,,0.0,0.0,0.0,0.0,,,40.0,,1.0,,,34.0,,,,,,,,,,,,,,102.0
+Leviathan Axe,Grip of Weighted Recovery,4.0,11.0,2400.0,,,,13.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,24.0
+Leviathan Axe,Grip of Weighted Recovery,5.0,15.0,4000.0,,5.0,,17.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,32.0
+Leviathan Axe,Grip of Weighted Recovery,6.0,18.0,6000.0,,,1.0,22.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,40.0
+Leviathan Axe,Grip of Weighted Recovery,7.0,22.0,9000.0,,,2.0,26.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,48.0
+Leviathan Axe,Grip of Weighted Recovery,8.0,25.0,12000.0,,,3.0,30.0,0.0,0.0,0.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,55.0
+Leviathan Axe,Grip of Weighted Recovery,9.0,29.0,16000.0,,,,34.0,0.0,0.0,0.0,20.0,10.0,,,,,,0.0,,,,,,,,,,,,,,63.0
+Leviathan Axe,Grip of Weighted Recovery,9.1,32.0,17000.0,,,,38.0,0.0,0.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,70.0
+Leviathan Axe,Grip of Weighted Recovery,9.2,36.0,18000.0,,,,43.0,0.0,0.0,0.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,79.0
+Leviathan Axe,Grip of Weighted Recovery,9.3,39.0,19000.0,,,,47.0,0.0,0.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,86.0
+Leviathan Axe,Grip of Weighted Recovery,10.0,43.0,20000.0,,,,51.0,0.0,0.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,94.0
+Leviathan Axe,Grip of Healing Harmony,5.0,15.0,,,,,0.0,0.0,0.0,0.0,,,,,,,,17.0,,,,,,,,,,,,,,32.0
+Leviathan Axe,Grip of Healing Harmony,6.0,18.0,6000.0,,,1.0,0.0,0.0,0.0,0.0,,,,,,,,22.0,,,,,,,,,,,,,,40.0
+Leviathan Axe,Grip of Healing Harmony,7.0,22.0,9000.0,,,2.0,0.0,0.0,0.0,0.0,,,,,,,,26.0,,,,,,,,,,,,,,48.0
+Leviathan Axe,Grip of Healing Harmony,8.0,25.0,12000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,30.0,4.0,,,,,,,,,,,,,55.0
+Leviathan Axe,Grip of Healing Harmony,9.0,29.0,16000.0,,,,0.0,0.0,0.0,0.0,20.0,10.0,,,,,,34.0,,,,,,,,,,,,,,63.0
+Leviathan Axe,Grip of Healing Harmony,9.1,32.0,17000.0,,,,0.0,0.0,0.0,0.0,,,10.0,,,,,38.0,,,,,,,,,,,,,,70.0
+Leviathan Axe,Grip of Healing Harmony,9.2,36.0,18000.0,,,,0.0,0.0,0.0,0.0,5.0,,20.0,,,,,43.0,,,,,,,,,,,,,,79.0
+Leviathan Axe,Grip of Healing Harmony,9.3,39.0,19000.0,,,,0.0,0.0,0.0,0.0,,,30.0,10.0,,,,41.0,,,,,,,,,,,,,,80.0
+Leviathan Axe,Grip of Healing Harmony,10.0,43.0,20000.0,,,,0.0,0.0,0.0,0.0,,,40.0,,1.0,,,51.0,,,,,,,,,,,,,,94.0
+Leviathan Axe,Grip of the Fallen Alchemist,5.0,15.0,,,,,0.0,12.0,0.0,12.0,,,,,,,,0.0,,,,,,,,,,,,,,39.0
+Leviathan Axe,Grip of the Fallen Alchemist,6.0,18.0,6000.0,,,1.0,0.0,14.0,0.0,14.0,,,,,,,,0.0,,,,,,,,,,,,,,46.0
+Leviathan Axe,Grip of the Fallen Alchemist,7.0,22.0,9000.0,,,2.0,0.0,17.0,0.0,17.0,,,,,,,,0.0,,,,,,,,,,,,,,56.0
+Leviathan Axe,Grip of the Fallen Alchemist,8.0,25.0,12000.0,,,3.0,0.0,20.0,0.0,20.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,65.0
+Leviathan Axe,Grip of the Fallen Alchemist,9.0,29.0,16000.0,,,,0.0,23.0,0.0,23.0,20.0,10.0,,,,,,0.0,,,,,,,,,,,,,,75.0
+Leviathan Axe,Grip of the Fallen Alchemist,9.1,32.0,17000.0,,,,0.0,26.0,0.0,26.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,84.0
+Leviathan Axe,Grip of the Fallen Alchemist,9.2,36.0,18000.0,,,,0.0,28.0,0.0,28.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,92.0
+Leviathan Axe,Grip of the Fallen Alchemist,9.3,39.0,19000.0,,,,0.0,31.0,0.0,31.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,101.0
+Leviathan Axe,Grip of the Fallen Alchemist,10.0,43.0,20000.0,,,,0.0,34.0,0.0,34.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,111.0
+Leviathan Axe,Runic Hailstone Knob,6.0,14.0,,,,,14.0,0.0,0.0,18.0,,,,,,,,0.0,,,,,,,,,,,,,,46.0
+Leviathan Axe,Runic Hailstone Knob,7.0,17.0,9000.0,,,2.0,17.0,0.0,0.0,22.0,,,,,,,,0.0,,,,,,,,,,,,,,56.0
+Leviathan Axe,Runic Hailstone Knob,8.0,20.0,12000.0,,,,20.0,0.0,0.0,25.0,,,,,,,,0.0,4.0,,,,,,,,,,,,,65.0
+Leviathan Axe,Runic Hailstone Knob,9.0,23.0,16000.0,,,,23.0,0.0,0.0,29.0,20.0,10.0,,,,,,0.0,,,,,,,,,,,,,,75.0
+Leviathan Axe,Runic Hailstone Knob,9.1,26.0,17000.0,,,,26.0,0.0,0.0,32.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,84.0
+Leviathan Axe,Runic Hailstone Knob,9.2,28.0,18000.0,,,,28.0,0.0,0.0,36.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,92.0
+Leviathan Axe,Runic Hailstone Knob,9.3,31.0,19000.0,,,,31.0,0.0,0.0,39.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,101.0
+Leviathan Axe,Runic Hailstone Knob,10.0,34.0,20000.0,,,,34.0,0.0,0.0,43.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,111.0
+Leviathan Axe,Banahogg Knob,6.0,18.0,,,,,0.0,22.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,40.0
+Leviathan Axe,Banahogg Knob,7.0,22.0,9000.0,,,2.0,0.0,26.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,48.0
+Leviathan Axe,Banahogg Knob,8.0,25.0,12000.0,,,,0.0,30.0,0.0,0.0,,,,,,,,0.0,4.0,,,,,,,,,,,,,55.0
+Leviathan Axe,Banahogg Knob,9.0,29.0,16000.0,,,,0.0,34.0,0.0,0.0,20.0,10.0,,,,,,0.0,,,,,,,,,,,,,,63.0
+Leviathan Axe,Banahogg Knob,9.1,32.0,17000.0,,,,0.0,38.0,0.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,70.0
+Leviathan Axe,Banahogg Knob,9.2,36.0,18000.0,,,,0.0,43.0,0.0,0.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,79.0
+Leviathan Axe,Banahogg Knob,9.3,39.0,19000.0,,,,0.0,47.0,0.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,86.0
+Leviathan Axe,Banahogg Knob,10.0,43.0,20000.0,,,,0.0,51.0,0.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,94.0
+Leviathan Axe,Grip of Radiant Reflection,6.0,25.0,,,,,11.0,0.0,11.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,47.0
+Leviathan Axe,Grip of Radiant Reflection,7.0,30.0,,,,,13.0,0.0,13.0,0.0,,,,1.0,,,,0.0,,750.0,,,,,,,,,,,,56.0
+Leviathan Axe,Grip of Radiant Reflection,8.0,35.0,,,,,15.0,0.0,15.0,0.0,,,,2.0,,,,0.0,,1250.0,,,,,,,,,,,,65.0
+Leviathan Axe,Grip of Radiant Reflection,9.0,40.0,,,,,17.0,0.0,17.0,0.0,20.0,10.0,,,,,,0.0,,1750.0,,,,,,,,,,,,74.0
+Leviathan Axe,Grip of Radiant Reflection,9.1,45.0,17000.0,,,,19.0,0.0,19.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,83.0
+Leviathan Axe,Grip of Radiant Reflection,9.2,50.0,18000.0,,,,21.0,0.0,21.0,0.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,92.0
+Leviathan Axe,Grip of Radiant Reflection,9.3,55.0,19000.0,,,,23.0,0.0,23.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,101.0
+Leviathan Axe,Grip of Radiant Reflection,10.0,60.0,20000.0,,,,26.0,0.0,26.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,112.0
+Blades of Chaos,Steel Handles,1.0,0.0,,,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,0.0
+Blades of Chaos,Steel Handles,2.0,4.0,400.0,3.0,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,4.0
+Blades of Chaos,Steel Handles,3.0,8.0,800.0,6.0,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,8.0
+Blades of Chaos,Steel Handles,4.0,11.0,2400.0,,2.0,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,11.0
+Blades of Chaos,Steel Handles,5.0,15.0,4000.0,,5.0,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,15.0
+Blades of Chaos,Steel Handles,6.0,18.0,6000.0,,,1.0,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,18.0
+Blades of Chaos,Steel Handles,7.0,22.0,9000.0,,,2.0,13.0,13.0,13.0,13.0,,,,,,,,0.0,,,,,,,,,,,,,,74.0
+Blades of Chaos,Steel Handles,8.0,25.0,12000.0,,,3.0,15.0,15.0,15.0,15.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,85.0
+Blades of Chaos,Steel Handles,9.0,29.0,16000.0,,,,17.0,17.0,17.0,17.0,20.0,,,3.0,,,,0.0,,,,,,,,,,,,,,97.0
+Blades of Chaos,Steel Handles,9.1,32.0,17000.0,,,,19.0,19.0,19.0,19.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,108.0
+Blades of Chaos,Steel Handles,9.2,36.0,18000.0,,,,21.0,21.0,21.0,21.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,120.0
+Blades of Chaos,Steel Handles,9.3,39.0,19000.0,,,,23.0,23.0,23.0,23.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,131.0
+Blades of Chaos,Steel Handles,10.0,43.0,20000.0,,,,26.0,26.0,26.0,26.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,147.0
+Blades of Chaos,Darkdale Handles,1.0,3.0,,,,,0.0,0.0,0.0,2.0,,,,,,,,0.0,,,,,,,,,,,,,,5.0
+Blades of Chaos,Darkdale Handles,2.0,6.0,400.0,3.0,,,0.0,0.0,0.0,3.0,,,,,,,,0.0,,,,,,,,,,,,,,9.0
+Blades of Chaos,Darkdale Handles,3.0,11.0,800.0,6.0,,,0.0,0.0,0.0,6.0,,,,,,,,0.0,,,,,,,,,,,,,,17.0
+Blades of Chaos,Darkdale Handles,4.0,17.0,2400.0,,2.0,,0.0,0.0,0.0,9.0,,,,,,,,0.0,,,,,,,,,,,,,,26.0
+Blades of Chaos,Darkdale Handles,5.0,22.0,4000.0,,5.0,,0.0,0.0,0.0,12.0,,,,,,,,0.0,,,,,,,,,,,,,,34.0
+Blades of Chaos,Darkdale Handles,6.0,27.0,6000.0,,,,0.0,0.0,0.0,4.0,,,,,,1.0,,0.0,,,,,,,,,,,,,,31.0
+Blades of Chaos,Darkdale Handles,7.0,32.0,9000.0,,,,0.0,0.0,0.0,17.0,,,,,,2.0,,0.0,,,,,,,,,,,,,,49.0
+Blades of Chaos,Darkdale Handles,8.0,38.0,12000.0,,,,0.0,0.0,0.0,20.0,,,,,,3.0,10.0,0.0,,,,,,,,,,,,,,58.0
+Blades of Chaos,Darkdale Handles,9.0,43.0,16000.0,,,,0.0,0.0,0.0,23.0,,,,3.0,,,20.0,0.0,,,,,,,,,,,,,,66.0
+Blades of Chaos,Darkdale Handles,9.1,48.0,17000.0,,,,0.0,0.0,0.0,26.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,74.0
+Blades of Chaos,Darkdale Handles,9.2,53.0,18000.0,,,,0.0,0.0,0.0,28.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,81.0
+Blades of Chaos,Darkdale Handles,9.3,59.0,19000.0,,,,0.0,0.0,0.0,31.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,90.0
+Blades of Chaos,Darkdale Handles,10.0,64.0,20000.0,,,,0.0,0.0,0.0,34.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,98.0
+Blades of Chaos,Deadly Obsidian Handles,1.0,4.0,,,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,4.0
+Blades of Chaos,Deadly Obsidian Handles,2.0,8.0,400.0,3.0,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,8.0
+Blades of Chaos,Deadly Obsidian Handles,3.0,12.0,800.0,6.0,,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,12.0
+Blades of Chaos,Deadly Obsidian Handles,4.0,18.0,2400.0,,2.0,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,18.0
+Blades of Chaos,Deadly Obsidian Handles,5.0,26.0,4000.0,,5.0,,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,26.0
+Blades of Chaos,Deadly Obsidian Handles,6.0,36.0,6000.0,,,1.0,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,36.0
+Blades of Chaos,Deadly Obsidian Handles,7.0,47.0,9000.0,,,2.0,0.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,47.0
+Blades of Chaos,Deadly Obsidian Handles,8.0,55.0,12000.0,,,3.0,0.0,0.0,0.0,0.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,55.0
+Blades of Chaos,Deadly Obsidian Handles,9.0,63.0,16000.0,,,,0.0,0.0,0.0,0.0,20.0,,,3.0,,,,0.0,,,,,,,,,,,,,,63.0
+Blades of Chaos,Deadly Obsidian Handles,9.1,70.0,17000.0,,,,0.0,0.0,0.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,70.0
+Blades of Chaos,Deadly Obsidian Handles,9.2,78.0,18000.0,,,,0.0,0.0,0.0,0.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,78.0
+Blades of Chaos,Deadly Obsidian Handles,9.3,86.0,19000.0,,,,0.0,0.0,0.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,86.0
+Blades of Chaos,Deadly Obsidian Handles,10.0,94.0,20000.0,,,,0.0,0.0,0.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,94.0
+Blades of Chaos,Radiant Warden Handles,2.0,4.0,600.0,,,,0.0,0.0,5.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,9.0
+Blades of Chaos,Radiant Warden Handles,3.0,8.0,800.0,6.0,,,0.0,0.0,9.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,17.0
+Blades of Chaos,Radiant Warden Handles,4.0,11.0,2400.0,,2.0,,0.0,0.0,13.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,24.0
+Blades of Chaos,Radiant Warden Handles,5.0,15.0,4000.0,,5.0,,0.0,0.0,17.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,32.0
+Blades of Chaos,Radiant Warden Handles,6.0,18.0,6000.0,,,1.0,0.0,0.0,22.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,40.0
+Blades of Chaos,Radiant Warden Handles,7.0,22.0,9000.0,,,2.0,0.0,0.0,26.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,48.0
+Blades of Chaos,Radiant Warden Handles,8.0,25.0,12000.0,,,3.0,0.0,0.0,30.0,0.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,55.0
+Blades of Chaos,Radiant Warden Handles,9.0,29.0,16000.0,,,,0.0,0.0,34.0,0.0,20.0,,,3.0,,,,0.0,,,,,,,,,,,,,,63.0
+Blades of Chaos,Radiant Warden Handles,9.1,32.0,17000.0,,,,0.0,0.0,38.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,70.0
+Blades of Chaos,Radiant Warden Handles,9.2,36.0,18000.0,,,,0.0,0.0,43.0,0.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,79.0
+Blades of Chaos,Radiant Warden Handles,9.3,39.0,19000.0,,,,0.0,0.0,47.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,86.0
+Blades of Chaos,Radiant Warden Handles,10.0,43.0,20000.0,,,,0.0,0.0,51.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,94.0
+Blades of Chaos,Cursed Empress Handles,2.0,4.0,,,,,0.0,0.0,0.0,5.0,,,,,,,,0.0,,,,,,,,,,,,,,9.0
+Blades of Chaos,Cursed Empress Handles,3.0,8.0,800.0,6.0,,,0.0,0.0,0.0,9.0,,,,,,,,0.0,,,,,,,,,,,,,,17.0
+Blades of Chaos,Cursed Empress Handles,4.0,11.0,2400.0,,2.0,,0.0,0.0,0.0,13.0,,,,,,,,0.0,,,,,,,,,,,,,,24.0
+Blades of Chaos,Cursed Empress Handles,5.0,15.0,4000.0,,5.0,,0.0,0.0,0.0,17.0,,,,,,,,0.0,,,,,,,,,,,,,,32.0
+Blades of Chaos,Cursed Empress Handles,6.0,18.0,6000.0,,,1.0,0.0,0.0,0.0,22.0,,,,,,,,0.0,,,,,,,,,,,,,,40.0
+Blades of Chaos,Cursed Empress Handles,7.0,22.0,9000.0,,,2.0,0.0,0.0,0.0,26.0,,,,,,,,0.0,,,,,,,,,,,,,,48.0
+Blades of Chaos,Cursed Empress Handles,8.0,25.0,12000.0,,,,0.0,0.0,0.0,30.0,,,,,,,,0.0,,,4.0,,,,,,,,,,,55.0
+Blades of Chaos,Cursed Empress Handles,9.0,29.0,16000.0,,,,0.0,0.0,0.0,34.0,20.0,,,3.0,,,,0.0,,,,,,,,,,,,,,63.0
+Blades of Chaos,Cursed Empress Handles,9.1,32.0,17000.0,,,,0.0,0.0,0.0,38.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,70.0
+Blades of Chaos,Cursed Empress Handles,9.2,36.0,18000.0,,,,0.0,0.0,0.0,43.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,79.0
+Blades of Chaos,Cursed Empress Handles,9.3,38.0,19000.0,,,,0.0,0.0,0.0,47.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,85.0
+Blades of Chaos,Cursed Empress Handles,10.0,43.0,20000.0,,,,0.0,0.0,0.0,51.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,94.0
+Blades of Chaos,Pommels of the Undying Spark,2.0,6.0,,,,,3.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,9.0
+Blades of Chaos,Pommels of the Undying Spark,3.0,12.0,800.0,6.0,,,6.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,18.0
+Blades of Chaos,Pommels of the Undying Spark,4.0,18.0,2400.0,,2.0,,9.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,27.0
+Blades of Chaos,Pommels of the Undying Spark,5.0,23.0,4000.0,,5.0,,12.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,35.0
+Blades of Chaos,Pommels of the Undying Spark,6.0,29.0,6000.0,,,1.0,14.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,43.0
+Blades of Chaos,Pommels of the Undying Spark,7.0,34.0,9000.0,,,2.0,17.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,51.0
+Blades of Chaos,Pommels of the Undying Spark,8.0,40.0,12000.0,,,3.0,20.0,0.0,0.0,0.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,60.0
+Blades of Chaos,Pommels of the Undying Spark,9.0,46.0,16000.0,,,,23.0,0.0,0.0,0.0,20.0,,,3.0,,,,0.0,,,,,,,,,,,,,,69.0
+Blades of Chaos,Pommels of Agile Deceit,4.0,11.0,2400.0,,,,0.0,13.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,24.0
+Blades of Chaos,Pommels of Agile Deceit,5.0,15.0,4000.0,,5.0,,0.0,17.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,32.0
+Blades of Chaos,Pommels of Agile Deceit,6.0,18.0,6000.0,,,1.0,0.0,22.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,40.0
+Blades of Chaos,Pommels of Agile Deceit,7.0,22.0,9000.0,,,2.0,0.0,26.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,48.0
+Blades of Chaos,Pommels of Agile Deceit,8.0,25.0,12000.0,,,3.0,0.0,30.0,0.0,0.0,10.0,,,,,,,0.0,,,,,,,,,,,,,,55.0
+Blades of Chaos,Pommels of Agile Deceit,9.0,29.0,16000.0,,,,0.0,34.0,0.0,0.0,20.0,,,3.0,,,,0.0,,,,,,,,,,,,,,63.0
+Blades of Chaos,Pommels of Agile Deceit,9.1,32.0,17000.0,,,,0.0,38.0,0.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,70.0
+Blades of Chaos,Pommels of Agile Deceit,9.2,36.0,18000.0,,,,0.0,43.0,0.0,0.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,79.0
+Blades of Chaos,Pommels of Agile Deceit,9.3,39.0,19000.0,,,,0.0,47.0,0.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,86.0
+Blades of Chaos,Pommels of Agile Deceit,10.0,43.0,20000.0,,,,0.0,51.0,0.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,94.0
+Blades of Chaos,Pommels of Brutal Might,4.0,11.0,2400.0,,,,0.0,0.0,0.0,0.0,,,,,,,,13.0,,,,,,,,,,,,,,24.0
+Blades of Chaos,Pommels of Brutal Might,5.0,15.0,4000.0,,5.0,,0.0,0.0,0.0,0.0,,,,,,,,17.0,,,,,,,,,,,,,,32.0
+Blades of Chaos,Pommels of Brutal Might,6.0,18.0,6000.0,,,1.0,0.0,0.0,0.0,0.0,,,,,,,,22.0,,,,,,,,,,,,,,40.0
+Blades of Chaos,Pommels of Brutal Might,7.0,22.0,9000.0,,,2.0,0.0,0.0,0.0,0.0,,,,,,,,26.0,,,,,,,,,,,,,,48.0
+Blades of Chaos,Pommels of Brutal Might,8.0,25.0,12000.0,,,3.0,0.0,0.0,0.0,0.0,10.0,,,,,,,30.0,,,,,,,,,,,,,,55.0
+Blades of Chaos,Pommels of Brutal Might,9.0,29.0,16000.0,,,,0.0,0.0,0.0,0.0,20.0,,,3.0,,,,34.0,,,,,,,,,,,,,,63.0
+Blades of Chaos,Pommels of Brutal Might,9.1,32.0,17000.0,,,,0.0,0.0,0.0,0.0,,,10.0,,,,,38.0,,,,,,,,,,,,,,70.0
+Blades of Chaos,Pommels of Brutal Might,9.2,36.0,18000.0,,,,0.0,0.0,0.0,0.0,5.0,,20.0,,,,,43.0,,,,,,,,,,,,,,79.0
+Blades of Chaos,Pommels of Brutal Might,9.3,39.0,19000.0,,,,0.0,0.0,0.0,0.0,,,30.0,10.0,,,,47.0,,,,,,,,,,,,,,86.0
+Blades of Chaos,Pommels of Brutal Might,10.0,43.0,20000.0,,,,0.0,0.0,0.0,0.0,,,40.0,,1.0,,,51.0,,,,,,,,,,,,,,94.0
+Blades of Chaos,Hardened War Handles,5.0,20.0,,,,,0.0,9.0,0.0,0.0,,,,,,,,9.0,,,,,,,,,,,,,,38.0
+Blades of Chaos,Hardened War Handles,6.0,25.0,6000.0,,,1.0,0.0,11.0,0.0,0.0,,,,,,,,11.0,,,,,,,,,,,,,,47.0
+Blades of Chaos,Hardened War Handles,7.0,30.0,9000.0,,,2.0,0.0,13.0,0.0,0.0,,,,,,,,13.0,,,,,,,,,,,,,,56.0
+Blades of Chaos,Hardened War Handles,8.0,35.0,12000.0,,,3.0,0.0,15.0,0.0,0.0,10.0,,,,,,,15.0,,,,,,,,,,,,,,65.0
+Blades of Chaos,Hardened War Handles,9.0,40.0,16000.0,,,,0.0,17.0,0.0,0.0,20.0,,,3.0,,,,17.0,,,,,,,,,,,,,,74.0
+Blades of Chaos,Hardened War Handles,9.1,45.0,17000.0,,,,0.0,19.0,0.0,0.0,,,10.0,,,,,19.0,,,,,,,,,,,,,,83.0
+Blades of Chaos,Hardened War Handles,9.2,50.0,18000.0,,,,0.0,21.0,0.0,0.0,5.0,,20.0,,,,,21.0,,,,,,,,,,,,,,92.0
+Blades of Chaos,Hardened War Handles,9.3,55.0,19000.0,,,,0.0,23.0,0.0,0.0,,,30.0,10.0,,,,23.0,,,,,,,,,,,,,,101.0
+Blades of Chaos,Hardened War Handles,10.0,60.0,20000.0,,,,0.0,26.0,0.0,0.0,,,40.0,,1.0,,,26.0,,,,,,,,,,,,,,112.0
+Blades of Chaos,Pommels of Burning Unity,6.0,18.0,,,,,22.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,40.0
+Blades of Chaos,Pommels of Burning Unity,7.0,22.0,9000.0,,,2.0,26.0,0.0,0.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,48.0
+Blades of Chaos,Pommels of Burning Unity,8.0,25.0,12000.0,,,,30.0,0.0,0.0,0.0,,,,,,,,0.0,,,4.0,,,,,,,,,,,55.0
+Blades of Chaos,Pommels of Burning Unity,9.0,29.0,16000.0,,,,34.0,0.0,0.0,0.0,20.0,,,3.0,,,,0.0,,,,,,,,,,,,,,63.0
+Blades of Chaos,Pommels of Burning Unity,9.1,32.0,17000.0,,,,38.0,0.0,0.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,70.0
+Blades of Chaos,Pommels of Burning Unity,9.2,36.0,18000.0,,,,43.0,0.0,0.0,0.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,79.0
+Blades of Chaos,Pommels of Burning Unity,9.3,39.0,19000.0,,,,47.0,0.0,0.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,86.0
+Blades of Chaos,Pommels of Burning Unity,10.0,43.0,20000.0,,,,51.0,0.0,0.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,94.0
+Blades of Chaos,Pommels of the True Flame,6.0,14.0,,,,,18.0,0.0,14.0,0.0,,,,,,,,0.0,,,,,,,,,,,,,,46.0
+Blades of Chaos,Pommels of the True Flame,7.0,17.0,,,,,22.0,0.0,17.0,0.0,,,,1.0,,,,0.0,,750.0,,,,,,,,,,,,56.0
+Blades of Chaos,Pommels of the True Flame,8.0,20.0,,,,,25.0,0.0,20.0,0.0,,,,2.0,,,,0.0,,1250.0,,,,,,,,,,,,65.0
+Blades of Chaos,Pommels of the True Flame,9.0,23.0,,,,,29.0,0.0,23.0,0.0,20.0,,,3.0,,,,0.0,,1750.0,,,,,,,,,,,,75.0
+Blades of Chaos,Pommels of the True Flame,9.1,26.0,17000.0,,,,32.0,0.0,26.0,0.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,84.0
+Blades of Chaos,Pommels of the True Flame,9.2,28.0,18000.0,,,,36.0,0.0,28.0,0.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,92.0
+Blades of Chaos,Pommels of the True Flame,9.3,31.0,19000.0,,,,39.0,0.0,31.0,0.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,101.0
+Blades of Chaos,Pommels of the True Flame,10.0,34.0,20000.0,,,,43.0,0.0,34.0,0.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,111.0
+Blades of Chaos,Luminous Recovery Handles,6.0,14.0,,,,,0.0,0.0,18.0,14.0,,,,,,,,0.0,,,,,,,,,,,,,,46.0
+Blades of Chaos,Luminous Recovery Handles,7.0,17.0,9000.0,,,2.0,0.0,0.0,22.0,17.0,,,,,,,,0.0,,,,,,,,,,,,,,56.0
+Blades of Chaos,Luminous Recovery Handles,8.0,20.0,12000.0,,,,0.0,0.0,25.0,20.0,,,,,,,,0.0,,,4.0,,,,,,,,,,,65.0
+Blades of Chaos,Luminous Recovery Handles,9.0,23.0,16000.0,,,,0.0,0.0,29.0,23.0,20.0,,,3.0,,,,0.0,,,,,,,,,,,,,,75.0
+Blades of Chaos,Luminous Recovery Handles,9.1,26.0,17000.0,,,,0.0,0.0,32.0,26.0,,,10.0,,,,,0.0,,,,,,,,,,,,,,84.0
+Blades of Chaos,Luminous Recovery Handles,9.2,28.0,18000.0,,,,0.0,0.0,36.0,28.0,5.0,,20.0,,,,,0.0,,,,,,,,,,,,,,92.0
+Blades of Chaos,Luminous Recovery Handles,9.3,31.0,19000.0,,,,0.0,0.0,39.0,31.0,,,30.0,10.0,,,,0.0,,,,,,,,,,,,,,101.0
+Blades of Chaos,Luminous Recovery Handles,10.0,34.0,20000.0,,,,0.0,0.0,43.0,34.0,,,40.0,,1.0,,,0.0,,,,,,,,,,,,,,111.0
+Draupnir Spear,Soldier's Sauroter,4.0,0.0,,,,,0.0,0.0,0.0,0.0,,,,,,,,11.0,,,,,,,,,,,,,,11.0
+Draupnir Spear,Soldier's Sauroter,5.0,0.0,4000.0,,5.0,,0.0,0.0,0.0,0.0,,,,,,,,15.0,,,,,,,,,,,,,,15.0
+Draupnir Spear,Soldier's Sauroter,6.0,0.0,6000.0,,,1.0,0.0,0.0,0.0,0.0,,,,,,,,18.0,,,,,,,,,,,,,,18.0
+Draupnir Spear,Soldier's Sauroter,7.0,0.0,9000.0,,,2.0,13.0,13.0,13.0,13.0,,,,,,,,22.0,,,,,,,,,,,,,,74.0
+Draupnir Spear,Soldier's Sauroter,8.0,0.0,12000.0,,,3.0,15.0,15.0,15.0,15.0,10.0,,,,,,,25.0,,,,,,,,,,,,,,85.0
+Draupnir Spear,Soldier's Sauroter,9.0,0.0,16000.0,,,,17.0,17.0,17.0,17.0,20.0,,,,,,,29.0,,,,20.0,,,,,,,,,,97.0
+Draupnir Spear,Soldier's Sauroter,9.1,0.0,17000.0,,,,19.0,19.0,19.0,19.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,108.0
+Draupnir Spear,Soldier's Sauroter,9.2,0.0,18000.0,,,,21.0,21.0,21.0,21.0,5.0,,20.0,,,,,36.0,,,,,,,,,,,,,,120.0
+Draupnir Spear,Soldier's Sauroter,9.3,0.0,19000.0,,,,23.0,23.0,23.0,23.0,,,30.0,10.0,,,,39.0,,,,,,,,,,,,,,131.0
+Draupnir Spear,Soldier's Sauroter,10.0,0.0,20000.0,,,,26.0,26.0,26.0,26.0,,,40.0,,1.0,,,43.0,,,,,,,,,,,,,,147.0
+Draupnir Spear,Hind of Attuned Elements,5.0,0.0,,,,,17.0,0.0,0.0,0.0,,,,,,,,15.0,,,,,,,,,,,,,,32.0
+Draupnir Spear,Hind of Attuned Elements,6.0,0.0,6000.0,,,1.0,22.0,0.0,0.0,0.0,,,,,,,,18.0,,,,,,,,,,,,,,40.0
+Draupnir Spear,Hind of Attuned Elements,7.0,0.0,9000.0,,,2.0,26.0,0.0,0.0,0.0,,,,,,,,22.0,,,,,,,,,,,,,,48.0
+Draupnir Spear,Hind of Attuned Elements,8.0,0.0,12000.0,,,3.0,30.0,0.0,0.0,0.0,10.0,,,,,,,25.0,,,,,,,,,,,,,,55.0
+Draupnir Spear,Hind of Attuned Elements,9.0,0.0,16000.0,,,,34.0,0.0,0.0,0.0,20.0,,,,,,,29.0,,,,20.0,,,,,,,,,,63.0
+Draupnir Spear,Hind of Attuned Elements,9.1,0.0,17000.0,,,,38.0,0.0,0.0,0.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,70.0
+Draupnir Spear,Hind of Attuned Elements,9.2,0.0,18000.0,,,,43.0,0.0,0.0,0.0,5.0,,20.0,,,,,36.0,,,,,,,,,,,,,,79.0
+Draupnir Spear,Hind of Attuned Elements,9.3,0.0,19000.0,,,,47.0,0.0,0.0,0.0,,,30.0,10.0,,,,39.0,,,,,,,,,,,,,,86.0
+Draupnir Spear,Hind of Attuned Elements,10.0,0.0,20000.0,,,,51.0,0.0,0.0,0.0,,,40.0,,1.0,,,43.0,,,,,,,,,,,,,,94.0
+Draupnir Spear,Charging Assault Sauroter,5.0,0.0,4800.0,,,,0.0,7.0,0.0,7.0,,,,,,,,23.0,,,,,,,,,,,,,,37.0
+Draupnir Spear,Charging Assault Sauroter,6.0,0.0,6000.0,,,1.0,0.0,9.0,0.0,9.0,,,,,,,,29.0,,,,,,,,,,,,,,47.0
+Draupnir Spear,Charging Assault Sauroter,7.0,0.0,9000.0,,,2.0,0.0,11.0,0.0,11.0,,,,,,,,34.0,,,,,,,,,,,,,,56.0
+Draupnir Spear,Charging Assault Sauroter,8.0,0.0,12000.0,,,3.0,0.0,13.0,0.0,13.0,10.0,,,,,,,40.0,,,,,,,,,,,,,,66.0
+Draupnir Spear,Charging Assault Sauroter,9.0,0.0,16000.0,,,,0.0,14.0,0.0,14.0,20.0,,,,,,,46.0,,,,20.0,,,,,,,,,,74.0
+Draupnir Spear,Charging Assault Sauroter,9.1,0.0,17000.0,,,,0.0,16.0,0.0,16.0,,,10.0,,,,,51.0,,,,,,,,,,,,,,83.0
+Draupnir Spear,Charging Assault Sauroter,9.2,0.0,18000.0,,,,0.0,18.0,0.0,17.0,5.0,,20.0,,,,,57.0,,,,,,,,,,,,,,92.0
+Draupnir Spear,Charging Assault Sauroter,9.3,0.0,19000.0,,,,0.0,20.0,0.0,20.0,,,30.0,10.0,,,,62.0,,,,,,,,,,,,,,102.0
+Draupnir Spear,Charging Assault Sauroter,10.0,0.0,20000.0,,,,0.0,21.0,0.0,21.0,,,40.0,,1.0,,,68.0,,,,,,,,,,,,,,110.0
+Draupnir Spear,Mighty Olympic Sauroter,5.0,0.0,4800.0,,,,0.0,0.0,17.0,12.0,,,,,,,,9.0,,,,,,,,,,,,,,38.0
+Draupnir Spear,Mighty Olympic Sauroter,6.0,0.0,6000.0,,,1.0,0.0,0.0,22.0,14.0,,,,,,,,11.0,,,,,,,,,,,,,,47.0
+Draupnir Spear,Mighty Olympic Sauroter,7.0,0.0,9000.0,,,2.0,0.0,0.0,26.0,17.0,,,,,,,,13.0,,,,,,,,,,,,,,56.0
+Draupnir Spear,Mighty Olympic Sauroter,8.0,0.0,12000.0,,,3.0,0.0,0.0,30.0,20.0,10.0,,,,,,,15.0,,,,,,,,,,,,,,65.0
+Draupnir Spear,Mighty Olympic Sauroter,9.0,0.0,16000.0,,,,0.0,0.0,34.0,23.0,20.0,,,,,,,17.0,,,,20.0,,,,,,,,,,74.0
+Draupnir Spear,Mighty Olympic Sauroter,9.1,0.0,17000.0,,,,0.0,0.0,38.0,26.0,,,10.0,,,,,19.0,,,,,,,,,,,,,,83.0
+Draupnir Spear,Mighty Olympic Sauroter,9.2,0.0,18000.0,,,,0.0,0.0,43.0,28.0,5.0,,20.0,,,,,21.0,,,,,,,,,,,,,,92.0
+Draupnir Spear,Mighty Olympic Sauroter,9.3,0.0,19000.0,,,,0.0,0.0,47.0,31.0,,,30.0,10.0,,,,23.0,,,,,,,,,,,,,,101.0
+Draupnir Spear,Mighty Olympic Sauroter,10.0,0.0,20000.0,,,,0.0,0.0,51.0,34.0,,,40.0,,1.0,,,26.0,,,,,,,,,,,,,,111.0
+Draupnir Spear,Lion's Roar Sauroter,5.0,0.0,,,,,0.0,0.0,0.0,0.0,,,,,,,,32.0,,,,,,,,,,,,,,32.0
+Draupnir Spear,Lion's Roar Sauroter,6.0,0.0,6000.0,,,1.0,0.0,0.0,0.0,0.0,,,,,,,,40.0,,,,,,,,,,,,,,40.0
+Draupnir Spear,Lion's Roar Sauroter,7.0,0.0,9000.0,,,2.0,0.0,0.0,0.0,0.0,,,,,,,,47.0,,,,,,,,,,,,,,47.0
+Draupnir Spear,Lion's Roar Sauroter,8.0,0.0,12000.0,,,3.0,0.0,0.0,0.0,0.0,10.0,,,,,,,55.0,,,,,,,,,,,,,,55.0
+Draupnir Spear,Lion's Roar Sauroter,9.0,0.0,16000.0,,,,0.0,0.0,0.0,0.0,20.0,,,,,,,63.0,,,,20.0,,,,,,,,,,63.0
+Draupnir Spear,Lion's Roar Sauroter,9.1,0.0,17000.0,,,,0.0,0.0,0.0,0.0,,,10.0,,,,,70.0,,,,,,,,,,,,,,70.0
+Draupnir Spear,Lion's Roar Sauroter,9.2,0.0,18000.0,,,,0.0,0.0,0.0,0.0,5.0,,20.0,,,,,78.0,,,,,,,,,,,,,,78.0
+Draupnir Spear,Lion's Roar Sauroter,9.3,0.0,19000.0,,,,0.0,0.0,0.0,0.0,,,30.0,10.0,,,,86.0,,,,,,,,,,,,,,86.0
+Draupnir Spear,Lion's Roar Sauroter,10.0,0.0,20000.0,,,,0.0,0.0,0.0,0.0,,,40.0,,1.0,,,94.0,,,,,,,,,,,,,,94.0
+Draupnir Spear,Hind of the Four Winds,5.0,17.0,,,,,0.0,0.0,0.0,0.0,,,,,,,,15.0,,,,,,,,,,,,,,32.0
+Draupnir Spear,Hind of the Four Winds,6.0,22.0,6000.0,,,1.0,0.0,0.0,0.0,0.0,,,,,,,,18.0,,,,,,,,,,,,,,40.0
+Draupnir Spear,Hind of the Four Winds,7.0,26.0,9000.0,,,2.0,0.0,0.0,0.0,0.0,,,,,,,,22.0,,,,,,,,,,,,,,48.0
+Draupnir Spear,Hind of the Four Winds,8.0,30.0,12000.0,,,3.0,0.0,0.0,0.0,0.0,10.0,,,,,,,25.0,,,,,,,,,,,,,,55.0
+Draupnir Spear,Hind of the Four Winds,9.0,34.0,16000.0,,,,0.0,0.0,0.0,0.0,20.0,,,,,,,29.0,,,,20.0,,,,,,,,,,63.0
+Draupnir Spear,Hind of the Four Winds,9.1,38.0,17000.0,,,,0.0,0.0,0.0,0.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,70.0
+Draupnir Spear,Hind of the Four Winds,9.2,43.0,18000.0,,,,0.0,0.0,0.0,0.0,5.0,,20.0,,,,,36.0,,,,,,,,,,,,,,79.0
+Draupnir Spear,Hind of the Four Winds,9.3,47.0,19000.0,,,,0.0,0.0,0.0,0.0,,,30.0,10.0,,,,39.0,,,,,,,,,,,,,,86.0
+Draupnir Spear,Hind of the Four Winds,10.0,51.0,20000.0,,,,0.0,0.0,0.0,0.0,,,40.0,,1.0,,,43.0,,,,,,,,,,,,,,94.0
+Draupnir Spear,Warrior's Echo Sauroter,6.0,14.0,,,,,18.0,0.0,0.0,0.0,,,,,,,,14.0,,,,,,,,,,,,,,46.0
+Draupnir Spear,Warrior's Echo Sauroter,7.0,17.0,,,,,22.0,0.0,0.0,0.0,,,,1.0,,,,17.0,,750.0,,,,,,,,,,,,56.0
+Draupnir Spear,Warrior's Echo Sauroter,8.0,20.0,,,,,25.0,0.0,0.0,0.0,,,,2.0,,,,20.0,,1250.0,,,,,,,,,,,,65.0
+Draupnir Spear,Warrior's Echo Sauroter,9.0,23.0,,,,,29.0,0.0,0.0,0.0,20.0,,,,,,,23.0,,1750.0,,20.0,,,,,,,,,,75.0
+Draupnir Spear,Warrior's Echo Sauroter,9.1,26.0,17000.0,,,,32.0,0.0,0.0,0.0,,,10.0,,,,,26.0,,,,,,,,,,,,,,84.0
+Draupnir Spear,Warrior's Echo Sauroter,9.2,28.0,18000.0,,,,36.0,0.0,0.0,0.0,5.0,,20.0,,,,,28.0,,,,,,,,,,,,,,92.0
+Draupnir Spear,Warrior's Echo Sauroter,9.3,31.0,19000.0,,,,39.0,0.0,0.0,0.0,,,30.0,10.0,,,,31.0,,,,,,,,,,,,,,101.0
+Draupnir Spear,Warrior's Echo Sauroter,10.0,34.0,20000.0,,,,43.0,0.0,0.0,0.0,,,40.0,,1.0,,,34.0,,,,,,,,,,,,,,111.0
+Draupnir Spear,Battle-Scarred Sauroter,6.0,0.0,8000.0,,,,0.0,18.0,0.0,0.0,,,,,,,,25.0,,,,,,,,,,,,,,43.0
+Draupnir Spear,Battle-Scarred Sauroter,7.0,0.0,9000.0,,,2.0,0.0,22.0,0.0,0.0,,,,,,,,30.0,,,,,,,,,,,,,,52.0
+Draupnir Spear,Battle-Scarred Sauroter,8.0,0.0,12000.0,,,3.0,0.0,25.0,0.0,0.0,10.0,,,,,,,35.0,,,,,,,,,,,,,,60.0
+Draupnir Spear,Battle-Scarred Sauroter,9.0,0.0,16000.0,,,,0.0,29.0,0.0,0.0,20.0,,,,,,,40.0,,,,20.0,,,,,,,,,,69.0
+Draupnir Spear,Battle-Scarred Sauroter,9.1,0.0,17000.0,,,,0.0,32.0,0.0,0.0,,,10.0,,,,,45.0,,,,,,,,,,,,,,77.0
+Draupnir Spear,Battle-Scarred Sauroter,9.2,0.0,18000.0,,,,0.0,36.0,0.0,0.0,5.0,,20.0,,,,,50.0,,,,,,,,,,,,,,86.0
+Draupnir Spear,Battle-Scarred Sauroter,9.3,0.0,19000.0,,,,0.0,39.0,0.0,0.0,,,30.0,10.0,,,,55.0,,,,,,,,,,,,,,94.0
+Draupnir Spear,Battle-Scarred Sauroter,10.0,0.0,20000.0,,,,0.0,43.0,0.0,0.0,,,40.0,,1.0,,,60.0,,,,,,,,,,,,,,103.0
+Draupnir Spear,Hind of Volatile Might,6.0,0.0,,,,,0.0,22.0,0.0,0.0,,,,,,,,18.0,,,,,,,,,,,,,,40.0
+Draupnir Spear,Hind of Volatile Might,7.0,0.0,9000.0,,,2.0,0.0,26.0,0.0,0.0,,,,,,,,22.0,,,,,,,,,,,,,,48.0
+Draupnir Spear,Hind of Volatile Might,8.0,0.0,12000.0,,,,0.0,30.0,0.0,0.0,,,,,,,,25.0,,,,,4.0,,,,,,,,,55.0
+Draupnir Spear,Hind of Volatile Might,9.0,0.0,16000.0,,,,0.0,34.0,0.0,0.0,20.0,,,,,,,29.0,,,,20.0,,,,,,,,,,63.0
+Draupnir Spear,Hind of Volatile Might,9.1,0.0,17000.0,,,,0.0,38.0,0.0,0.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,70.0
+Draupnir Spear,Hind of Volatile Might,9.2,0.0,18000.0,,,,0.0,43.0,0.0,0.0,5.0,,20.0,,,,,36.0,,,,,,,,,,,,,,79.0
+Draupnir Spear,Hind of Volatile Might,9.3,0.0,19000.0,,,,0.0,47.0,0.0,0.0,,,30.0,10.0,,,,39.0,,,,,,,,,,,,,,86.0
+Draupnir Spear,Hind of Volatile Might,10.0,0.0,20000.0,,,,0.0,51.0,0.0,0.0,,,40.0,,1.0,,,43.0,,,,,,,,,,,,,,94.0
+Draupnir Spear,Hind of Weightless Recovery,6.0,0.0,8000.0,,,,0.0,0.0,0.0,22.0,,,,,,,,18.0,,,,,,,,,,,,,,40.0
+Draupnir Spear,Hind of Weightless Recovery,7.0,0.0,9000.0,,,2.0,0.0,0.0,0.0,26.0,,,,,,,,22.0,,,,,,,,,,,,,,48.0
+Draupnir Spear,Hind of Weightless Recovery,8.0,0.0,12000.0,,,,0.0,0.0,0.0,30.0,,,,,,,,25.0,,,,,4.0,,,,,,,,,55.0
+Draupnir Spear,Hind of Weightless Recovery,9.0,0.0,16000.0,,,,0.0,0.0,0.0,34.0,20.0,,,,,,,29.0,,,,20.0,,,,,,,,,,63.0
+Draupnir Spear,Hind of Weightless Recovery,9.1,0.0,17000.0,,,,0.0,0.0,0.0,38.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,70.0
+Draupnir Spear,Hind of Weightless Recovery,9.2,0.0,18000.0,,,,0.0,0.0,0.0,43.0,5.0,,20.0,,,,,36.0,,,,,,,,,,,,,,79.0
+Draupnir Spear,Hind of Weightless Recovery,9.3,0.0,19000.0,,,,0.0,0.0,0.0,47.0,,,30.0,10.0,,,,39.0,,,,,,,,,,,,,,86.0
+Draupnir Spear,Hind of Weightless Recovery,10.0,0.0,20000.0,,,,0.0,0.0,0.0,51.0,,,40.0,,1.0,,,43.0,,,,,,,,,,,,,,94.0
+Shield,Rond of Volition,1.0,0.0,,,,,0.0,0.0,0.0,0.0,,,,,,,,2.0,,,,,,,,,,,,,,2.0
+Shield,Rond of Volition,2.0,0.0,350.0,,,,0.0,0.0,0.0,0.0,,,,,,,,4.0,,,,,,3.0,,,,,,,,4.0
+Shield,Rond of Volition,3.0,0.0,700.0,,,,0.0,0.0,0.0,0.0,,,,,,,,8.0,,,,,,6.0,,,,,,,,8.0
+Shield,Rond of Volition,4.0,0.0,2000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,11.0,,,,,,,2.0,,,,,,,11.0
+Shield,Rond of Volition,5.0,0.0,3500.0,,,,0.0,0.0,0.0,0.0,,,,,,,,15.0,,,,,,,4.0,,,,,,,15.0
+Shield,Rond of Volition,6.0,0.0,5000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,18.0,,,,,,,,1.0,,,,,,18.0
+Shield,Rond of Volition,7.0,0.0,7500.0,,,,13.0,13.0,13.0,13.0,,,,,,,,22.0,,,,,,,,2.0,,,,,,74.0
+Shield,Rond of Volition,8.0,0.0,10000.0,,,,15.0,15.0,15.0,15.0,,,,,,,,25.0,,,,,,,,3.0,15.0,,,,,85.0
+Shield,Rond of Volition,9.0,0.0,14000.0,,,,17.0,17.0,17.0,17.0,,,,,,,,29.0,,,,,,,,,30.0,20.0,,,,97.0
+Shield,Rond of Aggravation,2.0,0.0,,,,,0.0,3.0,0.0,3.0,,,,,,,,4.0,,,,,,,,,,,,,,10.0
+Shield,Rond of Aggravation,3.0,0.0,700.0,,,,0.0,6.0,0.0,6.0,,,,,,,,8.0,,,,,,6.0,,,,,,,,20.0
+Shield,Rond of Aggravation,4.0,0.0,2000.0,,,,0.0,9.0,0.0,9.0,,,,,,,,11.0,,,,,,,2.0,,,,,,,29.0
+Shield,Rond of Aggravation,5.0,0.0,3500.0,,,,0.0,12.0,0.0,12.0,,,,,,,,15.0,,,,,,,4.0,,,,,,,39.0
+Shield,Rond of Aggravation,6.0,0.0,5000.0,,,,0.0,14.0,0.0,14.0,,,,,,,,18.0,,,,,,,,1.0,,,,,,46.0
+Shield,Rond of Aggravation,7.0,0.0,7500.0,,,,0.0,17.0,0.0,17.0,,,,,,,,22.0,,,,,,,,2.0,,,,,,56.0
+Shield,Rond of Aggravation,8.0,0.0,10000.0,,,,0.0,20.0,0.0,20.0,,,,,,,,25.0,,,,,,,,3.0,15.0,,,,,65.0
+Shield,Rond of Aggravation,9.0,0.0,14000.0,,,,0.0,23.0,0.0,23.0,,,,,,,,29.0,,,,,,,,,30.0,20.0,,,,75.0
+Shield,Rond of Aggravation,9.1,0.0,15000.0,,,,0.0,26.0,0.0,26.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,84.0
+Shield,Rond of Aggravation,9.2,0.0,16000.0,,,,0.0,28.0,0.0,28.0,,,20.0,,,,,36.0,,,,,,,,,5.0,,,,,92.0
+Shield,Rond of Aggravation,9.3,0.0,18000.0,,,,0.0,31.0,0.0,31.0,,,30.0,,,,,39.0,,,,,,,,,,,10.0,,,101.0
+Shield,Rond of Aggravation,10.0,0.0,20000.0,,,,0.0,34.0,0.0,34.0,,,40.0,,,,,43.0,,,,,,,,,,,,1.0,,111.0
+Shield,Rond of Expedition,3.0,0.0,,,,,0.0,0.0,9.0,0.0,,,,,,,,8.0,,,,,,,,,,,,,,17.0
+Shield,Rond of Expedition,4.0,0.0,2000.0,,,,0.0,0.0,13.0,0.0,,,,,,,,11.0,,,,,,,2.0,,,,,,,24.0
+Shield,Rond of Expedition,5.0,0.0,3500.0,,,,0.0,0.0,17.0,0.0,,,,,,,,15.0,,,,,,,4.0,,,,,,,32.0
+Shield,Rond of Expedition,6.0,0.0,5000.0,,,,0.0,0.0,22.0,0.0,,,,,,,,18.0,,,,,,,,1.0,,,,,,40.0
+Shield,Rond of Expedition,7.0,0.0,7500.0,,,,0.0,0.0,26.0,0.0,,,,,,,,22.0,,,,,,,,2.0,,,,,,48.0
+Shield,Rond of Expedition,8.0,0.0,10000.0,,,,0.0,0.0,30.0,0.0,,,,,,,,25.0,,,,,,,,3.0,15.0,,,,,55.0
+Shield,Rond of Expedition,9.0,0.0,14000.0,,,,0.0,0.0,34.0,0.0,,,,,,,,29.0,,,,,,,,,30.0,20.0,,,,63.0
+Shield,Rond of Expedition,9.1,0.0,15000.0,,,,0.0,0.0,38.0,0.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,70.0
+Shield,Rond of Expedition,9.2,0.0,16000.0,,,,0.0,0.0,43.0,0.0,,,20.0,,,,,36.0,,,,,,,,,5.0,,,,,79.0
+Shield,Rond of Expedition,9.3,0.0,18000.0,,,,0.0,0.0,47.0,0.0,,,30.0,,,,,39.0,,,,,,,,,,,10.0,,,86.0
+Shield,Rond of Expedition,10.0,0.0,20000.0,,,,0.0,0.0,51.0,0.0,,,40.0,,,,,43.0,,,,,,,,,,,,1.0,,94.0
+Shield,Rond of Affliction,3.0,0.0,,,,,6.0,0.0,6.0,0.0,,,,,,,,8.0,,,,,,,,,,,,,,20.0
+Shield,Rond of Affliction,4.0,0.0,2000.0,,,,9.0,0.0,9.0,0.0,,,,,,,,11.0,,,,,,,2.0,,,,,,,29.0
+Shield,Rond of Affliction,5.0,0.0,3500.0,,,,12.0,0.0,12.0,0.0,,,,,,,,15.0,,,,,,,4.0,,,,,,,39.0
+Shield,Rond of Affliction,6.0,0.0,5000.0,,,,14.0,0.0,14.0,0.0,,,,,,,,18.0,,,,,,,,1.0,,,,,,46.0
+Shield,Rond of Affliction,7.0,0.0,7500.0,,,,17.0,0.0,17.0,0.0,,,,,,,,22.0,,,,,,,,2.0,,,,,,56.0
+Shield,Rond of Affliction,8.0,0.0,10000.0,,,,20.0,0.0,20.0,0.0,,,,,,,,25.0,,,,,,,,3.0,15.0,,,,,65.0
+Shield,Rond of Affliction,9.0,0.0,14000.0,,,,23.0,0.0,23.0,0.0,,,,,,,,29.0,,,,,,,,,30.0,,,,45.0,75.0
+Shield,Rond of Affliction,9.1,0.0,15000.0,,,,26.0,0.0,26.0,0.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,84.0
+Shield,Rond of Affliction,9.2,0.0,16000.0,,,,28.0,0.0,28.0,0.0,,,20.0,,,,,36.0,,,,,,,,,5.0,,,,,92.0
+Shield,Rond of Affliction,9.3,0.0,18000.0,,,,31.0,0.0,31.0,0.0,,,30.0,,,,,39.0,,,,,,,,,,,10.0,,,101.0
+Shield,Rond of Affliction,10.0,0.0,20000.0,,,,34.0,0.0,34.0,0.0,,,40.0,,,,,43.0,,,,,,,,,,,,1.0,,111.0
+Shield,Rond of Restoration,4.0,0.0,,,,,0.0,13.0,0.0,0.0,,,,,,,,11.0,,,,,,,,,,,,,,24.0
+Shield,Rond of Restoration,5.0,0.0,3500.0,,,,0.0,17.0,0.0,0.0,,,,,,,,15.0,,,,,,,4.0,,,,,,,32.0
+Shield,Rond of Restoration,6.0,0.0,5000.0,,,,0.0,22.0,0.0,0.0,,,,,,,,18.0,,,,,,,,1.0,,,,,,40.0
+Shield,Rond of Restoration,7.0,0.0,7500.0,,,,0.0,26.0,0.0,0.0,,,,,,,,22.0,,,,,,,,2.0,,,,,,48.0
+Shield,Rond of Restoration,8.0,0.0,10000.0,,,,0.0,30.0,0.0,0.0,,,,,,,,25.0,,,,,,,,3.0,15.0,,,,,55.0
+Shield,Rond of Restoration,9.0,0.0,14000.0,,,,0.0,34.0,0.0,0.0,,,,,,,,29.0,,,,,,,,,30.0,20.0,,,,63.0
+Shield,Rond of Restoration,9.1,0.0,15000.0,,,,0.0,38.0,0.0,0.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,70.0
+Shield,Rond of Restoration,9.2,0.0,16000.0,,,,0.0,43.0,0.0,0.0,,,20.0,,,,,36.0,,,,,,,,,5.0,,,,,79.0
+Shield,Rond of Restoration,9.3,0.0,18000.0,,,,0.0,47.0,0.0,0.0,,,30.0,,,,,39.0,,,,,,,,,,,10.0,,,86.0
+Shield,Rond of Restoration,10.0,0.0,20000.0,,,,0.0,51.0,0.0,0.0,,,40.0,,,,,43.0,,,,,,,,,,,,1.0,,94.0
+Shield,Rond of Purification,5.0,17.0,,,,,0.0,0.0,0.0,0.0,,,,,,,,15.0,,,,,,,,,,,,,,32.0
+Shield,Rond of Purification,6.0,22.0,5000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,18.0,,,,,,,,1.0,,,,,,40.0
+Shield,Rond of Purification,7.0,26.0,7500.0,,,,0.0,0.0,0.0,0.0,,,,,,,,22.0,,,,,,,,2.0,,,,,,48.0
+Shield,Rond of Purification,8.0,30.0,10000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,25.0,,,,,,,,3.0,15.0,,,,,55.0
+Shield,Rond of Purification,9.0,34.0,14000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,29.0,,,,,,,,,30.0,,,,45.0,63.0
+Shield,Rond of Purification,9.1,38.0,15000.0,,,,0.0,0.0,0.0,0.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,70.0
+Shield,Rond of Purification,9.2,43.0,16000.0,,,,0.0,0.0,0.0,0.0,,,20.0,,,,,36.0,,,,,,,,,5.0,,,,,79.0
+Shield,Rond of Purification,9.3,47.0,18000.0,,,,0.0,0.0,0.0,0.0,,,30.0,,,,,39.0,,,,,,,,,,,10.0,,,86.0
+Shield,Rond of Purification,10.0,51.0,20000.0,,,,0.0,0.0,0.0,0.0,,,40.0,,,,,43.0,,,,,,,,,,,,1.0,,94.0
+Shield,Rond of Deflection,5.0,0.0,3000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,15.0,,,,,,,,,,,,,,15.0
+Shield,Rond of Deflection,6.0,0.0,5000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,18.0,,,,,,,,1.0,,,,,,18.0
+Shield,Rond of Deflection,7.0,0.0,7500.0,,,,0.0,0.0,0.0,0.0,,,,,,,,22.0,,,,,,,,2.0,,,,,,22.0
+Shield,Rond of Deflection,8.0,0.0,10000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,25.0,,,,,,,,3.0,15.0,,,,,25.0
+Shield,Rond of Deflection,9.0,0.0,14000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,29.0,,,,,,,,,30.0,20.0,,,,29.0
+Shield,Rond of Deflection,9.1,0.0,15000.0,,,,0.0,0.0,0.0,0.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,32.0
+Shield,Rond of Deflection,9.2,0.0,16000.0,,,,0.0,0.0,0.0,0.0,,,20.0,,,,,36.0,,,,,,,,,5.0,,,,,36.0
+Shield,Rond of Deflection,9.3,0.0,18000.0,,,,0.0,0.0,0.0,0.0,,,30.0,,,,,39.0,,,,,,,,,,,10.0,,,39.0
+Shield,Rond of Deflection,10.0,0.0,20000.0,,,,0.0,0.0,0.0,0.0,,,40.0,,,,,43.0,,,,,,,,,,,,1.0,,43.0
+Shield,Rond of Fortification,6.0,0.0,,,,,0.0,0.0,0.0,0.0,,,,,,,,40.0,,,,,,,,,,,,,,40.0
+Shield,Rond of Fortification,7.0,0.0,7500.0,,,,0.0,0.0,0.0,0.0,,,,,,,,47.0,,,,,,,,2.0,,,,,,47.0
+Shield,Rond of Fortification,8.0,0.0,10000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,55.0,,,,,,,,3.0,15.0,,,,,55.0
+Shield,Rond of Fortification,9.0,0.0,14000.0,,,,0.0,0.0,0.0,0.0,,,,,,,,63.0,,,,,,,,,30.0,,,,45.0,63.0
+Shield,Rond of Fortification,9.1,0.0,15000.0,,,,0.0,0.0,0.0,0.0,,,10.0,,,,,70.0,,,,,,,,,,,,,,70.0
+Shield,Rond of Fortification,9.2,0.0,16000.0,,,,0.0,0.0,0.0,0.0,,,20.0,,,,,78.0,,,,,,,,,5.0,,,,,78.0
+Shield,Rond of Fortification,9.3,0.0,18000.0,,,,0.0,0.0,0.0,0.0,,,30.0,,,,,86.0,,,,,,,,,,,10.0,,,86.0
+Shield,Rond of Fortification,10.0,0.0,20000.0,,,,0.0,0.0,0.0,0.0,,,40.0,,,,,94.0,,,,,,,,,,,,1.0,,94.0
+Shield,Rond of the Nine Realms,6.0,0.0,,,,,0.0,0.0,0.0,22.0,,,,,,,,18.0,,,,,,,,,,,,,,40.0
+Shield,Rond of the Nine Realms,7.0,0.0,7500.0,,,,0.0,0.0,0.0,26.0,,,,,,,,22.0,,,,,,,,2.0,,,,,,48.0
+Shield,Rond of the Nine Realms,8.0,0.0,10000.0,,,,0.0,0.0,0.0,30.0,,,,,,,,25.0,,,,,,,,3.0,15.0,,,,,55.0
+Shield,Rond of the Nine Realms,9.0,0.0,14000.0,,,,0.0,0.0,0.0,34.0,,,,,,,,29.0,,,,,,,,,30.0,20.0,,,,63.0
+Shield,Rond of the Nine Realms,9.1,0.0,15000.0,,,,0.0,0.0,0.0,38.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,70.0
+Shield,Rond of the Nine Realms,9.2,0.0,16000.0,,,,0.0,0.0,0.0,43.0,,,20.0,,,,,36.0,,,,,,,,,5.0,,,,,79.0
+Shield,Rond of the Nine Realms,9.3,0.0,18000.0,,,,0.0,0.0,0.0,47.0,,,30.0,,,,,39.0,,,,,,,,,,,10.0,,,86.0
+Shield,Rond of the Nine Realms,10.0,0.0,20000.0,,,,0.0,0.0,0.0,51.0,,,40.0,,,,,43.0,,,,,,,,,,,,1.0,,94.0
+Shield,Rond of Absorption,6.0,0.0,,,,,22.0,0.0,0.0,0.0,,,,,,,,18.0,,,,,,,,,,,,,,40.0
+Shield,Rond of Absorption,7.0,0.0,,,,,26.0,0.0,0.0,0.0,,,,,,,,22.0,,500.0,,,,,,,,,1.0,,,48.0
+Shield,Rond of Absorption,8.0,0.0,,,,,30.0,0.0,0.0,0.0,,,,,,,,25.0,,1000.0,,,,,,,,,2.0,,,55.0
+Shield,Rond of Absorption,9.0,0.0,,,,,34.0,0.0,0.0,0.0,,,,,,,,29.0,,1500.0,,,,,,,30.0,,,,45.0,63.0
+Shield,Rond of Absorption,9.1,0.0,15000.0,,,,38.0,0.0,0.0,0.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,70.0
+Shield,Rond of Absorption,9.2,0.0,16000.0,,,,43.0,0.0,0.0,0.0,,,20.0,,,,,36.0,,,,,,,,,5.0,,,,,79.0
+Shield,Rond of Absorption,9.3,0.0,18000.0,,,,47.0,0.0,0.0,0.0,,,30.0,,,,,39.0,,,,,,,,,,,10.0,,,86.0
+Shield,Rond of Absorption,10.0,0.0,20000.0,,,,51.0,0.0,0.0,0.0,,,40.0,,,,,43.0,,,,,,,,,,,,1.0,,94.0
+Shield,Rond of Disruption,7.0,0.0,,,,,17.0,0.0,0.0,17.0,,,,,,,,22.0,,,,,,,,,,,,,,56.0
+Shield,Rond of Disruption,8.0,0.0,10000.0,,,,20.0,0.0,0.0,20.0,,,,,,,,25.0,,,,,,,,3.0,15.0,,,,,65.0
+Shield,Rond of Disruption,9.0,0.0,14000.0,,,,23.0,0.0,0.0,23.0,,,,,,,,29.0,,,,,,,,,30.0,,,,45.0,75.0
+Shield,Rond of Disruption,9.1,0.0,15000.0,,,,26.0,0.0,0.0,26.0,,,10.0,,,,,32.0,,,,,,,,,,,,,,84.0
+Shield,Rond of Disruption,9.2,0.0,16000.0,,,,28.0,0.0,0.0,28.0,,,20.0,,,,,36.0,,,,,,,,,5.0,,,,,92.0
+Shield,Rond of Disruption,9.3,0.0,18000.0,,,,31.0,0.0,0.0,31.0,,,30.0,,,,,39.0,,,,,,,,,,,10.0,,,101.0
+Shield,Rond of Disruption,10.0,0.0,20000.0,,,,34.0,0.0,0.0,34.0,,,40.0,,,,,43.0,,,,,,,,,,,,1.0,,111.0
+Shield,Rond of Obliteration,8.0,10.0,,,,,13.0,13.0,13.0,13.0,,,,,,,,10.0,,,,,,,,,,,,,,72.0
+Shield,Rond of Obliteration,9.0,11.0,14000.0,,,,14.0,14.0,14.0,14.0,,,,,,,,11.0,,,,,,,,,30.0,,,,45.0,78.0

@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>God of War Ragnarök — Build Optimizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0d13;
+            --surface: #12151f;
+            --surface2: #1a1e2e;
+            --surface3: #222840;
+            --border: #2a3050;
+            --border-glow: #c8a44e33;
+            --text: #e8eaf0;
+            --text2: #8890a8;
+            --text3: #5a6080;
+            --accent: #c8a44e;
+            --accent2: #e8c85e;
+            --accent-dim: #c8a44e22;
+            --red: #e05555;
+            --red-dim: #e0555522;
+            --green: #50c878;
+            --green-dim: #50c87822;
+            --blue: #5b9bd5;
+            --blue-dim: #5b9bd522;
+            --orange: #e8915a;
+            --orange-dim: #e8915a22;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 24px rgba(0,0,0,.4);
+            --shadow-glow: 0 0 30px rgba(200,164,78,.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container { max-width: 1280px; margin: 0 auto; padding: 24px; }
+
+        /* ── Header ── */
+        header {
+            text-align: center;
+            padding: 40px 0 28px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+        header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.4em;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent2), var(--accent), #a8884e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            text-shadow: 0 0 40px rgba(200,164,78,.3);
+        }
+        header p {
+            color: var(--text2);
+            margin-top: 8px;
+            font-size: .95em;
+            letter-spacing: .5px;
+        }
+
+        /* ── Summary bar ── */
+        .summary-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, var(--surface), var(--surface2));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform .2s, border-color .2s;
+        }
+        .summary-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-dim);
+        }
+        .summary-card .label {
+            font-size: .7em;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+        .summary-card .value {
+            font-family: 'Cinzel', serif;
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--accent2);
+            margin-top: 4px;
+        }
+        .summary-card .value.green { color: var(--green); }
+
+        /* ── Section cards ── */
+        .section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .section-header {
+            background: linear-gradient(135deg, var(--surface2), var(--surface3));
+            padding: 16px 24px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.05em;
+            font-weight: 700;
+            color: var(--accent2);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background .15s;
+        }
+        .section-header:hover { background: var(--surface3); }
+        .section-header .toggle {
+            font-size: .7em;
+            color: var(--text2);
+            transition: transform .2s;
+        }
+        .section.collapsed .section-header .toggle { transform: rotate(-90deg); }
+        .section-body { padding: 24px; }
+        .section.collapsed .section-body { display: none; }
+
+        /* ── Slot cards (build) ── */
+        .slot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+        }
+        .slot-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 18px;
+            transition: border-color .2s;
+        }
+        .slot-card:hover { border-color: var(--accent-dim); }
+        .slot-card h3 {
+            font-size: .8em;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text2);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .item-best {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .item-best .name { font-weight: 600; font-size: 1.05em; }
+        .item-best .level {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #000;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: .75em;
+            font-weight: 700;
+            letter-spacing: .5px;
+        }
+        .stat-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+        .stat-pill {
+            font-size: .72em;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: var(--accent-dim);
+            color: var(--accent2);
+            font-weight: 600;
+            letter-spacing: .3px;
+        }
+        .total-badge {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--accent2);
+        }
+
+        /* ── Rankings ── */
+        .ranking-list { list-style: none; }
+        .ranking-list li {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 4px;
+            transition: background .15s;
+        }
+        .ranking-list li:hover { background: rgba(255,255,255,.03); }
+        .ranking-list li:first-child { background: var(--accent-dim); }
+        .ranking-list li .rank { width: 28px; color: var(--text3); font-size: .85em; font-weight: 600; }
+        .ranking-list li .rank-name { flex: 1; font-size: .9em; }
+        .ranking-list li .rank-total { font-weight: 700; color: var(--accent2); font-variant-numeric: tabular-nums; }
+        .ranking-list li:first-child .rank { color: var(--accent2); }
+        .star { color: var(--accent2); margin-left: 4px; }
+
+        /* ── Craft list ── */
+        .craft-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 8px;
+        }
+        .craft-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: .9em;
+            display: flex;
+            justify-content: space-between;
+        }
+        .craft-item .ci-slot { color: var(--text2); font-size: .8em; }
+
+        /* ── Tables ── */
+        table { width: 100%; border-collapse: collapse; font-size: .88em; }
+        th {
+            text-align: left;
+            padding: 12px 14px;
+            background: var(--surface2);
+            color: var(--text2);
+            text-transform: uppercase;
+            font-size: .72em;
+            letter-spacing: .8px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        tr:hover td { background: rgba(255,255,255,.015); }
+        .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+        /* ── Resources ── */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 10px;
+        }
+        .res-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: .88em;
+            transition: border-color .15s;
+        }
+        .res-item:hover { border-color: var(--accent-dim); }
+        .res-name { color: var(--text2); font-weight: 500; }
+        .res-qty { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
+        .res-qty.zero { color: var(--text3); }
+
+        /* ── Resource edit mode ── */
+        .res-editor { display: none; align-items: center; gap: 6px; }
+        .editing .res-qty-display { display: none; }
+        .editing .res-editor { display: flex; }
+        .res-editor input {
+            width: 72px;
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: .9em;
+            font-weight: 600;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+        .res-editor input:focus { outline: none; border-color: var(--accent); }
+        .res-btn-pm {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface3);
+            color: var(--text);
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .1s, border-color .1s;
+            line-height: 1;
+        }
+        .res-btn-pm:hover { background: var(--accent-dim); border-color: var(--accent); }
+
+        /* ── Action buttons ── */
+        .btn {
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 10px 24px;
+            font-size: .9em;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: .5px;
+            transition: all .15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #000;
+        }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: .4; cursor: wait; transform: none; }
+        .btn-secondary {
+            background: var(--surface3);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--accent); background: var(--accent-dim); }
+        .btn-success {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(80,200,120,.3);
+            padding: 6px 14px;
+            font-size: .8em;
+        }
+        .btn-success:hover { background: rgba(80,200,120,.2); border-color: var(--green); }
+        .btn-success:disabled { opacity: .3; cursor: default; }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .toolbar .status {
+            font-size: .85em;
+            color: var(--text2);
+            margin-left: 8px;
+        }
+
+        /* ── Blocked ── */
+        .blocked-item {
+            background: var(--red-dim);
+            border: 1px solid rgba(224,85,85,.25);
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+            margin-bottom: 10px;
+        }
+        .blocked-item .bl-name { font-weight: 600; }
+        .blocked-item .bl-action { color: var(--text2); font-size: .85em; margin-left: 8px; }
+        .blocked-item .bl-missing { margin-top: 6px; font-size: .85em; color: var(--red); }
+
+        /* ── Steps ── */
+        .step-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: 44px 1fr auto auto;
+            gap: 14px;
+            align-items: center;
+            transition: border-color .15s;
+        }
+        .step-card:hover { border-color: var(--accent-dim); }
+        .step-num {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--accent);
+            text-align: center;
+        }
+        .step-detail .step-label { font-weight: 600; }
+        .step-detail .step-slot { font-size: .8em; color: var(--text2); }
+        .step-detail .step-mats { font-size: .78em; color: var(--text3); margin-top: 2px; }
+        .step-metrics { text-align: right; font-size: .85em; }
+        .step-metrics .sm-gain { color: var(--green); font-weight: 700; }
+        .step-metrics .sm-hack { color: var(--orange); }
+        .step-metrics .sm-eff { color: var(--text3); }
+        .step-metrics .sm-gt { color: var(--accent2); font-weight: 700; }
+
+        /* ── Final box ── */
+        .final-box {
+            background: linear-gradient(135deg, var(--accent-dim), rgba(200,164,78,.02));
+            border: 1px solid var(--accent);
+            border-radius: var(--radius);
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            text-align: center;
+            box-shadow: var(--shadow-glow);
+        }
+        .final-box .fb-label {
+            font-size: .7em;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+        .final-box .fb-value {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--accent2);
+        }
+
+        .empty-state { text-align: center; padding: 30px; color: var(--text3); font-style: italic; }
+
+        /* ── Loading overlay ── */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(11,13,19,.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .loading-overlay.active { display: flex; }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 22px;
+            font-size: .9em;
+            color: var(--text);
+            box-shadow: var(--shadow);
+            z-index: 1001;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all .3s;
+            pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .toast.success { border-color: var(--green); color: var(--green); }
+        .toast.error { border-color: var(--red); color: var(--red); }
+
+        /* ── Responsive ── */
+        @media (max-width: 700px) {
+            .container { padding: 12px; }
+            header h1 { font-size: 1.6em; }
+            .summary-card .value { font-size: 1.4em; }
+            .slot-grid { grid-template-columns: 1fr; }
+            .step-card { grid-template-columns: 34px 1fr; }
+            .step-metrics, .step-card .btn-success { grid-column: 1 / -1; text-align: left; }
+        }
+    </style>
+</head>
+<body>
+<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+<div class="toast" id="toast"></div>
+
+<div class="container">
+
+<header>
+    <h1>GOD OF WAR RAGNARÖK</h1>
+    <p>Build Optimizer — Analisi inventario e piano di upgrade ottimo</p>
+</header>
+
+<!-- ═══ Summary ═══ -->
+<div class="summary-bar" id="summary-bar">
+    <div class="summary-card">
+        <div class="label">Armatura</div>
+        <div class="value">{{ armor_total }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="label">Armi</div>
+        <div class="value">{{ weapon_total }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="label">Grand Total</div>
+        <div class="value">{{ grand_total }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="label">Hacksilver</div>
+        <div class="value">{{ "{:,}".format(hacksilver) }}</div>
+    </div>
+    {% if opt_gain > 0 %}
+    <div class="summary-card">
+        <div class="label">Upgrade possibile</div>
+        <div class="value green">+{{ opt_gain }}</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ═══ Build Ottimale ═══ -->
+<div class="section">
+    <div class="section-header" onclick="toggle(this)">
+        <span>🛡 Build Ottimale</span>
+        <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="info-box" style="background: var(--surface2); border-left: 4px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--text2);">
+            <strong>💡 Algoritmo globale:</strong> Questo piano calcola la miglior combinazione di upgrade possibile date le tue risorse attuali, scegliendo il percorso di ottimizzazione assoluta. Se il piano step-by-step differisce, significa che non puoi raggiungerlo passo dopo passo.
+        </div>
+        <div class="slot-grid">
+            {% for pt in ["Chest", "Wrist", "Waist"] %}
+            <div class="slot-card">
+                <h3>🛡 Armatura — {{ pt }}</h3>
+                {% if pt in best_armor %}
+                {% set b = best_armor[pt] %}
+                <div class="item-best">
+                    <span class="name">{{ b.name }}</span>
+                    <span class="level">LVL {{ b.level }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="stat-bar">
+                        {% for s, v in b.stats.items() %}
+                        <span class="stat-pill">{{ s[:3]|upper }} {{ v }}</span>
+                        {% endfor %}
+                    </div>
+                    <span class="total-badge">{{ b.total }}</span>
+                </div>
+                {% else %}
+                <div class="empty-state">Nessun pezzo</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            {% for cat in ["Leviathan Axe", "Blades of Chaos", "Draupnir Spear", "Shield"] %}
+            <div class="slot-card">
+                <h3>⚔ {{ cat }}</h3>
+                {% if cat in best_weapons %}
+                {% set b = best_weapons[cat] %}
+                <div class="item-best">
+                    <span class="name">{{ b.name }}</span>
+                    <span class="level">LVL {{ b.level }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="stat-bar">
+                        {% for s, v in b.stats.items() %}
+                        <span class="stat-pill">{{ s[:3]|upper }} {{ v }}</span>
+                        {% endfor %}
+                    </div>
+                    <span class="total-badge">{{ b.total }}</span>
+                </div>
+                {% else %}
+                <div class="empty-state">Non sbloccata</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Classifica per Slot ═══ -->
+<div class="section collapsed">
+    <div class="section-header" onclick="toggle(this)">
+        <span>📊 Classifica per Slot</span>
+        <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="slot-grid">
+            {% for pt in ["Chest", "Wrist", "Waist"] %}
+            {% if rankings_armor[pt] %}
+            <div class="slot-card">
+                <h3>🛡 {{ pt }}</h3>
+                <ul class="ranking-list">
+                    {% for r in rankings_armor[pt] %}
+                    <li>
+                        <span class="rank">{{ loop.index }}</span>
+                        <span class="rank-name">{{ r.name }} <small style="color:var(--text3)">(LVL {{ r.level }})</small>
+                            {% if loop.first %}<span class="star">★</span>{% endif %}
+                        </span>
+                        <span class="rank-total">{{ r.total }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% for cat in ["Leviathan Axe", "Blades of Chaos", "Draupnir Spear", "Shield"] %}
+            {% if rankings_weapons[cat] %}
+            <div class="slot-card">
+                <h3>⚔ {{ cat }}</h3>
+                <ul class="ranking-list">
+                    {% for r in rankings_weapons[cat] %}
+                    <li>
+                        <span class="rank">{{ loop.index }}</span>
+                        <span class="rank-name">{{ r.name }} <small style="color:var(--text3)">(LVL {{ r.level }})</small>
+                            {% if loop.first %}<span class="star">★</span>{% endif %}
+                        </span>
+                        <span class="rank-total">{{ r.total }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Pezzi da Craftare ═══ -->
+{% if craft_armor or craft_weapons %}
+<div class="section collapsed">
+    <div class="section-header" onclick="toggle(this)">
+        <span>⚠ Pezzi da Craftare ({{ craft_armor|length + craft_weapons|length }})</span>
+        <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="craft-list">
+            {% for n, l, pt in craft_armor %}
+            <div class="craft-item">
+                <span>{{ n }} — LVL {{ l }}</span>
+                <span class="ci-slot">{{ pt }}</span>
+            </div>
+            {% endfor %}
+            {% for n, l, cat in craft_weapons %}
+            <div class="craft-item">
+                <span>{{ n }} — LVL {{ l }}</span>
+                <span class="ci-slot">{{ cat }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ═══ Risorse Disponibili ═══ -->
+<div class="section" id="resources-section">
+    <div class="section-header" onclick="toggle(this)">
+        <span>💰 Risorse Disponibili</span>
+        <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="toolbar">
+            <button class="btn btn-secondary" id="btn-edit-toggle" onclick="toggleEditMode()">
+                ✏️ Modifica Inventario
+            </button>
+            <button class="btn btn-primary" id="btn-save" style="display:none" onclick="saveInventory()">
+                💾 Salva e Ricalcola
+            </button>
+            <button class="btn btn-secondary" id="btn-cancel" style="display:none" onclick="cancelEdit()">
+                ✕ Annulla
+            </button>
+            <span class="status" id="edit-status"></span>
+        </div>
+        <div class="resources-grid" id="resources-grid">
+            {% for r in resources %}
+            <div class="res-item" data-mat="{{ r.name }}">
+                <span class="res-name">{{ r.name }}</span>
+                <span class="res-qty-display res-qty {% if r.qty == 0 %}zero{% endif %}">{{ "{:,}".format(r.qty) }}</span>
+                <div class="res-editor">
+                    <button class="res-btn-pm" onclick="stepRes(this,-1)" tabindex="-1">−</button>
+                    <input type="number" value="{{ r.qty }}" min="0" data-mat="{{ r.name }}">
+                    <button class="res-btn-pm" onclick="stepRes(this,1)" tabindex="-1">+</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Frontiere di Pareto ═══ -->
+<div class="section collapsed">
+    <div class="section-header" onclick="toggle(this)">
+        <span>📈 Frontiere di Pareto</span>
+        <span class="toggle">▼</span>
+    </div>
+    <div class="section-body" id="pareto-body">
+        {% for slot, opts in pareto_data.items() %}
+        <h4 style="color: var(--accent2); margin: 16px 0 8px 0;">{{ slot }} — {{ opts|length }} upgrade</h4>
+        {% if opts %}
+        <table>
+            <thead><tr><th>Azione</th><th class="num">Hacksilver</th><th class="num">Stats</th><th>Materiali</th></tr></thead>
+            <tbody>
+            {% for o in opts %}
+            <tr>
+                <td>{{ o.label }}</td>
+                <td class="num">{{ "{:,}".format(o.hack) }}</td>
+                <td class="num">{{ o.stats }}</td>
+                <td>{% if o.mats %}{% for m, v in o.mats.items() %}{{ m }}: {{ v }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: var(--text3); font-style: italic; padding: 8px 0;">Nessun upgrade fattibile</p>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ═══ Piano Ottimo ═══ -->
+<div class="section">
+    <div class="section-header" onclick="toggle(this)">
+        <span>🎯 Piano Ottimo</span>
+        <span class="toggle">▼</span>
+    </div>
+    <div class="section-body" id="piano-body">
+        {% if opt_gain > 0 %}
+        <div class="final-box" style="margin-bottom: 20px;">
+            <div><div class="fb-label">Grand Total</div><div class="fb-value">{{ opt_total }} <small style="color:var(--green);">(+{{ opt_gain }})</small></div></div>
+            <div><div class="fb-label">Hacksilver Spesi</div><div class="fb-value">{{ "{:,}".format(opt_hack) }}</div></div>
+            <div><div class="fb-label">Hacksilver Restanti</div><div class="fb-value">{{ "{:,}".format(opt_hack_remaining) }}</div></div>
+        </div>
+        {% if opt_mats %}
+        <h4 style="color: var(--text2); margin-bottom: 8px;">Materiali usati</h4>
+        <div class="resources-grid" style="margin-bottom: 16px;">
+            {% for m in opt_mats %}
+            <div class="res-item">
+                <span class="res-name">{{ m.name }}</span>
+                <span class="res-qty">{{ m.used }} / {{ m.available }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <table>
+            <thead><tr><th>Azione</th><th>Slot</th><th class="num">Hacksilver</th><th class="num">Stats</th><th>Materiali</th><th></th></tr></thead>
+            <tbody>
+            {% for a in opt_actions %}
+            <tr>
+                <td>{{ a.label }}</td>
+                <td>{{ a.slot }}</td>
+                <td class="num">{{ "{:,}".format(a.hack) }}</td>
+                <td class="num">{{ a.stats }}</td>
+                <td>{% if a.mats %}{% for m, v in a.mats.items() %}{{ m }}: {{ v }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}solo Hacksilver{% endif %}</td>
+                <td><button class="btn btn-success" style="padding:4px 10px;font-size:0.82rem" onclick="applyUpgrade(this, {{ a.hack }}, {{ a.mats|tojson|e }}, {{ a.label|tojson }}, {{ a.slot|tojson }})">✓ Fatto</button></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">Nessun upgrade possibile con le risorse attuali.</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ═══ Slot Bloccati ═══ -->
+<div class="section collapsed" id="blocked-section" {% if not blocked %}style="display:none"{% endif %}>
+    <div class="section-header" onclick="toggle(this)">
+        <span id="blocked-header-text">🔒 Slot Bloccati ({{ blocked|length }})</span>
+        <span class="toggle">▼</span>
+    </div>
+    <div class="section-body" id="blocked-body">
+        {% for b in blocked %}
+        <div class="blocked-item">
+            <span class="bl-name">{{ b.name }}</span>
+            <span class="bl-action">{{ b.action }}</span>
+            <div class="bl-missing">
+                {% for m in b.missing %}
+                {{ m.mat }}: {{ m.need }} richiesti, {{ m.have }} disponibili{% if not loop.last %} · {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ═══ Step-by-Step ═══ -->
+<div class="section">
+    <div class="section-header" onclick="toggle(this)">
+        <span>📋 Step-by-Step</span>
+        <span class="toggle">▼</span>
+    </div>
+    <div class="section-body" id="steps-body">
+        <div class="info-box" style="background: var(--surface2); border-left: 4px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--text2);">
+            <strong>💡 Algoritmo greedy:</strong> Questo piano esegue gli upgrade passo dopo passo, scegliendo sempre l'upgrade più efficiente al momento. Potrebbe non raggiungere il Grand Total del Piano Ottimale, che invece ha accesso a tutte le informazioni globali per trovare il percorso assoluto migliore.
+        </div>
+        {% if steps %}
+        {% for s in steps %}
+        <div class="step-card">
+            <div class="step-num">{{ s.step }}</div>
+            <div class="step-detail">
+                <div class="step-label">{{ s.label }}</div>
+                <div class="step-slot">{{ s.slot }}</div>
+                <div class="step-mats">
+                    {% if s.mats %}{% for m, v in s.mats.items() %}{{ m }}: {{ v }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}—{% endif %}
+                </div>
+            </div>
+            <div class="step-metrics">
+                <div class="sm-gain">+{{ s.gain }} stats</div>
+                <div class="sm-hack">{{ "{:,}".format(s.hack) }} hack</div>
+                <div class="sm-eff">{{ s.eff }}/1k eff</div>
+                <div class="sm-gt">GT: {{ s.grand_total }}</div>
+            </div>
+            <button class="btn btn-success" onclick="applyUpgrade(this, {{ s.hack }}, {{ s.mats|tojson|e }}, {{ s.label|tojson }}, {{ s.slot|tojson }})">
+                ✓ Fatto
+            </button>
+        </div>
+        {% endfor %}
+
+        <div class="final-box" style="margin-top: 20px;">
+            <div><div class="fb-label">Grand Total Finale</div><div class="fb-value">{{ step_final_total }} <small style="color:var(--green);">(+{{ step_final_gain }})</small></div></div>
+            <div><div class="fb-label">Hacksilver Spesi</div><div class="fb-value">{{ "{:,}".format(step_hack_spent) }}</div></div>
+            <div><div class="fb-label">Hacksilver Restanti</div><div class="fb-value">{{ "{:,}".format(step_hack_remaining) }}</div></div>
+        </div>
+
+        {% if step_mats_consumed %}
+        <h4 style="color: var(--text2); margin: 16px 0 8px;">Materiali consumati</h4>
+        <div class="resources-grid">
+            {% for m in step_mats_consumed %}
+            <div class="res-item">
+                <span class="res-name">{{ m.name }}</span>
+                <span class="res-qty">{{ m.used }}/{{ m.available }} (restano {{ m.remaining }})</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">Nessun upgrade possibile con le risorse attuali.</div>
+        {% endif %}
+    </div>
+</div>
+
+</div><!-- /.container -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   Core helpers
+   ═══════════════════════════════════════════════════════════ */
+
+function fmt(n) { return Number(n).toLocaleString('it-IT'); }
+
+function matsHtml(mats) {
+    if (!mats || Object.keys(mats).length === 0) return '—';
+    return Object.entries(mats).map(([k,v]) => `${k}: ${v}`).join(', ');
+}
+
+function escAttr(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toggle(header) {
+    header.parentElement.classList.toggle('collapsed');
+}
+
+function showLoading(on) {
+    document.getElementById('loading').classList.toggle('active', on);
+}
+
+function toast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + (type || '');
+    clearTimeout(t._tm);
+    t._tm = setTimeout(() => { t.className = 'toast'; }, 2500);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   Edit‑mode for resources
+   ═══════════════════════════════════════════════════════════ */
+let _editMode = false;
+let _savedValues = {};  // snapshot before editing
+
+function toggleEditMode() {
+    _editMode = true;
+    // Save current values so we can cancel
+    _savedValues = {};
+    document.querySelectorAll('#resources-grid .res-editor input').forEach(inp => {
+        _savedValues[inp.dataset.mat] = inp.value;
+    });
+    document.getElementById('resources-grid').classList.add('editing');
+    document.getElementById('btn-edit-toggle').style.display = 'none';
+    document.getElementById('btn-save').style.display = '';
+    document.getElementById('btn-cancel').style.display = '';
+}
+
+function cancelEdit() {
+    // Restore saved values
+    document.querySelectorAll('#resources-grid .res-editor input').forEach(inp => {
+        if (inp.dataset.mat in _savedValues) inp.value = _savedValues[inp.dataset.mat];
+    });
+    exitEditMode();
+}
+
+function exitEditMode() {
+    _editMode = false;
+    document.getElementById('resources-grid').classList.remove('editing');
+    document.getElementById('btn-edit-toggle').style.display = '';
+    document.getElementById('btn-save').style.display = 'none';
+    document.getElementById('btn-cancel').style.display = 'none';
+}
+
+function stepRes(btn, delta) {
+    const inp = btn.parentElement.querySelector('input');
+    inp.value = Math.max(0, (parseInt(inp.value,10)||0) + delta);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   API calls
+   ═══════════════════════════════════════════════════════════ */
+
+async function saveInventory() {
+    const budget = {};
+    document.querySelectorAll('#resources-grid .res-editor input').forEach(inp => {
+        budget[inp.dataset.mat] = parseInt(inp.value, 10) || 0;
+    });
+    showLoading(true);
+    try {
+        const resp = await fetch('/api/save-inventory', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ resource_budget: budget })
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const d = await resp.json();
+        exitEditMode();
+        updateAllSections(d);
+        toast('Inventario salvato e build ricalcolata', 'success');
+    } catch(e) {
+        toast('Errore: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function applyUpgrade(btn, hack, mats, label, slot) {
+    btn.disabled = true;
+    btn.textContent = '⏳…';
+    showLoading(true);
+    try {
+        const resp = await fetch('/api/apply-upgrade', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ hack, mats, label, slot })
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const d = await resp.json();
+        updateAllSections(d);
+        toast('Upgrade applicato — risorse scalate', 'success');
+    } catch(e) {
+        toast('Errore: ' + e.message, 'error');
+        btn.disabled = false;
+        btn.textContent = '✓ Fatto';
+    } finally {
+        showLoading(false);
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   Update all dynamic UI sections from API response
+   ═══════════════════════════════════════════════════════════ */
+
+function updateAllSections(d) {
+    // ── Summary bar ──
+    const bar = document.getElementById('summary-bar');
+    let h = `
+        <div class="summary-card"><div class="label">Armatura</div><div class="value">${d.armor_total}</div></div>
+        <div class="summary-card"><div class="label">Armi</div><div class="value">${d.weapon_total}</div></div>
+        <div class="summary-card"><div class="label">Grand Total</div><div class="value">${d.grand_total}</div></div>
+        <div class="summary-card"><div class="label">Hacksilver</div><div class="value">${fmt(d.hacksilver)}</div></div>`;
+    if (d.opt_gain > 0) h += `<div class="summary-card"><div class="label">Upgrade possibile</div><div class="value green">+${d.opt_gain}</div></div>`;
+    bar.innerHTML = h;
+
+    // ── Resources (update displays + inputs) ──
+    d.resources.forEach(r => {
+        const item = document.querySelector(`.res-item[data-mat="${CSS.escape(r.name)}"]`);
+        if (!item) return;
+        const disp = item.querySelector('.res-qty-display');
+        if (disp) {
+            disp.textContent = fmt(r.qty);
+            disp.classList.toggle('zero', r.qty === 0);
+        }
+        const inp = item.querySelector('.res-editor input');
+        if (inp) inp.value = r.qty;
+    });
+
+    // ── Pareto ──
+    const pareto = document.getElementById('pareto-body');
+    let ph = '';
+    for (const [slot, opts] of Object.entries(d.pareto_data)) {
+        ph += `<h4 style="color:var(--accent2);margin:16px 0 8px">${escAttr(slot)} — ${opts.length} upgrade</h4>`;
+        if (opts.length) {
+            ph += '<table><thead><tr><th>Azione</th><th class="num">Hacksilver</th><th class="num">Stats</th><th>Materiali</th></tr></thead><tbody>';
+            opts.forEach(o => { ph += `<tr><td>${escAttr(o.label)}</td><td class="num">${fmt(o.hack)}</td><td class="num">${o.stats}</td><td>${matsHtml(o.mats)}</td></tr>`; });
+            ph += '</tbody></table>';
+        } else {
+            ph += '<p style="color:var(--text3);font-style:italic;padding:8px 0">Nessun upgrade fattibile</p>';
+        }
+    }
+    pareto.innerHTML = ph;
+
+    // ── Piano Ottimo ──
+    const piano = document.getElementById('piano-body');
+    if (d.opt_gain > 0) {
+        let pp = `<div class="final-box" style="margin-bottom:20px">
+            <div><div class="fb-label">Grand Total</div><div class="fb-value">${d.opt_total} <small style="color:var(--green)">(+${d.opt_gain})</small></div></div>
+            <div><div class="fb-label">Hacksilver Spesi</div><div class="fb-value">${fmt(d.opt_hack)}</div></div>
+            <div><div class="fb-label">Hacksilver Restanti</div><div class="fb-value">${fmt(d.opt_hack_remaining)}</div></div>
+        </div>`;
+        if (d.opt_mats?.length) {
+            pp += '<h4 style="color:var(--text2);margin-bottom:8px">Materiali usati</h4><div class="resources-grid" style="margin-bottom:16px">';
+            d.opt_mats.forEach(m => { pp += `<div class="res-item"><span class="res-name">${escAttr(m.name)}</span><span class="res-qty">${m.used} / ${m.available}</span></div>`; });
+            pp += '</div>';
+        }
+        pp += '<table><thead><tr><th>Azione</th><th>Slot</th><th class="num">Hacksilver</th><th class="num">Stats</th><th>Materiali</th><th></th></tr></thead><tbody>';
+        d.opt_actions.forEach(a => {
+            const aMatsJson = escAttr(JSON.stringify(a.mats));
+            pp += `<tr><td>${escAttr(a.label)}</td><td>${escAttr(a.slot)}</td><td class="num">${fmt(a.hack)}</td><td class="num">${a.stats}</td><td>${Object.keys(a.mats).length ? matsHtml(a.mats) : 'solo Hacksilver'}</td><td><button class="btn btn-success" style="padding:4px 10px;font-size:0.82rem" onclick="applyUpgrade(this, ${a.hack}, JSON.parse(this.dataset.mats), this.dataset.label, this.dataset.slot)" data-mats="${aMatsJson}" data-label="${escAttr(a.label)}" data-slot="${escAttr(a.slot)}">✓ Fatto</button></td></tr>`;
+        });
+        pp += '</tbody></table>';
+        piano.innerHTML = pp;
+    } else {
+        piano.innerHTML = '<div class="empty-state">Nessun upgrade possibile con le risorse attuali.</div>';
+    }
+
+    // ── Blocked ──
+    const bs = document.getElementById('blocked-section');
+    const bb = document.getElementById('blocked-body');
+    const bht = document.getElementById('blocked-header-text');
+    if (d.blocked?.length) {
+        bs.style.display = '';
+        bht.textContent = `🔒 Slot Bloccati (${d.blocked.length})`;
+        let bh = '';
+        d.blocked.forEach(b => {
+            bh += `<div class="blocked-item"><span class="bl-name">${escAttr(b.name)}</span> <span class="bl-action">${escAttr(b.action)}</span><div class="bl-missing">`;
+            bh += b.missing.map(m => `${escAttr(m.mat)}: ${m.need} richiesti, ${m.have} disponibili`).join(' · ');
+            bh += '</div></div>';
+        });
+        bb.innerHTML = bh;
+    } else {
+        bs.style.display = 'none';
+    }
+
+    // ── Steps ──
+    const stepsBody = document.getElementById('steps-body');
+    if (d.steps?.length) {
+        let sh = '';
+        d.steps.forEach(s => {
+            const matsJson = escAttr(JSON.stringify(s.mats || {}));
+            sh += `<div class="step-card">
+                <div class="step-num">${s.step}</div>
+                <div class="step-detail">
+                    <div class="step-label">${escAttr(s.label)}</div>
+                    <div class="step-slot">${escAttr(s.slot)}</div>
+                    <div class="step-mats">${matsHtml(s.mats)}</div>
+                </div>
+                <div class="step-metrics">
+                    <div class="sm-gain">+${s.gain} stats</div>
+                    <div class="sm-hack">${fmt(s.hack)} hack</div>
+                    <div class="sm-eff">${s.eff}/1k eff</div>
+                    <div class="sm-gt">GT: ${s.grand_total}</div>
+                </div>
+                <button class="btn btn-success" onclick="applyUpgrade(this, ${s.hack}, JSON.parse(this.dataset.mats), this.dataset.label, this.dataset.slot)" data-mats="${matsJson}" data-label="${escAttr(s.label)}" data-slot="${escAttr(s.slot)}">✓ Fatto</button>
+            </div>`;
+        });
+        sh += `<div class="final-box" style="margin-top:20px">
+            <div><div class="fb-label">Grand Total Finale</div><div class="fb-value">${d.step_final_total} <small style="color:var(--green)">(+${d.step_final_gain})</small></div></div>
+            <div><div class="fb-label">Hacksilver Spesi</div><div class="fb-value">${fmt(d.step_hack_spent)}</div></div>
+            <div><div class="fb-label">Hacksilver Restanti</div><div class="fb-value">${fmt(d.step_hack_remaining)}</div></div>
+        </div>`;
+        if (d.step_mats_consumed?.length) {
+            sh += '<h4 style="color:var(--text2);margin:16px 0 8px">Materiali consumati</h4><div class="resources-grid">';
+            d.step_mats_consumed.forEach(m => {
+                sh += `<div class="res-item"><span class="res-name">${escAttr(m.name)}</span><span class="res-qty">${m.used}/${m.available} (restano ${m.remaining})</span></div>`;
+            });
+            sh += '</div>';
+        }
+        stepsBody.innerHTML = sh;
+    } else {
+        stepsBody.innerHTML = '<div class="empty-state">Nessun upgrade possibile con le risorse attuali.</div>';
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   Section toggle init
+   ═══════════════════════════════════════════════════════════ */
+document.querySelectorAll('.section-header').forEach(hdr => {
+    const sec = hdr.parentElement;
+    const tog = hdr.querySelector('.toggle');
+    if (tog) tog.textContent = sec.classList.contains('collapsed') ? '▶' : '▼';
+    new MutationObserver(() => {
+        if (tog) tog.textContent = sec.classList.contains('collapsed') ? '▶' : '▼';
+    }).observe(sec, { attributes: true, attributeFilter: ['class'] });
+});
+</script>
+</body>
+</html>
