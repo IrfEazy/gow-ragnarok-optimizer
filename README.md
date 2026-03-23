@@ -1,5 +1,7 @@
 ## God of War Ragnarök Build Optimizer
 
+[![CI](https://github.com/IrfEazy/gow-ragnarok-optimizer/actions/workflows/ci.yml/badge.svg)](https://github.com/IrfEazy/gow-ragnarok-optimizer/actions/workflows/ci.yml)
+
 Applicazione Python 3.12 per analizzare build, materiali e percorsi di upgrade in God of War Ragnarök.
 
 Il progetto combina:
