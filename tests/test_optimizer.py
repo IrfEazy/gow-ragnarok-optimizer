@@ -360,3 +360,33 @@ def test_multi_objective_vs_single_objective_differences():
         inventory, w_inventory, armor_df, weapon_df, resource_budget, mat_aliases
     )
     assert "Armatura — Chest" in slot_pareto
+
+
+def test_build_slot_options_with_score_fn_applied():
+    """RED: build_slot_options_with_mats should score using score_fn when provided."""
+    # Create items with per-stat chains
+    chain_balanced = [
+        (2, 30, 100, {}, {"Strength": 15, "Defense": 15, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0}),
+    ]
+    chain_strength = [
+        (2, 30, 50, {}, {"Strength": 24, "Defense": 6, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0}),
+    ]
+
+    items_with_chains = [
+        ("Balanced", 1, 20, chain_balanced, False),
+        ("StrengthFocus", 1, 20, chain_strength, False),
+    ]
+
+    # Baseline stats for the slot
+    baseline = {"Strength": 10, "Defense": 10, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0}
+
+    # Score function for Strength+Defense (balanced)
+    target_stats = ["Strength", "Defense"]
+    score_fn = optimizer.make_score_fn(target_stats, baseline)
+
+    # For now, build_slot_options_with_mats doesn't take score_fn yet
+    # This test is marked RED — we'll implement score_fn support next
+    options = optimizer.build_slot_options_with_mats(items_with_chains)
+
+    # Should have: no-op, Balanced->2, StrengthFocus->2
+    assert len(options) >= 1

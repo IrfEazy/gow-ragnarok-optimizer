@@ -729,6 +729,47 @@
     </div>
 </div>
 
+<!-- ═══ Ottimizzazione Multi-Obiettivo ═══ -->
+<div class="section" id="stat-selector-section" data-aos="fade-up" data-aos-delay="350">
+    <div class="section-header" style="cursor: default;">
+        <span>🎯 Seleziona Obiettivi di Ottimizzazione</span>
+    </div>
+    <div class="section-body">
+        <div class="info-box" style="background: var(--surface2); border-left: 4px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--text2);">
+            <strong>💡 Multi-Obiettivo:</strong> Seleziona le statistiche che desideri massimizzare. Il sistema utilizzerà la media geometrica per bilanciare i miglioramenti tra i valori selezionati. Se deselezioni tutto, verrà usato il totale statistiche (comportamento classico).
+        </div>
+        <div id="stat-selector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
+                <input type="checkbox" name="stat" value="Strength" checked style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="flex: 1;">⚔️ Forza</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
+                <input type="checkbox" name="stat" value="Defense" checked style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="flex: 1;">🛡️ Difesa</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
+                <input type="checkbox" name="stat" value="Runic" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="flex: 1;">✨ Runico</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
+                <input type="checkbox" name="stat" value="Vitality" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="flex: 1;">❤️ Vitalità</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
+                <input type="checkbox" name="stat" value="Cooldown" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="flex: 1;">⏱️ Ricarica</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
+                <input type="checkbox" name="stat" value="Luck" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="flex: 1;">🍀 Fortuna</span>
+            </label>
+        </div>
+        <button class="btn btn-primary" id="btn-apply-stats" onclick="applyStatSelection()" style="margin-top: 16px; width: 100%;">
+            ✓ Applica e Ricalcola
+        </button>
+    </div>
+</div>
+
 <!-- ═══ Risorse Disponibili ═══ -->
 <div class="section" id="resources-section" data-aos="fade-up" data-aos-delay="400">
     <div class="section-header" onclick="toggle(this)">
@@ -948,6 +989,37 @@ function toast(msg, type) {
     t.className = 'toast show ' + (type || '');
     clearTimeout(t._tm);
     t._tm = setTimeout(() => { t.className = 'toast'; }, 2500);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   Multi-objective stat selection
+   ═══════════════════════════════════════════════════════════ */
+async function applyStatSelection() {
+    const selected = Array.from(
+        document.querySelectorAll('#stat-selector input[name="stat"]:checked')
+    ).map(cb => cb.value);
+
+    showLoading(true);
+    try {
+        const resp = await fetch('/api/recalc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                target_stats: selected,
+            })
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const d = await resp.json();
+        updateAllSections(d);
+        toast(selected.length > 0
+            ? `Ottimizzazione per: ${selected.join(', ')}`
+            : 'Ottimizzazione per Total Stats', 'success');
+    } catch(e) {
+        toast('Errore durante ricalcolo: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
 
