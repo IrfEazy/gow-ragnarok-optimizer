@@ -1030,7 +1030,7 @@ async function applyStatSelection() {
 }
 
 function saveStatSelection(selected) {
-    """Save selected stats to localStorage."""
+    // Save selected stats to localStorage.
     try {
         localStorage.setItem('gow_optimizer_stats', JSON.stringify(selected));
     } catch(e) {
@@ -1039,7 +1039,7 @@ function saveStatSelection(selected) {
 }
 
 function loadStatSelection() {
-    """Load and restore saved stat selection from localStorage."""
+    // Load and restore saved stat selection from localStorage.
     try {
         const saved = localStorage.getItem('gow_optimizer_stats');
         if (!saved) return;  // No saved selection
@@ -1062,7 +1062,7 @@ function loadStatSelection() {
 }
 
 function resetStatSelection() {
-    """Reset stat selection to defaults (Strength + Defense) and clear localStorage."""
+    // Reset stat selection to defaults (Strength + Defense) and clear localStorage.
     try {
         localStorage.removeItem('gow_optimizer_stats');
     } catch(e) {
