@@ -360,3 +360,65 @@ def test_apply_stat_selection_includes_save_logic(monkeypatch):
     # Verify applyStatSelection function includes saveStatSelection call
     assert "async function applyStatSelection()" in html
     assert "saveStatSelection(selected)" in html
+
+
+def test_score_fn_affects_pareto_frontier(monkeypatch):
+    """RED: score_fn parameter should affect which items appear in Pareto frontier.
+
+    This tests that build_slot_options_with_mats actually uses the score_fn
+    to compute different scores vs Total Stats-based scoring.
+    """
+    from gow_optimizer.optimizer import build_slot_options_with_mats, make_score_fn
+    from gow_optimizer.scraper import STAT_COLS
+
+    # Create mock item chains with per_stat data
+    # Item 1: Strong in Strength (36→40), weak in Defense (29→29)
+    per_stat_1 = {'Strength': 40, 'Defense': 29, 'Runic': 14, 'Vitality': 26, 'Cooldown': 29, 'Luck': 29}
+    chain_1 = [(2, 108, 100, {}, per_stat_1)]  # level, total_stats, hacksilver, mats, per_stat
+
+    # Item 2: Weak in Strength (36→36), strong in Defense (29→33)
+    per_stat_2 = {'Strength': 36, 'Defense': 33, 'Runic': 14, 'Vitality': 26, 'Cooldown': 29, 'Luck': 29}
+    chain_2 = [(2, 108, 100, {}, per_stat_2)]
+
+    # Current best: baseline values
+    items_with_chains = [
+        ("Item1", 1, 93, chain_1, False),  # name, level, current_stats, chain, needs_craft
+        ("Item2", 1, 93, chain_2, False),
+    ]
+
+    baseline = {'Strength': 36, 'Defense': 29, 'Runic': 14, 'Vitality': 26, 'Cooldown': 29, 'Luck': 29}
+
+    # Build with Strength-only scoring
+    score_fn_strength = make_score_fn(['Strength'], baseline)
+    options_strength = build_slot_options_with_mats(items_with_chains, score_fn=score_fn_strength)
+
+    # Build with Defense-only scoring
+    score_fn_defense = make_score_fn(['Defense'], baseline)
+    options_defense = build_slot_options_with_mats(items_with_chains, score_fn=score_fn_defense)
+
+    # Build without scoring (Total Stats)
+    options_totals = build_slot_options_with_mats(items_with_chains, score_fn=None)
+
+    # Extract scores for upgraded items (skip the "nessuna azione" option at index 0)
+    scores_strength = [opt[1] for opt in options_strength[1:] if opt[0] > 0]  # (hack, score, label, mats)
+    scores_defense = [opt[1] for opt in options_defense[1:] if opt[0] > 0]
+    scores_totals = [opt[1] for opt in options_totals[1:] if opt[0] > 0]
+
+    # With Strength-only scoring, Item 1 should score higher than Item 2
+    # (Item 1 has +4 Strength, Item 2 has +4 Defense)
+    assert scores_strength[0] > scores_strength[1], (
+        f"Strength-only should prefer Item1 (+Strength). "
+        f"Item1: {scores_strength[0]}, Item2: {scores_strength[1]}"
+    )
+
+    # With Defense-only scoring, Item 2 should score higher than Item 1
+    assert scores_defense[1] > scores_defense[0], (
+        f"Defense-only should prefer Item2 (+Defense). "
+        f"Item1: {scores_defense[0]}, Item2: {scores_defense[1]}"
+    )
+
+    # Total Stats scoring should treat them equally (both are 108 total)
+    assert scores_totals[0] == scores_totals[1], (
+        f"Both items have same Total Stats, should score equally. "
+        f"Item1: {scores_totals[0]}, Item2: {scores_totals[1]}"
+    )

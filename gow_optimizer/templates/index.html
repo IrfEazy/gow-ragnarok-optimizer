@@ -1005,12 +1005,25 @@ async function applyStatSelection() {
         document.querySelectorAll('#stat-selector input[name="stat"]:checked')
     ).map(cb => cb.value);
 
+    // Collect current resource budget from display
+    const budget = {};
+    document.querySelectorAll('#resources-grid .res-item').forEach(item => {
+        const matName = item.dataset.mat;
+        const span = item.querySelector('.res-qty');
+        if (matName && span) {
+            // Parse "X/Y (restano Z)" format
+            const match = span.textContent.match(/^(\d+)/);
+            if (match) budget[matName] = parseInt(match[1], 10);
+        }
+    });
+
     showLoading(true);
     try {
         const resp = await fetch('/api/recalc', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
+                resource_budget: budget,
                 target_stats: selected,
             })
         });

@@ -217,15 +217,13 @@ def build_slot_options_with_mats(items_with_chains, score_fn=None):
         for target_lvl, target_stats, hack, mats, per_stat in chain:
             lvl_label = int(target_lvl) if target_lvl == int(target_lvl) else target_lvl
 
-            # If score_fn provided, use it for multi-objective scoring
+            # Compute the resulting score
             if score_fn is not None:
+                # Multi-objective: use geometric mean score of selected stat gains
                 resulting_score = score_fn(per_stat)
-                # Also consider best from other items (using their Total Stats for now)
-                other_best_score = other_best if other_best > 0 else 0
-                resulting_score = max(resulting_score, other_best_score)
             else:
-                # Original behavior: use Total Stats
-                resulting_score = max(target_stats, other_best)
+                # Original behavior: use Total Stats, comparing against other items in same slot
+                resulting_score = target_stats
 
             craft_tag = "★craft+" if needs_craft else ""
             options.append(
