@@ -1,10 +1,44 @@
 """Ottimizzatore build: inventario, upgrade chain, Pareto, solver."""
 
+import math
 from collections import Counter
 
 import pandas as pd
 
 from gow_optimizer.scraper import STAT_COLS
+
+
+# ─── Multi-objective scoring ────────────────────────────────
+
+
+def make_score_fn(target_stats, baseline_per_slot):
+    """
+    Returns a scoring function for multi-objective optimization.
+
+    Args:
+        target_stats: List of stat names to optimize (subset of STAT_COLS).
+        baseline_per_slot: Dict mapping stat name -> current best value in this slot.
+
+    Returns:
+        A function that takes a per_stat_dict and returns geometric mean of gains.
+        Formula: ∏(1 + max(per_stat[s] - baseline[s], 0))^(1/n) for s in target_stats.
+
+    If target_stats is empty, falls back to summing all stats (original behavior).
+    """
+
+    def score_fn(per_stat_dict):
+        if not target_stats:
+            # Fallback: sum all stats (original behavior)
+            return sum(per_stat_dict.values())
+
+        gains = [
+            max(per_stat_dict.get(s, 0) - baseline_per_slot.get(s, 0), 0)
+            for s in target_stats
+        ]
+        product = math.prod(1 + g for g in gains)
+        return product ** (1 / len(target_stats))
+
+    return score_fn
 
 
 # ─── Normalizzazione materiali ──────────────────────────────
@@ -153,7 +187,11 @@ def get_upgrade_chain_with_mats(
 
         cum_hack += hack
         cum_mats = test_mats
-        chain.append((r["Level"], r["Total Stats"], cum_hack, dict(cum_mats)))
+
+        # Extract per-stat dict for this item at this level
+        per_stat = {col: r.get(col, 0) for col in STAT_COLS}
+
+        chain.append((r["Level"], r["Total Stats"], cum_hack, dict(cum_mats), per_stat))
 
     return chain
 
@@ -166,7 +204,7 @@ def build_slot_options_with_mats(items_with_chains):
         other_best = max(
             (s for n, _, s, _, _ in items_with_chains if n != item_name), default=0
         )
-        for target_lvl, target_stats, hack, mats in chain:
+        for target_lvl, target_stats, hack, mats, per_stat in chain:
             lvl_label = int(target_lvl) if target_lvl == int(target_lvl) else target_lvl
             resulting_stats = max(target_stats, other_best)
             craft_tag = "★craft+" if needs_craft else ""
