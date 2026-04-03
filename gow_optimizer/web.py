@@ -590,6 +590,23 @@ def delete_build_slot(slot_name, slots):
     return result
 
 
+def load_build_slots():
+    """Load all saved build slots from storage."""
+    cfg = load_config()
+    return cfg.get("build_slots", {})
+
+
+def save_build_slots(slots):
+    """Save build slots to storage."""
+    cfg = load_config()
+    cfg["build_slots"] = slots
+    from gow_optimizer.paths import CONFIG_FILE
+    import yaml
+
+    with open(CONFIG_FILE, "w") as f:
+        yaml.dump(cfg, f, default_flow_style=False)
+
+
 # ---------------------------------------------------------------------------
 # Validation and error handling
 # ---------------------------------------------------------------------------
@@ -998,6 +1015,84 @@ def create_app(test_config=None) -> Flask:
         save_web_inventory(web_data)
         data = _compute_all(web_data=web_data)
         return jsonify(data)
+
+    @app.route("/api/export-build", methods=["POST"])
+    def api_export_build():
+        """Export current build as JSON."""
+        web_data = load_web_inventory()
+        exported = export_build(web_data)
+        return jsonify(exported)
+
+    @app.route("/api/export-build-csv", methods=["GET"])
+    def api_export_build_csv():
+        """Export current build as CSV file."""
+        web_data = load_web_inventory()
+        csv_content = export_build_csv(web_data)
+        return csv_content, 200, {"Content-Type": "text/csv", "Content-Disposition": "attachment; filename=build.csv"}
+
+    @app.route("/api/import-build", methods=["POST"])
+    def api_import_build():
+        """Import an exported build."""
+        payload = request.get_json(force=True)
+        imported_data = import_build(payload)
+        validate_build_data(imported_data)
+        save_web_inventory(imported_data)
+        data = _compute_all(web_data=imported_data)
+        return jsonify(data)
+
+    @app.route("/api/share-build", methods=["POST"])
+    def api_share_build():
+        """Generate shareable URL for current build."""
+        web_data = load_web_inventory()
+        # In production, use request.host_url
+        base_url = request.host_url.rstrip("/")
+        share_url = generate_shareable_url(base_url, web_data)
+        return jsonify({"url": share_url})
+
+    @app.route("/api/build-slots", methods=["GET"])
+    def api_list_build_slots():
+        """List all saved build slots."""
+        slots = load_build_slots()
+        slot_list = list_build_slots(slots)
+        return jsonify({"slots": slot_list})
+
+    @app.route("/api/build-slots", methods=["POST"])
+    def api_manage_build_slots():
+        """Create, load, or delete a build slot."""
+        payload = request.get_json(force=True)
+        action = payload.get("action", "").lower()
+        slot_name = payload.get("name", "")
+
+        if not slot_name or not action:
+            return jsonify({"error": "Missing action or slot name"}), 400
+
+        slots = load_build_slots()
+
+        try:
+            if action == "create":
+                web_data = load_web_inventory()
+                slots = create_build_slot(slot_name, web_data, slots)
+                save_build_slots(slots)
+                return jsonify({"message": f"Slot '{slot_name}' created"})
+
+            elif action == "load":
+                loaded_data = load_build_slot(slot_name, slots)
+                save_web_inventory(loaded_data)
+                data = _compute_all(web_data=loaded_data)
+                return jsonify(data)
+
+            elif action == "delete":
+                slots = delete_build_slot(slot_name, slots)
+                save_build_slots(slots)
+                return jsonify({"message": f"Slot '{slot_name}' deleted"})
+
+            else:
+                return jsonify({"error": f"Unknown action: {action}"}), 400
+
+        except KeyError as e:
+            return jsonify({"error": f"Build slot not found: {e}"}), 404
+        except Exception as e:
+            return jsonify({"error": str(e)}), 400
 
     return app
 
