@@ -764,9 +764,14 @@
                 <span style="flex: 1;">🍀 Fortuna</span>
             </label>
         </div>
-        <button class="btn btn-primary" id="btn-apply-stats" onclick="applyStatSelection()" style="margin-top: 16px; width: 100%;">
-            ✓ Applica e Ricalcola
-        </button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+            <button class="btn btn-primary" id="btn-apply-stats" onclick="applyStatSelection()">
+                ✓ Applica e Ricalcola
+            </button>
+            <button class="btn btn-secondary" id="btn-reset-stats" onclick="resetStatSelection()">
+                ↻ Ripristina Predefiniti
+            </button>
+        </div>
     </div>
 </div>
 
@@ -1020,6 +1025,56 @@ async function applyStatSelection() {
     } finally {
         showLoading(false);
     }
+    // Save selected stats to localStorage
+    saveStatSelection(selected);
+}
+
+function saveStatSelection(selected) {
+    """Save selected stats to localStorage."""
+    try {
+        localStorage.setItem('gow_optimizer_stats', JSON.stringify(selected));
+    } catch(e) {
+        console.warn('Failed to save stat selection to localStorage:', e);
+    }
+}
+
+function loadStatSelection() {
+    """Load and restore saved stat selection from localStorage."""
+    try {
+        const saved = localStorage.getItem('gow_optimizer_stats');
+        if (!saved) return;  // No saved selection
+        const selected = JSON.parse(saved);
+        if (!Array.isArray(selected)) return;
+
+        // Uncheck all first
+        document.querySelectorAll('#stat-selector input[name="stat"]').forEach(cb => {
+            cb.checked = false;
+        });
+
+        // Check only the saved ones
+        selected.forEach(stat => {
+            const cb = document.querySelector(`#stat-selector input[name="stat"][value="${stat}"]`);
+            if (cb) cb.checked = true;
+        });
+    } catch(e) {
+        console.warn('Failed to load stat selection from localStorage:', e);
+    }
+}
+
+function resetStatSelection() {
+    """Reset stat selection to defaults (Strength + Defense) and clear localStorage."""
+    try {
+        localStorage.removeItem('gow_optimizer_stats');
+    } catch(e) {
+        console.warn('Failed to clear localStorage:', e);
+    }
+
+    // Reset to defaults: Strength and Defense checked, rest unchecked
+    document.querySelectorAll('#stat-selector input[name="stat"]').forEach(cb => {
+        cb.checked = (cb.value === 'Strength' || cb.value === 'Defense');
+    });
+
+    toast('Ripristinati i valori predefiniti (Forza + Difesa)', 'success');
 }
 
 
@@ -1632,6 +1687,9 @@ setInterval(() => {
         refreshFromServerSilently();
     }
 }, 5000);
+
+// Load saved stat selection from localStorage
+loadStatSelection();
 
 // Initialize AOS (Animate On Scroll)
 AOS.init({
