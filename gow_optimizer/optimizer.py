@@ -196,7 +196,17 @@ def get_upgrade_chain_with_mats(
     return chain
 
 
-def build_slot_options_with_mats(items_with_chains):
+def build_slot_options_with_mats(items_with_chains, score_fn=None):
+    """Build upgrade options for a slot, optionally using a multi-objective score function.
+
+    Args:
+        items_with_chains: List of (name, lvl, stats, chain, needs_craft) tuples.
+        score_fn: Optional function that takes per_stat dict and returns a score.
+                 If None, uses Total Stats (original behavior).
+
+    Returns:
+        List of (hack, score, label, mats) tuples representing upgrade options.
+    """
     current_best = max((s for _, _, s, _, _ in items_with_chains), default=0)
     options = [(0, current_best, "— nessuna azione —", {})]
 
@@ -206,12 +216,22 @@ def build_slot_options_with_mats(items_with_chains):
         )
         for target_lvl, target_stats, hack, mats, per_stat in chain:
             lvl_label = int(target_lvl) if target_lvl == int(target_lvl) else target_lvl
-            resulting_stats = max(target_stats, other_best)
+
+            # If score_fn provided, use it for multi-objective scoring
+            if score_fn is not None:
+                resulting_score = score_fn(per_stat)
+                # Also consider best from other items (using their Total Stats for now)
+                other_best_score = other_best if other_best > 0 else 0
+                resulting_score = max(resulting_score, other_best_score)
+            else:
+                # Original behavior: use Total Stats
+                resulting_score = max(target_stats, other_best)
+
             craft_tag = "★craft+" if needs_craft else ""
             options.append(
                 (
                     hack,
-                    resulting_stats,
+                    resulting_score,
                     f"{craft_tag}{item_name} {int(item_lvl)}→{lvl_label}",
                     mats,
                 )
@@ -273,8 +293,14 @@ def solve_with_resources(slot_pareto_dict, budget_hack, resource_budget, mat_ali
 
 
 def build_all_pareto(
-    inventory, w_inventory, all_pieces_df, all_weapons_df, resource_budget, mat_aliases
+    inventory, w_inventory, all_pieces_df, all_weapons_df, resource_budget, mat_aliases, score_fns=None
 ):
+    """Build Pareto frontier for all slots.
+
+    Args:
+        score_fns: Optional dict mapping slot_label -> score_fn for multi-objective optimization.
+                  If None, uses original Total Stats-based scoring.
+    """
     slot_pareto = {}
 
     for pt in ["Chest", "Wrist", "Waist"]:
@@ -304,8 +330,10 @@ def build_all_pareto(
                 mat_aliases,
             )
             items.append((name, lvl, stats, chain, needs_craft))
-        slot_pareto[f"Armatura — {pt}"] = pareto_frontier_with_mats(
-            build_slot_options_with_mats(items)
+        slot_label = f"Armatura — {pt}"
+        score_fn = (score_fns or {}).get(slot_label)
+        slot_pareto[slot_label] = pareto_frontier_with_mats(
+            build_slot_options_with_mats(items, score_fn=score_fn)
         )
 
     for cat in ["Leviathan Axe", "Blades of Chaos", "Shield"]:
@@ -336,8 +364,10 @@ def build_all_pareto(
             )
             items.append((name, lvl, stats, chain, needs_craft))
         if items:
-            slot_pareto[f"Arma — {cat}"] = pareto_frontier_with_mats(
-                build_slot_options_with_mats(items)
+            slot_label = f"Arma — {cat}"
+            score_fn = (score_fns or {}).get(slot_label)
+            slot_pareto[slot_label] = pareto_frontier_with_mats(
+                build_slot_options_with_mats(items, score_fn=score_fn)
             )
 
     return slot_pareto
