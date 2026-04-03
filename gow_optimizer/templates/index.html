@@ -530,7 +530,7 @@
         <span>🛡 Build Ottimale</span>
         <span class="toggle">▼</span>
     </div>
-    <div class="section-body">
+    <div class="section-body" id="best-build-body">
         <div class="info-box" style="background: var(--surface2); border-left: 4px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--text2);">
             <strong>💡 Algoritmo globale:</strong> Questo piano calcola la miglior combinazione di upgrade possibile date le tue risorse attuali, scegliendo il percorso di ottimizzazione assoluta. Se il piano step-by-step differisce, significa che non puoi raggiungerlo passo dopo passo.
         </div>
@@ -590,7 +590,7 @@
         <span>📊 Classifica per Slot</span>
         <span class="toggle">▼</span>
     </div>
-    <div class="section-body">
+    <div class="section-body" id="rankings-body">
         <div class="slot-grid">
             {% for pt in ["Chest", "Wrist", "Waist"] %}
             {% if rankings_armor[pt] %}
@@ -633,13 +633,12 @@
 </div>
 
 <!-- ═══ Pezzi da Craftare ═══ -->
-{% if craft_armor or craft_weapons %}
-<div class="section collapsed">
+<div class="section collapsed" id="craft-section" {% if not (craft_armor or craft_weapons) %}style="display:none"{% endif %}>
     <div class="section-header" onclick="toggle(this)">
-        <span>⚠ Pezzi da Craftare ({{ craft_armor|length + craft_weapons|length }})</span>
+        <span id="craft-header-text">⚠ Pezzi da Craftare ({{ craft_armor|length + craft_weapons|length }})</span>
         <span class="toggle">▼</span>
     </div>
-    <div class="section-body">
+    <div class="section-body" id="craft-body">
         <div class="craft-list">
             {% for n, l, pt in craft_armor %}
             <div class="craft-item">
@@ -656,7 +655,6 @@
         </div>
     </div>
 </div>
-{% endif %}
 
 <!-- ═══ Risorse Disponibili ═══ -->
 <div class="section" id="resources-section">
@@ -988,6 +986,99 @@ function updateAllSections(d) {
     if (d.opt_gain > 0) h += `<div class="summary-card"><div class="label">Upgrade possibile</div><div class="value green">+${d.opt_gain}</div></div>`;
     bar.innerHTML = h;
 
+    // ── Build Ottimale ──
+    const bestBuild = document.getElementById('best-build-body');
+    if (bestBuild) {
+        const armorTypes = ['Chest', 'Wrist', 'Waist'];
+        const weaponCats = ['Leviathan Axe', 'Blades of Chaos', 'Draupnir Spear', 'Shield'];
+        let bh = `<div class="info-box" style="background: var(--surface2); border-left: 4px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--text2);"><strong>💡 Algoritmo globale:</strong> Questo piano calcola la miglior combinazione di upgrade possibile date le tue risorse attuali, scegliendo il percorso di ottimizzazione assoluta. Se il piano step-by-step differisce, significa che non puoi raggiungerlo passo dopo passo.</div>`;
+        bh += '<div class="slot-grid">';
+
+        armorTypes.forEach(pt => {
+            const b = d.best_armor?.[pt];
+            bh += `<div class="slot-card"><h3>🛡 Armatura — ${escAttr(pt)}</h3>`;
+            if (b) {
+                const stats = Object.entries(b.stats || {}).map(([s, v]) => `<span class="stat-pill">${escAttr(String(s).slice(0,3).toUpperCase())} ${v}</span>`).join('');
+                bh += `<div class="item-best"><span class="name">${escAttr(b.name)}</span><span class="level">LVL ${b.level}</span></div><div style="display:flex; justify-content:space-between; align-items:center;"><div class="stat-bar">${stats}</div><span class="total-badge">${b.total}</span></div>`;
+            } else {
+                bh += '<div class="empty-state">Nessun pezzo</div>';
+            }
+            bh += '</div>';
+        });
+
+        weaponCats.forEach(cat => {
+            const b = d.best_weapons?.[cat];
+            bh += `<div class="slot-card"><h3>⚔ ${escAttr(cat)}</h3>`;
+            if (b) {
+                const stats = Object.entries(b.stats || {}).map(([s, v]) => `<span class="stat-pill">${escAttr(String(s).slice(0,3).toUpperCase())} ${v}</span>`).join('');
+                bh += `<div class="item-best"><span class="name">${escAttr(b.name)}</span><span class="level">LVL ${b.level}</span></div><div style="display:flex; justify-content:space-between; align-items:center;"><div class="stat-bar">${stats}</div><span class="total-badge">${b.total}</span></div>`;
+            } else {
+                bh += '<div class="empty-state">Non sbloccata</div>';
+            }
+            bh += '</div>';
+        });
+
+        bh += '</div>';
+        bestBuild.innerHTML = bh;
+    }
+
+    // ── Classifiche per slot ──
+    const rankingsBody = document.getElementById('rankings-body');
+    if (rankingsBody) {
+        const armorTypes = ['Chest', 'Wrist', 'Waist'];
+        const weaponCats = ['Leviathan Axe', 'Blades of Chaos', 'Draupnir Spear', 'Shield'];
+        let rh = '<div class="slot-grid">';
+
+        armorTypes.forEach(pt => {
+            const rows = d.rankings_armor?.[pt] || [];
+            if (!rows.length) return;
+            rh += `<div class="slot-card"><h3>🛡 ${escAttr(pt)}</h3><ul class="ranking-list">`;
+            rows.forEach((r, i) => {
+                rh += `<li><span class="rank">${i + 1}</span><span class="rank-name">${escAttr(r.name)} <small style="color:var(--text3)">(LVL ${r.level})</small>${i === 0 ? '<span class="star">★</span>' : ''}</span><span class="rank-total">${r.total}</span></li>`;
+            });
+            rh += '</ul></div>';
+        });
+
+        weaponCats.forEach(cat => {
+            const rows = d.rankings_weapons?.[cat] || [];
+            if (!rows.length) return;
+            rh += `<div class="slot-card"><h3>⚔ ${escAttr(cat)}</h3><ul class="ranking-list">`;
+            rows.forEach((r, i) => {
+                rh += `<li><span class="rank">${i + 1}</span><span class="rank-name">${escAttr(r.name)} <small style="color:var(--text3)">(LVL ${r.level})</small>${i === 0 ? '<span class="star">★</span>' : ''}</span><span class="rank-total">${r.total}</span></li>`;
+            });
+            rh += '</ul></div>';
+        });
+
+        rh += '</div>';
+        rankingsBody.innerHTML = rh;
+    }
+
+    // ── Pezzi da craftare ──
+    const craftSection = document.getElementById('craft-section');
+    const craftBody = document.getElementById('craft-body');
+    const craftHeaderText = document.getElementById('craft-header-text');
+    if (craftSection && craftBody && craftHeaderText) {
+        const craftArmor = d.craft_armor || [];
+        const craftWeapons = d.craft_weapons || [];
+        const totalCraft = craftArmor.length + craftWeapons.length;
+
+        if (totalCraft > 0) {
+            craftSection.style.display = '';
+            craftHeaderText.textContent = `⚠ Pezzi da Craftare (${totalCraft})`;
+            let ch = '<div class="craft-list">';
+            craftArmor.forEach(([n, l, pt]) => {
+                ch += `<div class="craft-item"><span>${escAttr(n)} — LVL ${l}</span><span class="ci-slot">${escAttr(pt)}</span></div>`;
+            });
+            craftWeapons.forEach(([n, l, cat]) => {
+                ch += `<div class="craft-item"><span>${escAttr(n)} — LVL ${l}</span><span class="ci-slot">${escAttr(cat)}</span></div>`;
+            });
+            ch += '</div>';
+            craftBody.innerHTML = ch;
+        } else {
+            craftSection.style.display = 'none';
+        }
+    }
+
     // ── Resources (update displays + inputs) ──
     d.resources.forEach(r => {
         const item = document.querySelector(`.res-item[data-mat="${CSS.escape(r.name)}"]`);
@@ -1110,6 +1201,29 @@ document.querySelectorAll('.section-header').forEach(hdr => {
         if (tog) tog.textContent = sec.classList.contains('collapsed') ? '▶' : '▼';
     }).observe(sec, { attributes: true, attributeFilter: ['class'] });
 });
+
+// Auto-refresh leggero: sincronizza la UI con il server senza ricaricare la pagina.
+async function refreshFromServerSilently() {
+    if (_editMode) return;
+    try {
+        const resp = await fetch('/api/recalc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({})
+        });
+        if (!resp.ok) return;
+        const d = await resp.json();
+        updateAllSections(d);
+    } catch (_) {
+        // Ignora errori transienti: il prossimo tick riprovera'.
+    }
+}
+
+setInterval(() => {
+    if (document.visibilityState === 'visible') {
+        refreshFromServerSilently();
+    }
+}, 5000);
 </script>
 </body>
 </html>

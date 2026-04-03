@@ -1,6 +1,9 @@
-"""python -m gow_optimizer."""
+"""python -m gow_optimizer — start the web UI."""
 
-from gow_optimizer.cli import main
+import logging
+
+from gow_optimizer.web import app
 
 if __name__ == "__main__":
-    main()
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    app.run(debug=True, port=5000)

@@ -19,7 +19,6 @@ dependencies = [
 ]
 
 [project.scripts]
-gow-cli = "gow_optimizer.cli:main"
 gow-web = "gow_optimizer.web:main"
 
 [dependency-groups]

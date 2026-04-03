@@ -26,7 +26,7 @@ from gow_optimizer.optimizer import (
     solve_with_resources,
 )
 from gow_optimizer.paths import TEMPLATES_DIR
-from gow_optimizer.scraper import STAT_COLS, load_or_scrape
+from gow_optimizer.scraper import STAT_COLS, load_csvs
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +51,10 @@ def _load_static():
         return _static_cache
 
     cfg = load_config()
-    force_scrape = cfg.get("force_scrape", False)
     armor_csv, weapons_csv = get_data_file_paths(cfg)
     mat_aliases = cfg.get("mat_aliases", {})
 
-    all_pieces_df, all_weapons_df = load_or_scrape(armor_csv, weapons_csv, force_scrape)
+    all_pieces_df, all_weapons_df = load_csvs(armor_csv, weapons_csv)
 
     _static_cache = {
         "all_pieces_df": all_pieces_df,
@@ -540,7 +539,6 @@ def _compute_all(web_data=None):
     resources = _serialize_resources(resource_budget)
 
     return {
-        "stat_cols": STAT_COLS,
         "best_armor": best_armor,
         "best_weapons": best_weapons,
         "armor_total": int(armor_total),

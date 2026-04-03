@@ -9,9 +9,14 @@ wheels/
 # Virtual environments
 .venv
 
-# Runtime state (user-specific inventory)
-web_inventory.yaml
+# CSV data files (not committed)
+data/all_pieces.csv
+data/all_weapons.csv
 
-# IDE / tools
+# Runtime state and IDE
+.pytest_cache/
 .mypy_cache/
-.playwright-mcp/
+.vscode/
+
+# Claude Code
+.claude/

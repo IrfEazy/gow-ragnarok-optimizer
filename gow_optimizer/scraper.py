@@ -113,30 +113,34 @@ def scrape_armor_detail(armor_url) -> dict[Any, Any]:
 # ─── Caricamento / Scraping ─────────────────────────────────
 
 
-def load_or_scrape(armor_csv, weapons_csv, force_scrape=False) -> Any:
-    """Restituisce (all_pieces_df, all_weapons_df).
+def load_csvs(armor_csv, weapons_csv) -> tuple[Any, Any]:
+    """Load armor and weapon DataFrames from CSV files.
 
-    Se *force_scrape* è False e i CSV esistono, li carica direttamente.
-    Altrimenti scrapa IGN e salva i CSV aggiornati.
+    Raises FileNotFoundError if either CSV is missing.
     """
     armor_csv = fspath(armor_csv)
     weapons_csv = fspath(weapons_csv)
 
-    if not force_scrape and os.path.exists(armor_csv) and os.path.exists(weapons_csv):
-        all_pieces_df = pd.read_csv(armor_csv)
-        all_weapons_df = pd.read_csv(weapons_csv)
-        logger.info("Caricati da CSV:")
-        logger.info(
-            "  Armature: %d righe, %d pezzi unici",
-            all_pieces_df.shape[0],
-            all_pieces_df["Piece Name"].nunique(),
+    if not os.path.exists(armor_csv):
+        raise FileNotFoundError(
+            f"Armor CSV not found: {armor_csv}\n"
+            "Run 'python -m gow_optimizer.scraper' to generate it."
         )
-        logger.info(
-            "  Armi:     %d righe, %d armi uniche",
-            all_weapons_df.shape[0],
-            all_weapons_df["Weapon Name"].nunique(),
+    if not os.path.exists(weapons_csv):
+        raise FileNotFoundError(
+            f"Weapons CSV not found: {weapons_csv}\n"
+            "Run 'python -m gow_optimizer.scraper' to generate it."
         )
-        return all_pieces_df, all_weapons_df
+
+    all_pieces_df = pd.read_csv(armor_csv)
+    all_weapons_df = pd.read_csv(weapons_csv)
+    return all_pieces_df, all_weapons_df
+
+
+def scrape_and_save(armor_csv, weapons_csv) -> Any:
+    """Scrape armor and weapon data from IGN wiki and save to CSV files."""
+    armor_csv = fspath(armor_csv)
+    weapons_csv = fspath(weapons_csv)
 
     # ─── Scraping completo ───
     logger.info("=== SCRAPING DAL WEB ===")
@@ -331,3 +335,17 @@ def load_or_scrape(armor_csv, weapons_csv, force_scrape=False) -> Any:
     logger.info("CSV salvati: %s, %s", armor_csv, weapons_csv)
 
     return all_pieces_df, all_weapons_df
+
+
+if __name__ == "__main__":
+    from gow_optimizer.paths import DATA_DIR
+
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    logger = logging.getLogger(__name__)
+
+    armor_csv = DATA_DIR / "all_pieces.csv"
+    weapons_csv = DATA_DIR / "all_weapons.csv"
+
+    logger.info("Starting scraper...")
+    scrape_and_save(armor_csv, weapons_csv)
+    logger.info("Done! CSVs are ready.")
