@@ -108,14 +108,15 @@ def build_weapon_available_df(all_weapons_df, w_inventory):
 # ─── Build attuale ──────────────────────────────────────────
 
 
-def collect_current_build(inventory, available_df, w_inventory, w_available_df, score_fns=None):
+def collect_current_build(inventory, available_df, w_inventory, w_available_df, target_stats=None):
     """Restituisce (armor_current, weapon_current) — liste di Series pandas.
 
-    If score_fns dict is provided (keyed by slot_label), selects best item per slot
-    using the corresponding score_fn instead of just returning the highest-level item owned.
+    If target_stats is provided, selects best item per slot by summing those specific stats.
+    Otherwise, selects by Total Stats (original behavior).
 
     Args:
-        score_fns: Optional dict mapping slot_label (e.g., "Armatura — Chest") to score_fn.
+        target_stats: Optional list of stat names to optimize (e.g., ["Strength", "Defense"]).
+                     If None, uses Total Stats.
     """
     armor_current = []
     for pt in ["Chest", "Wrist", "Waist"]:
@@ -129,11 +130,10 @@ def collect_current_build(inventory, available_df, w_inventory, w_available_df, 
         if not items_in_slot:
             continue
 
-        # Find best item using score_fn if provided
+        # Find best item by selected stats or Total Stats
         best_item = None
         best_score = -1
         slot_label = f"Armatura — {pt}"
-        score_fn = (score_fns or {}).get(slot_label)
 
         for name, lvl, _ in items_in_slot:
             row = available_df[
@@ -144,10 +144,9 @@ def collect_current_build(inventory, available_df, w_inventory, w_available_df, 
             if row.empty:
                 continue
 
-            per_stat = {col: row.iloc[0].get(col, 0) for col in STAT_COLS}
-
-            if score_fn is not None:
-                score = score_fn(per_stat)
+            # Compute score based on target_stats or Total Stats
+            if target_stats:
+                score = sum(row.iloc[0].get(s, 0) for s in target_stats)
             else:
                 score = row.iloc[0]["Total Stats"]
 
@@ -174,11 +173,10 @@ def collect_current_build(inventory, available_df, w_inventory, w_available_df, 
         if not items_in_slot:
             continue
 
-        # Find best item using score_fn if provided
+        # Find best item by selected stats or Total Stats
         best_item = None
         best_score = -1
         slot_label = f"Arma — {cat}"
-        score_fn = (score_fns or {}).get(slot_label)
 
         for name, lvl, _ in items_in_slot:
             row = w_available_df[
@@ -189,10 +187,9 @@ def collect_current_build(inventory, available_df, w_inventory, w_available_df, 
             if row.empty:
                 continue
 
-            per_stat = {col: row.iloc[0].get(col, 0) for col in STAT_COLS}
-
-            if score_fn is not None:
-                score = score_fn(per_stat)
+            # Compute score based on target_stats or Total Stats
+            if target_stats:
+                score = sum(row.iloc[0].get(s, 0) for s in target_stats)
             else:
                 score = row.iloc[0]["Total Stats"]
 
