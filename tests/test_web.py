@@ -302,3 +302,61 @@ def test_home_page_includes_reset_stats_button(monkeypatch):
     # Check for reset button
     assert "btn-reset-stats" in html
     assert "Ripristina Predefiniti" in html
+
+
+def test_home_page_includes_localstorage_functions(monkeypatch):
+    """Test: GET / should include localStorage persistence functions."""
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "chest_pieces": [],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+    _patch_runtime_store(monkeypatch, state)
+
+    app = web.create_app({"TESTING": True})
+    client = app.test_client()
+
+    response = client.get("/")
+    assert response.status_code == 200
+    html = response.data.decode()
+
+    # Check for localStorage functions
+    assert "function saveStatSelection" in html
+    assert "localStorage.setItem('gow_optimizer_stats'" in html
+    assert "function loadStatSelection" in html
+    assert "localStorage.getItem('gow_optimizer_stats')" in html
+    assert "function resetStatSelection" in html
+    assert "localStorage.removeItem('gow_optimizer_stats')" in html
+    # Verify loadStatSelection is called on page initialization
+    assert "loadStatSelection()" in html
+
+
+def test_apply_stat_selection_includes_save_logic(monkeypatch):
+    """Test: applyStatSelection should call saveStatSelection."""
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "chest_pieces": [],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+    _patch_runtime_store(monkeypatch, state)
+
+    app = web.create_app({"TESTING": True})
+    client = app.test_client()
+
+    response = client.get("/")
+    assert response.status_code == 200
+    html = response.data.decode()
+
+    # Verify applyStatSelection function includes saveStatSelection call
+    assert "async function applyStatSelection()" in html
+    assert "saveStatSelection(selected)" in html
