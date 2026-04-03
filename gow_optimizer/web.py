@@ -1,8 +1,14 @@
 """God of War Ragnarök — Web UI (Flask)."""
 
+import base64
+import hashlib
+import json
 import logging
 import re
+import urllib.parse
 from collections import Counter
+from copy import deepcopy
+from datetime import datetime, timezone
 
 from flask import Flask, jsonify, render_template, request
 
@@ -472,6 +478,320 @@ def _serialize_resources(resource_budget):
         {"name": material, "qty": quantity}
         for material, quantity in sorted(resource_budget.items())
     ]
+
+
+# ---------------------------------------------------------------------------
+# Export/Import functionality
+# ---------------------------------------------------------------------------
+
+
+def export_build(build_data):
+    """Export build data to JSON-serializable dict with metadata."""
+    return {
+        "version": "0.1.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "resource_budget": build_data.get("resource_budget", {}),
+        "armor": {
+            "chest": build_data.get("chest_pieces", []),
+            "wrist": build_data.get("wrist_pieces", []),
+            "waist": build_data.get("waist_pieces", []),
+        },
+        "weapons": {
+            "axe": build_data.get("axe_attachments", []),
+            "blades": build_data.get("blades_attachments", []),
+            "spear": build_data.get("spear_attachments", []),
+            "shield": build_data.get("shield_attachments", []),
+        },
+    }
+
+
+def import_build(exported_data):
+    """Restore exported build data to inventory format."""
+    return {
+        "resource_budget": exported_data.get("resource_budget", {}),
+        "chest_pieces": exported_data.get("armor", {}).get("chest", []),
+        "wrist_pieces": exported_data.get("armor", {}).get("wrist", []),
+        "waist_pieces": exported_data.get("armor", {}).get("waist", []),
+        "axe_attachments": exported_data.get("weapons", {}).get("axe", []),
+        "blades_attachments": exported_data.get("weapons", {}).get("blades", []),
+        "spear_attachments": exported_data.get("weapons", {}).get("spear", []),
+        "shield_attachments": exported_data.get("weapons", {}).get("shield", []),
+    }
+
+
+def export_build_csv(build_data):
+    """Export build to CSV format."""
+    lines = ["Piece Type,Name,Level,Craft"]
+
+    # Export armor
+    for piece_type, pieces in [
+        ("Chest", build_data.get("chest_pieces", [])),
+        ("Wrist", build_data.get("wrist_pieces", [])),
+        ("Waist", build_data.get("waist_pieces", [])),
+    ]:
+        for piece in pieces:
+            craft = "Yes" if piece.get("craft") else "No"
+            lines.append(
+                f'{piece_type},{piece.get("name", "")},{piece.get("level", 0)},{craft}'
+            )
+
+    # Export weapons
+    for weapon_type, attachments in [
+        ("Axe Attachment", build_data.get("axe_attachments", [])),
+        ("Blades Attachment", build_data.get("blades_attachments", [])),
+        ("Spear Attachment", build_data.get("spear_attachments", [])),
+        ("Shield Attachment", build_data.get("shield_attachments", [])),
+    ]:
+        for attachment in attachments:
+            craft = "Yes" if attachment.get("craft") else "No"
+            lines.append(
+                f'{weapon_type},{attachment.get("name", "")},{attachment.get("level", 0)},{craft}'
+            )
+
+    return "\n".join(lines)
+
+
+def generate_shareable_url(base_url, build_data):
+    """Generate URL-safe shareable build link."""
+    exported = export_build(build_data)
+    json_str = json.dumps(exported, separators=(",", ":"))
+    encoded = base64.urlsafe_b64encode(json_str.encode()).decode().rstrip("=")
+    return f"{base_url}/?build={encoded}"
+
+
+# ---------------------------------------------------------------------------
+# Build slot management (multi-save)
+# ---------------------------------------------------------------------------
+
+
+def create_build_slot(slot_name, build_data, current_slots):
+    """Create a new named build slot."""
+    slots = deepcopy(current_slots)
+    slots[slot_name] = deepcopy(build_data)
+    return slots
+
+
+def list_build_slots(slots):
+    """List all saved build slots."""
+    return [{"name": slot_name} for slot_name in sorted(slots.keys())]
+
+
+def load_build_slot(slot_name, slots):
+    """Load a named build slot. Raises KeyError if not found."""
+    if slot_name not in slots:
+        raise KeyError(f"Build slot '{slot_name}' not found")
+    return deepcopy(slots[slot_name])
+
+
+def delete_build_slot(slot_name, slots):
+    """Delete a named build slot."""
+    result = deepcopy(slots)
+    result.pop(slot_name, None)
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Validation and error handling
+# ---------------------------------------------------------------------------
+
+
+def validate_build_data(build_data):
+    """Validate build data structure. Raises ValueError if invalid."""
+    if "resource_budget" not in build_data:
+        raise ValueError("Build data missing 'resource_budget' key")
+
+    resource_budget = build_data["resource_budget"]
+    if "Hacksilver" not in resource_budget:
+        raise ValueError("resource_budget missing required 'Hacksilver' key")
+
+    return True
+
+
+def validate_inventory_piece(piece):
+    """Validate an inventory piece. Raises ValueError if invalid."""
+    level = piece.get("level", 0)
+    if not (1 <= level <= 9):
+        raise ValueError(f"Piece level must be 1-9, got {level}")
+
+    return True
+
+
+def validate_csv_integrity(csv_dict):
+    """Validate CSV data has required columns. Raises ValueError if missing."""
+    required_columns = ["Item Name", "Total Stats"]
+    for col in required_columns:
+        if col not in csv_dict:
+            raise ValueError(f"CSV missing required column: '{col}'")
+
+    return True
+
+
+def format_missing_materials_error(missing_mats):
+    """Format a readable error message for missing materials."""
+    lines = ["Missing materials:"]
+    for material, quantity in sorted(missing_mats.items()):
+        lines.append(f"  • {material}: {quantity}")
+    return "\n".join(lines)
+
+
+def safe_resource_update(resources, deduction):
+    """Safely deduct resources, raises ValueError if would go negative."""
+    result = deepcopy(resources)
+
+    for material, amount in deduction.items():
+        if result.get(material, 0) - amount < 0:
+            raise ValueError(
+                f"insufficient {material}: need {amount}, have {result.get(material, 0)}"
+            )
+        result[material] = result.get(material, 0) - amount
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# UI/UX Helper functions (accessibility, mobile, feedback)
+# ---------------------------------------------------------------------------
+
+
+def generate_loading_spinner(message):
+    """Generate HTML markup for loading spinner with message."""
+    return f'<div class="spinner" aria-label="Loading"><div class="spinner-icon"></div><p>{message}</p></div>'
+
+
+def generate_error_alert(message):
+    """Generate accessible error alert HTML."""
+    return f'<div class="alert alert-error" role="alert" aria-live="assertive">{message}</div>'
+
+
+def generate_success_message(message):
+    """Generate success message HTML."""
+    return f'<div class="alert alert-success" role="status" aria-live="polite">{message}</div>'
+
+
+def generate_button(label, aria_label):
+    """Generate button with accessibility attributes."""
+    return f'<button aria-label="{aria_label}">{label}</button>'
+
+
+def generate_form_field(field_id, label_text, placeholder):
+    """Generate form field with label association."""
+    return f'<label for="{field_id}">{label_text}</label><input id="{field_id}" type="text" placeholder="{placeholder}" />'
+
+
+def generate_responsive_grid(items):
+    """Generate responsive grid layout."""
+    item_html = "".join(f"<div class='grid-item'>{item}</div>" for item in items)
+    return f'<div class="responsive-grid grid-auto-fit">{item_html}</div>'
+
+
+def generate_tooltip(text, description):
+    """Generate tooltip with accessible content."""
+    return f'<span class="tooltip" title="{description}" aria-describedby="tooltip-{id(text)}">{text}</span>'
+
+
+def generate_focusable_element(text):
+    """Generate element with keyboard focus support."""
+    return f'<div tabindex="0" class="focusable" style="outline: 2px solid transparent; outline-offset: 2px;">{text}</div>'
+
+
+def validate_color_contrast(fg_color, bg_color):
+    """Validate color contrast meets WCAG AA standards (simplified)."""
+    # Simplified contrast check - in production use proper WCAG algorithm
+    # This just checks if colors are different enough
+    fg_hex = fg_color.lstrip("#")
+    bg_hex = bg_color.lstrip("#")
+
+    if fg_hex == bg_hex:
+        return False
+
+    # Convert hex to RGB
+    try:
+        fg_r, fg_g, fg_b = int(fg_hex[0:2], 16), int(fg_hex[2:4], 16), int(fg_hex[4:6], 16)
+        bg_r, bg_g, bg_b = int(bg_hex[0:2], 16), int(bg_hex[2:4], 16), int(bg_hex[4:6], 16)
+    except (ValueError, IndexError):
+        return False
+
+    # Simple luminance calculation
+    fg_luminance = (0.299 * fg_r + 0.587 * fg_g + 0.114 * fg_b) / 255
+    bg_luminance = (0.299 * bg_r + 0.587 * bg_g + 0.114 * bg_b) / 255
+
+    # WCAG AA contrast ratio of 4.5:1 or more for normal text
+    max_lum = max(fg_luminance, bg_luminance)
+    min_lum = min(fg_luminance, bg_luminance)
+    contrast_ratio = (max_lum + 0.05) / (min_lum + 0.05)
+
+    return contrast_ratio >= 4.5
+
+
+def generate_notification_center(notifications):
+    """Generate notification UI that works on mobile."""
+    notif_html = ""
+    for notif in notifications:
+        notif_type = notif.get("type", "info")
+        message = notif.get("message", "")
+        notif_html += f'<div class="notification notification-{notif_type}" role="status">{message}</div>'
+    return f'<div class="notification-center">{notif_html}</div>'
+
+
+# ---------------------------------------------------------------------------
+# Performance optimization
+# ---------------------------------------------------------------------------
+
+
+def generate_inventory_cache_key(inventory):
+    """Generate consistent cache key for inventory state."""
+    json_str = json.dumps(inventory, sort_keys=True, separators=(",", ":"))
+    return hashlib.md5(json_str.encode()).hexdigest()
+
+
+def batch_resource_deductions(resources, deductions):
+    """Batch multiple material deductions efficiently."""
+    result = deepcopy(resources)
+    for deduction in deductions:
+        result = safe_resource_update(result, deduction)
+    return result
+
+
+class LazyDataLoader:
+    """Lazy load CSV data on first access."""
+
+    def __init__(self, load_fn):
+        self._load_fn = load_fn
+        self._data = None
+
+    def get_data(self):
+        """Get data, loading only on first access."""
+        if self._data is None:
+            self._data = self._load_fn()
+        return self._data
+
+
+def generate_cache_headers(max_age=3600):
+    """Generate HTTP cache headers for responses."""
+    return {
+        "Cache-Control": f"public, max-age={max_age}",
+    }
+
+
+def generate_etag(content):
+    """Generate ETag for response validation."""
+    if isinstance(content, str):
+        content_bytes = content.encode()
+    else:
+        content_bytes = json.dumps(content, separators=(",", ":")).encode()
+
+    return hashlib.md5(content_bytes).hexdigest()
+
+
+def should_compress_response(response_content):
+    """Determine if response should be compressed."""
+    # Compress if larger than 1KB
+    return len(str(response_content)) > 1024
+
+
+def filter_inventory_by_level(inventory, min_level=1):
+    """Filter inventory items by minimum level efficiently."""
+    return [item for item in inventory if item.get("level", 0) >= min_level]
 
 
 def _compute_all(web_data=None):
