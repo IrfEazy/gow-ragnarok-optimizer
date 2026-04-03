@@ -276,3 +276,29 @@ def test_home_page_renders_stat_selector_ui(monkeypatch):
     assert "Luck" in html  # Luck stat label
     # Verify checkboxes exist
     assert "type=" in html and "checkbox" in html
+
+
+def test_home_page_includes_reset_stats_button(monkeypatch):
+    """RED: GET / should render a reset button for stat selector."""
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "chest_pieces": [],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+    _patch_runtime_store(monkeypatch, state)
+
+    app = web.create_app({"TESTING": True})
+    client = app.test_client()
+
+    response = client.get("/")
+    assert response.status_code == 200
+    html = response.data.decode()
+
+    # Check for reset button
+    assert "btn-reset-stats" in html
+    assert "Ripristina Predefiniti" in html
