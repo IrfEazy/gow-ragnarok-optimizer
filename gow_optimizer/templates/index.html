@@ -6,6 +6,11 @@
     <title>God of War Ragnarök — Build Optimizer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- AOS - Animate On Scroll -->
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
     <style>
         :root {
             --bg: #0b0d13;
@@ -454,6 +459,44 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ── Title Glow Animation ── */
+        @keyframes titleGlow {
+            0%, 100% { text-shadow: 0 0 40px rgba(200,164,78,.3); }
+            50% { text-shadow: 0 0 60px rgba(200,164,78,.5); }
+        }
+        .title-animate {
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        /* ── Hero Background ── */
+        .hero-background {
+            position: relative;
+            background: radial-gradient(ellipse at 50% 0%, rgba(200,164,78,.08), transparent 70%);
+        }
+        .hero-runes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            font-size: 4em;
+            opacity: .08;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            font-family: 'Cinzel', serif;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        /* ── Border Glow on Hover ── */
+        .section {
+            transition: border-color .3s, box-shadow .3s;
+        }
+        .section:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px rgba(200,164,78,.15);
+        }
+
         /* ── Toast ── */
         .toast {
             position: fixed;
@@ -493,31 +536,35 @@
 
 <div class="container">
 
-<header>
-    <h1>GOD OF WAR RAGNARÖK</h1>
-    <p>Build Optimizer — Analisi inventario e piano di upgrade ottimo</p>
+<header class="hero-background py-16">
+    <div class="hero-runes">⚔ ⚡ 🛡</div>
+    <h1 class="title-animate">GOD OF WAR RAGNARÖK</h1>
+    <p data-aos="fade-up" data-aos-delay="200">Build Optimizer — Analisi inventario e piano di upgrade ottimo</p>
+    <p data-aos="fade-up" data-aos-delay="400" style="font-size: 0.85em; color: var(--text3); margin-top: 8px;">
+        ⚔ Armour · Weapon · Stats ⚔
+    </p>
 </header>
 
 <!-- ═══ Summary ═══ -->
 <div class="summary-bar" id="summary-bar">
-    <div class="summary-card">
+    <div class="summary-card" data-aos="zoom-in" data-aos-delay="0">
         <div class="label">Armatura</div>
         <div class="value">{{ armor_total }}</div>
     </div>
-    <div class="summary-card">
+    <div class="summary-card" data-aos="zoom-in" data-aos-delay="100">
         <div class="label">Armi</div>
         <div class="value">{{ weapon_total }}</div>
     </div>
-    <div class="summary-card">
+    <div class="summary-card" data-aos="zoom-in" data-aos-delay="200">
         <div class="label">Grand Total</div>
         <div class="value">{{ grand_total }}</div>
     </div>
-    <div class="summary-card">
+    <div class="summary-card" data-aos="zoom-in" data-aos-delay="300">
         <div class="label">Hacksilver</div>
         <div class="value">{{ "{:,}".format(hacksilver) }}</div>
     </div>
     {% if opt_gain > 0 %}
-    <div class="summary-card">
+    <div class="summary-card" data-aos="zoom-in" data-aos-delay="400">
         <div class="label">Upgrade possibile</div>
         <div class="value green">+{{ opt_gain }}</div>
     </div>
@@ -525,7 +572,7 @@
 </div>
 
 <!-- ═══ Build Ottimale ═══ -->
-<div class="section">
+<div class="section" data-aos="fade-up" data-aos-delay="100">
     <div class="section-header" onclick="toggle(this)">
         <span>🛡 Build Ottimale</span>
         <span class="toggle">▼</span>
@@ -585,7 +632,7 @@
 </div>
 
 <!-- ═══ Classifica per Slot ═══ -->
-<div class="section collapsed">
+<div class="section collapsed" data-aos="fade-up" data-aos-delay="200">
     <div class="section-header" onclick="toggle(this)">
         <span>📊 Classifica per Slot</span>
         <span class="toggle">▼</span>
@@ -633,7 +680,7 @@
 </div>
 
 <!-- ═══ Pezzi da Craftare ═══ -->
-<div class="section collapsed" id="craft-section" {% if not (craft_armor or craft_weapons) %}style="display:none"{% endif %}>
+<div class="section collapsed" id="craft-section" {% if not (craft_armor or craft_weapons) %}style="display:none"{% endif %} data-aos="fade-up" data-aos-delay="300">
     <div class="section-header" onclick="toggle(this)">
         <span id="craft-header-text">⚠ Pezzi da Craftare ({{ craft_armor|length + craft_weapons|length }})</span>
         <span class="toggle">▼</span>
@@ -657,7 +704,7 @@
 </div>
 
 <!-- ═══ Risorse Disponibili ═══ -->
-<div class="section" id="resources-section">
+<div class="section" id="resources-section" data-aos="fade-up" data-aos-delay="400">
     <div class="section-header" onclick="toggle(this)">
         <span>💰 Risorse Disponibili</span>
         <span class="toggle">▼</span>
@@ -692,7 +739,7 @@
 </div>
 
 <!-- ═══ Frontiere di Pareto ═══ -->
-<div class="section collapsed">
+<div class="section collapsed" data-aos="fade-up" data-aos-delay="500">
     <div class="section-header" onclick="toggle(this)">
         <span>📈 Frontiere di Pareto</span>
         <span class="toggle">▼</span>
@@ -722,7 +769,7 @@
 </div>
 
 <!-- ═══ Piano Ottimo ═══ -->
-<div class="section">
+<div class="section" data-aos="fade-up" data-aos-delay="600">
     <div class="section-header" onclick="toggle(this)">
         <span>🎯 Piano Ottimo</span>
         <span class="toggle">▼</span>
@@ -767,7 +814,7 @@
 </div>
 
 <!-- ═══ Slot Bloccati ═══ -->
-<div class="section collapsed" id="blocked-section" {% if not blocked %}style="display:none"{% endif %}>
+<div class="section collapsed" id="blocked-section" {% if not blocked %}style="display:none"{% endif %} data-aos="fade-up" data-aos-delay="700">
     <div class="section-header" onclick="toggle(this)">
         <span id="blocked-header-text">🔒 Slot Bloccati ({{ blocked|length }})</span>
         <span class="toggle">▼</span>
@@ -788,7 +835,7 @@
 </div>
 
 <!-- ═══ Step-by-Step ═══ -->
-<div class="section">
+<div class="section" data-aos="fade-up" data-aos-delay="800">
     <div class="section-header" onclick="toggle(this)">
         <span>📋 Step-by-Step</span>
         <span class="toggle">▼</span>
@@ -1224,6 +1271,14 @@ setInterval(() => {
         refreshFromServerSilently();
     }
 }, 5000);
+
+// Initialize AOS (Animate On Scroll)
+AOS.init({
+    duration: 600,
+    easing: 'ease-out-quad',
+    once: true,
+    offset: 50
+});
 </script>
 </body>
 </html>
