@@ -128,6 +128,42 @@ def test_apply_upgrade_updates_inventory_and_resources(monkeypatch):
     assert state["chest_pieces"] == [{"name": "Test Armor", "level": 2, "craft": False}]
 
 
+def test_recalc_api_accepts_target_stats_parameter(monkeypatch):
+    """RED: /api/recalc should accept target_stats parameter for multi-objective."""
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "chest_pieces": [{"name": "Lunda's Lost Cuirass", "level": 5, "craft": False}],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+
+    def load():
+        return deepcopy(state)
+
+    def save(data):
+        state.clear()
+        state.update(deepcopy(data))
+
+    monkeypatch.setattr(web, "load_web_inventory", load)
+    monkeypatch.setattr(web, "save_web_inventory", save)
+
+    app = web.create_app({"TESTING": True})
+    client = app.test_client()
+
+    # Should accept target_stats in request body
+    response = client.post(
+        "/api/recalc",
+        json={"resource_budget": {"Hacksilver": 5000}, "target_stats": ["Strength", "Defense"]},
+    )
+
+    # For now, just verify the endpoint doesn't error (actual multi-objective logic comes later)
+    assert response.status_code == 200
+
+
 def test_apply_upgrade_rejects_invalid_upgrade_without_mutating_state(monkeypatch):
     state = {
         "resource_budget": {"Hacksilver": 100, "Forged Iron": 5},

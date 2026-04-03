@@ -811,8 +811,14 @@ def filter_inventory_by_level(inventory, min_level=1):
     return [item for item in inventory if item.get("level", 0) >= min_level]
 
 
-def _compute_all(web_data=None):
-    """Run the full pipeline. Uses web_inventory.yaml if no data given."""
+def _compute_all(web_data=None, target_stats=None):
+    """Run the full pipeline. Uses web_inventory.yaml if no data given.
+
+    Args:
+        web_data: Inventory and resource data. If None, loads from config.
+        target_stats: List of stats to optimize (subset of STAT_COLS).
+                     Defaults to all stats (backwards-compatible).
+    """
     st = _load_static()
     all_pieces_df = st["all_pieces_df"]
     all_weapons_df = st["all_weapons_df"]
@@ -953,13 +959,14 @@ def create_app(test_config=None) -> Flask:
 
     @app.route("/api/recalc", methods=["POST"])
     def api_recalc():
-        """Accept a modified resource budget and return the recomputed data."""
+        """Accept a modified resource budget and optional target stats for multi-objective optimization."""
         payload = request.get_json(force=True)
         budget = payload.get("resource_budget")
+        target_stats = payload.get("target_stats")
         web_data = load_web_inventory()
         if budget:
             web_data["resource_budget"] = coerce_resource_budget(budget)
-        data = _compute_all(web_data=web_data)
+        data = _compute_all(web_data=web_data, target_stats=target_stats)
         return jsonify(data)
 
     @app.route("/api/save-inventory", methods=["POST"])
