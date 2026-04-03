@@ -703,6 +703,32 @@
     </div>
 </div>
 
+<!-- ═══ Build Actions Toolbar ═══ -->
+<div class="section" data-aos="fade-up" data-aos-delay="350">
+    <div class="section-header" style="cursor: default;">
+        <span>🛠 Azioni Build</span>
+    </div>
+    <div class="section-body">
+        <div class="toolbar">
+            <button class="btn btn-secondary" id="btn-export" onclick="exportBuild()">
+                📥 Esporta Build
+            </button>
+            <button class="btn btn-secondary" id="btn-import" onclick="importBuild()">
+                📤 Importa Build
+            </button>
+            <button class="btn btn-secondary" id="btn-share" onclick="shareBuild()">
+                🔗 Condividi Build
+            </button>
+            <button class="btn btn-secondary" id="btn-save-slot" onclick="saveBuildSlot()">
+                💾 Salva Build
+            </button>
+            <button class="btn btn-secondary" id="btn-load-slot" onclick="loadBuildSlot()">
+                📂 I Miei Build
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- ═══ Risorse Disponibili ═══ -->
 <div class="section" id="resources-section" data-aos="fade-up" data-aos-delay="400">
     <div class="section-header" onclick="toggle(this)">
@@ -1012,6 +1038,269 @@ async function applyUpgrade(btn, hack, mats, label, slot) {
         toast('Errore: ' + e.message, 'error');
         btn.disabled = false;
         btn.textContent = '✓ Fatto';
+    } finally {
+        showLoading(false);
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   Export / Import / Share / Build Slots
+   ═══════════════════════════════════════════════════════════ */
+
+async function exportBuild() {
+    showLoading(true);
+    try {
+        const resp = await fetch('/api/export-build', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({})
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+
+        // Create download link
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gow-build-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast('Build esportato con successo', 'success');
+    } catch(e) {
+        toast('Errore durante export: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function importBuild() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            showLoading(true);
+            try {
+                const imported = JSON.parse(ev.target.result);
+                const resp = await fetch('/api/import-build', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(imported)
+                });
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const d = await resp.json();
+                updateAllSections(d);
+                toast('Build importato e applicato', 'success');
+            } catch(e) {
+                toast('Errore durante import: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+async function shareBuild() {
+    showLoading(true);
+    try {
+        const resp = await fetch('/api/share-build', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({})
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+
+        // Create modal to display shareable URL
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:2000;';
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'btn btn-primary';
+        copyBtn.style.cssText = 'width:100%;margin-bottom:8px;';
+        copyBtn.textContent = '📋 Copia Link';
+        copyBtn.dataset.url = data.url;
+        copyBtn.onclick = function() {
+            navigator.clipboard.writeText(this.dataset.url);
+            this.textContent = '✓ Copiato!';
+            setTimeout(() => { this.textContent = '📋 Copia Link'; }, 2000);
+        };
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'btn btn-secondary';
+        closeBtn.style.width = '100%';
+        closeBtn.textContent = '✕ Chiudi';
+        closeBtn.onclick = function() { modal.remove(); };
+
+        const content = document.createElement('div');
+        content.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:500px;color:var(--text);';
+
+        const title = document.createElement('h3');
+        title.style.cssText = 'color:var(--accent2);margin-bottom:16px;font-family:Cinzel;';
+        title.textContent = '🔗 Condividi Build';
+
+        const desc = document.createElement('p');
+        desc.style.cssText = 'color:var(--text2);margin-bottom:16px;font-size:0.9em;';
+        desc.textContent = 'Usa questo link per condividere il tuo build:';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.readOnly = true;
+        input.value = data.url;
+        input.style.cssText = 'width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.85em;margin-bottom:16px;font-family:monospace;';
+
+        content.appendChild(title);
+        content.appendChild(desc);
+        content.appendChild(input);
+        content.appendChild(copyBtn);
+        content.appendChild(closeBtn);
+
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+        toast('Link di condivisione generato', 'success');
+    } catch(e) {
+        toast('Errore durante share: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function saveBuildSlot() {
+    const name = prompt('Nome del build:');
+    if (!name || !name.trim()) return;
+
+    showLoading(true);
+    try {
+        const resp = await fetch('/api/build-slots', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ action: 'create', name: name.trim() })
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        toast(`Build "${name}" salvato con successo`, 'success');
+    } catch(e) {
+        toast('Errore durante salvataggio: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function loadBuildSlot() {
+    showLoading(true);
+    try {
+        const resp = await fetch('/api/build-slots', {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'}
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+
+        if (!data.slots || data.slots.length === 0) {
+            toast('Nessun build salvato', 'error');
+            showLoading(false);
+            return;
+        }
+
+        // Create modal with slot list
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:2000;';
+
+        let slotHtml = `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:400px;color:var(--text);max-height:70vh;overflow-y:auto;">
+                <h3 style="color:var(--accent2);margin-bottom:16px;font-family:Cinzel;">📂 I Miei Build</h3>
+        `;
+
+        data.slots.forEach(slot => {
+            slotHtml += `
+                <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+                    <span>${escAttr(slot.name)}</span>
+                    <div style="display:flex;gap:6px;">
+                        <button class="btn btn-success slot-load-btn" style="padding:4px 10px;font-size:0.8em;" data-slot-name="${escAttr(slot.name)}" data-modal="true">Carica</button>
+                        <button class="btn btn-secondary slot-delete-btn" style="padding:4px 10px;font-size:0.8em;background:var(--red-dim);color:var(--red);border-color:var(--red);" data-slot-name="${escAttr(slot.name)}" data-modal="true">Elimina</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Attach event listeners to slot buttons
+        setTimeout(() => {
+            document.querySelectorAll('.slot-load-btn').forEach(btn => {
+                btn.onclick = function() { loadSlot(this.dataset.slotName); };
+            });
+            document.querySelectorAll('.slot-delete-btn').forEach(btn => {
+                btn.onclick = function() { deleteSlot(this.dataset.slotName); };
+            });
+        }, 0);
+
+        slotHtml += `
+                <button class="btn btn-secondary" style="width:100%;margin-top:16px;" onclick="this.closest('[data-modal-wrapper]').remove()">✕ Chiudi</button>
+            </div>
+        `;
+
+        modal.innerHTML = slotHtml;
+        modal.setAttribute('data-modal-wrapper', 'true');
+        document.body.appendChild(modal);
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+    } catch(e) {
+        toast('Errore durante caricamento slot: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function loadSlot(name) {
+    showLoading(true);
+    try {
+        const resp = await fetch('/api/build-slots', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ action: 'load', name })
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const d = await resp.json();
+        updateAllSections(d);
+        document.querySelector('[data-modal-wrapper]')?.remove();
+        toast(`Build "${name}" caricato`, 'success');
+    } catch(e) {
+        toast('Errore durante caricamento: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function deleteSlot(name) {
+    if (!confirm(`Eliminare il build "${name}"?`)) return;
+
+    showLoading(true);
+    try {
+        const resp = await fetch('/api/build-slots', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ action: 'delete', name })
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+        // Reload slot list
+        document.querySelector('[data-modal-wrapper]')?.remove();
+        toast(`Build "${name}" eliminato`, 'success');
+        loadBuildSlot();
+    } catch(e) {
+        toast('Errore durante eliminazione: ' + e.message, 'error');
     } finally {
         showLoading(false);
     }
