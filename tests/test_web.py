@@ -424,6 +424,64 @@ def test_score_fn_affects_pareto_frontier(monkeypatch):
     )
 
 
+def test_build_rankings_respects_target_stats(monkeypatch):
+    """RED: Rankings should be sorted by target_stats, not Total Stats."""
+    from gow_optimizer.web import _build_rankings
+    import pandas as pd
+
+    # Two chest items with different stat profiles
+    items = [
+        pd.Series({
+            "Piece Type": "Chest",
+            "Piece Name": "High Defense Item",
+            "Item Name": "High Defense Item",
+            "Item Level": 5,
+            "Level": 5,
+            "Total Stats": 35,
+            "Defense": 30,
+            "Strength": 5,
+            "Runic": 0,
+            "Vitality": 0,
+            "Cooldown": 0,
+            "Luck": 0,
+        }),
+        pd.Series({
+            "Piece Type": "Chest",
+            "Piece Name": "Balanced Item",
+            "Item Name": "Balanced Item",
+            "Item Level": 5,
+            "Level": 5,
+            "Total Stats": 60,
+            "Defense": 15,
+            "Strength": 15,
+            "Runic": 10,
+            "Vitality": 10,
+            "Cooldown": 5,
+            "Luck": 5,
+        }),
+    ]
+
+    # Test 1: Rankings sorted by Defense (target_stats=["Defense"])
+    # Currently _build_rankings doesn't accept target_stats, so this test will fail
+    # This is what we want to implement
+    rankings = _build_rankings(items, "Piece Type", ["Chest"], target_stats=["Defense"])
+
+    # With Defense-only ranking:
+    # High Defense Item (30 Def) should rank #1
+    # Balanced Item (15 Def) should rank #2
+    assert rankings["Chest"][0]["name"] == "High Defense Item"
+    assert rankings["Chest"][1]["name"] == "Balanced Item"
+
+    # Test 2: Rankings sorted by Total Stats (target_stats=None)
+    rankings_totals = _build_rankings(items, "Piece Type", ["Chest"], target_stats=None)
+
+    # With Total Stats ranking:
+    # Balanced Item (60 total) should rank #1
+    # High Defense Item (35 total) should rank #2
+    assert rankings_totals["Chest"][0]["name"] == "Balanced Item"
+    assert rankings_totals["Chest"][1]["name"] == "High Defense Item"
+
+
 def test_collect_current_build_respects_preference_baseline(monkeypatch):
     """RED: collect_current_build should use target_stats to select best item per slot.
 

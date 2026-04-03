@@ -88,9 +88,14 @@ def _build_inventory_from_web(web_data):
 
 
 def _serialize_best_item(record):
+    # Handle rows from CSV data (use "Piece Name") or processed rows (use "Item Name")
+    name_col = ITEM_NAME_COL if ITEM_NAME_COL in record else "Piece Name"
+    name_col = name_col if name_col in record else "Weapon Name"  # For weapons
+    level_col = ITEM_LEVEL_COL if ITEM_LEVEL_COL in record else "Level"
+
     return {
-        "name": record[ITEM_NAME_COL],
-        "level": int(record[ITEM_LEVEL_COL]),
+        "name": record[name_col],
+        "level": int(record[level_col]),
         "total": int(record[TOTAL_STATS_COL]),
         "stats": {
             stat: int(record.get(stat, 0))
@@ -130,15 +135,34 @@ def _build_best_weapons(weapon_current):
     return best_weapons, weapon_total
 
 
-def _build_rankings(items, group_key, values):
+def _build_rankings(items, group_key, values, target_stats=None):
+    """Build rankings of items per group, sorted by target_stats or Total Stats.
+
+    Args:
+        items: List of item rows (pandas Series)
+        group_key: Column to group by (e.g., "Piece Type")
+        values: Values of group_key to include (e.g., ["Chest", "Wrist"])
+        target_stats: Optional list of stats to sort by. If None, uses Total Stats.
+    """
     rankings = {}
     for value in values:
-        grouped_items = sorted(
-            [row for row in items if row[group_key] == value],
-            key=lambda row: row[TOTAL_STATS_COL],
-            reverse=True,
-        )
-        rankings[value] = [_serialize_best_item(row) for row in grouped_items]
+        grouped_items = [row for row in items if row[group_key] == value]
+
+        # Sort by target_stats (sum of selected stats) or Total Stats
+        if target_stats:
+            sorted_items = sorted(
+                grouped_items,
+                key=lambda row: sum(row.get(s, 0) for s in target_stats),
+                reverse=True,
+            )
+        else:
+            sorted_items = sorted(
+                grouped_items,
+                key=lambda row: row[TOTAL_STATS_COL],
+                reverse=True,
+            )
+
+        rankings[value] = [_serialize_best_item(row) for row in sorted_items]
     return rankings
 
 
@@ -846,11 +870,19 @@ def _compute_all(web_data=None, target_stats=None):
     best_weapons, weapon_total = _build_best_weapons(weapon_current)
     grand_total = armor_total + weapon_total
 
-    rankings_armor = _build_rankings(armor_current, PIECE_TYPE_COL, ARMOR_TYPES)
+    # Build rankings from all available items (not just current build),
+    # sorted by target_stats if provided, otherwise by Total Stats
+    rankings_armor = _build_rankings(
+        [row for _, row in available_df.iterrows()],
+        PIECE_TYPE_COL,
+        ARMOR_TYPES,
+        target_stats=target_stats,
+    )
     rankings_weapons = _build_rankings(
-        weapon_current,
+        [row for _, row in w_available_df.iterrows()],
         CATEGORY_COL,
         WEAPON_CATEGORIES,
+        target_stats=target_stats,
     )
 
     craft_armor = [(n, l, pt) for n, l, pt, c in inventory if c]
