@@ -27,6 +27,7 @@ from gow_optimizer.optimizer import (
     build_weapon_available_df,
     collect_current_build,
     get_available,
+    make_score_fn,
     normalize_mat,
     parse_inventory_from_config,
     solve_with_resources,
@@ -852,6 +853,32 @@ def _compute_all(web_data=None, target_stats=None):
     craft_armor = [(n, l, pt) for n, l, pt, c in inventory if c]
     craft_weapons = [(n, l, cat) for n, l, cat, c in w_inventory if c]
 
+    # Build score_fns dict for multi-objective optimization if target_stats provided
+    score_fns = None
+    if target_stats:
+        score_fns = {}
+        # Compute per-stat baseline for each armor slot
+        for pt in ARMOR_TYPES:
+            slot_label = f"Armatura — {pt}"
+            baseline = {col: 0 for col in STAT_COLS}
+            for item in armor_current:
+                if f"Armatura — {pt}" in item.get("Slot", ""):
+                    for col in STAT_COLS:
+                        baseline[col] = item.get(col, 0)
+                    break
+            score_fns[slot_label] = make_score_fn(target_stats, baseline)
+
+        # Compute per-stat baseline for each weapon slot
+        for cat in WEAPON_CATEGORIES_WITH_UPGRADES:
+            slot_label = f"Arma — {cat}"
+            baseline = {col: 0 for col in STAT_COLS}
+            for item in weapon_current:
+                if f"Arma — {cat}" in item.get("Slot", ""):
+                    for col in STAT_COLS:
+                        baseline[col] = item.get(col, 0)
+                    break
+            score_fns[slot_label] = make_score_fn(target_stats, baseline)
+
     slot_pareto = build_all_pareto(
         inventory,
         w_inventory,
@@ -859,6 +886,7 @@ def _compute_all(web_data=None, target_stats=None):
         all_weapons_df,
         resource_budget,
         mat_aliases,
+        score_fns=score_fns,
     )
     pareto_data = _build_pareto_data(slot_pareto)
     optimal_plan = _build_optimal_plan_data(
