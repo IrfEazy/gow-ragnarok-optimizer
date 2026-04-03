@@ -28,5 +28,5 @@ jobs:
       - name: Run test suite
         run: uv run pytest
 
-      - name: Smoke test CLI
-        run: uv run gow-cli
+      - name: Smoke test web UI import
+        run: uv run python -c "from gow_optimizer.web import app; print('Web app imported successfully')"
