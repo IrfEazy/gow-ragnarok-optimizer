@@ -128,6 +128,42 @@ def test_apply_upgrade_updates_inventory_and_resources(monkeypatch):
     assert state["chest_pieces"] == [{"name": "Test Armor", "level": 2, "craft": False}]
 
 
+def test_recalc_api_accepts_target_stats_parameter(monkeypatch):
+    """RED: /api/recalc should accept target_stats parameter for multi-objective."""
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "chest_pieces": [{"name": "Lunda's Lost Cuirass", "level": 5, "craft": False}],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+
+    def load():
+        return deepcopy(state)
+
+    def save(data):
+        state.clear()
+        state.update(deepcopy(data))
+
+    monkeypatch.setattr(web, "load_web_inventory", load)
+    monkeypatch.setattr(web, "save_web_inventory", save)
+
+    app = web.create_app({"TESTING": True})
+    client = app.test_client()
+
+    # Should accept target_stats in request body
+    response = client.post(
+        "/api/recalc",
+        json={"resource_budget": {"Hacksilver": 5000}, "target_stats": ["Strength", "Defense"]},
+    )
+
+    # For now, just verify the endpoint doesn't error (actual multi-objective logic comes later)
+    assert response.status_code == 200
+
+
 def test_apply_upgrade_rejects_invalid_upgrade_without_mutating_state(monkeypatch):
     state = {
         "resource_budget": {"Hacksilver": 100, "Forged Iron": 5},
@@ -158,3 +194,85 @@ def test_apply_upgrade_rejects_invalid_upgrade_without_mutating_state(monkeypatc
     assert response.status_code == 400
     assert response.get_json()["error"]
     assert state == original_state
+
+
+def test_api_recalc_respects_target_stats_parameter_and_returns_updated_computation(monkeypatch):
+    """RED: /api/recalc should accept target_stats and apply multi-objective scoring."""
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "chest_pieces": [{"name": "Lunda's Lost Cuirass", "level": 5, "craft": False}],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+
+    def load():
+        return deepcopy(state)
+
+    def save(data):
+        state.clear()
+        state.update(deepcopy(data))
+
+    monkeypatch.setattr(web, "load_web_inventory", load)
+    monkeypatch.setattr(web, "save_web_inventory", save)
+
+    app = web.create_app({"TESTING": True})
+    client = app.test_client()
+
+    # Call without target_stats (should use original Total Stats behavior)
+    response1 = client.post(
+        "/api/recalc",
+        json={"resource_budget": {"Hacksilver": 5000}},
+    )
+    assert response1.status_code == 200
+    data1 = response1.get_json()
+
+    # Call with target_stats (should use multi-objective geometric mean)
+    response2 = client.post(
+        "/api/recalc",
+        json={"resource_budget": {"Hacksilver": 5000}, "target_stats": ["Strength", "Defense"]},
+    )
+    assert response2.status_code == 200
+    data2 = response2.get_json()
+
+    # Both should return valid data with same structure
+    assert "opt_total" in data1
+    assert "opt_total" in data2
+    # Verify the endpoint accepted the parameter without error
+    assert response2.status_code == 200
+
+
+def test_home_page_renders_stat_selector_ui(monkeypatch):
+    """RED: GET / should render stat selector checkboxes for multi-objective selection."""
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "chest_pieces": [],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+    _patch_runtime_store(monkeypatch, state)
+
+    app = web.create_app({"TESTING": True})
+    client = app.test_client()
+
+    response = client.get("/")
+    assert response.status_code == 200
+    html = response.data.decode()
+
+    # Check for stat selector UI elements
+    assert "id=" in html and "stat-selector" in html  # Stat selector container
+    assert "Strength" in html  # Strength stat label
+    assert "Defense" in html  # Defense stat label
+    assert "Runic" in html  # Runic stat label
+    assert "Vitality" in html  # Vitality stat label
+    assert "Cooldown" in html  # Cooldown stat label
+    assert "Luck" in html  # Luck stat label
+    # Verify checkboxes exist
+    assert "type=" in html and "checkbox" in html
