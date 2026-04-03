@@ -832,11 +832,28 @@ def _compute_all(web_data=None, target_stats=None):
     inventory, w_inventory = _build_inventory_from_web(web_data)
     available_df = build_available_df(all_pieces_df, inventory)
     w_available_df = build_weapon_available_df(all_weapons_df, w_inventory)
+
+    # Build score_fns dict for selecting current build if target_stats provided.
+    # Use neutral baseline (zeros) so collect_current_build can select best item per slot
+    # using user preferences, not Total Stats.
+    current_build_score_fns = None
+    if target_stats:
+        current_build_score_fns = {}
+        neutral_baseline = {col: 0 for col in STAT_COLS}
+        for pt in ARMOR_TYPES:
+            slot_label = f"Armatura — {pt}"
+            current_build_score_fns[slot_label] = make_score_fn(target_stats, neutral_baseline)
+
+        for cat in ["Leviathan Axe", "Blades of Chaos", "Draupnir Spear", "Shield"]:
+            slot_label = f"Arma — {cat}"
+            current_build_score_fns[slot_label] = make_score_fn(target_stats, neutral_baseline)
+
     armor_current, weapon_current = collect_current_build(
         inventory,
         available_df,
         w_inventory,
         w_available_df,
+        score_fns=current_build_score_fns,
     )
 
     best_armor, armor_total = _build_best_armor(armor_current)
@@ -853,11 +870,11 @@ def _compute_all(web_data=None, target_stats=None):
     craft_armor = [(n, l, pt) for n, l, pt, c in inventory if c]
     craft_weapons = [(n, l, cat) for n, l, cat, c in w_inventory if c]
 
-    # Build score_fns dict for multi-objective optimization if target_stats provided
+    # Build score_fns dict for upgrade optimization using actual current build as baseline
     score_fns = None
     if target_stats:
         score_fns = {}
-        # Compute per-stat baseline for each armor slot
+        # Compute per-stat baseline for each armor slot (from current build)
         for pt in ARMOR_TYPES:
             slot_label = f"Armatura — {pt}"
             baseline = {col: 0 for col in STAT_COLS}
@@ -868,7 +885,7 @@ def _compute_all(web_data=None, target_stats=None):
                     break
             score_fns[slot_label] = make_score_fn(target_stats, baseline)
 
-        # Compute per-stat baseline for each weapon slot
+        # Compute per-stat baseline for each weapon slot (from current build)
         for cat in WEAPON_CATEGORIES_WITH_UPGRADES:
             slot_label = f"Arma — {cat}"
             baseline = {col: 0 for col in STAT_COLS}

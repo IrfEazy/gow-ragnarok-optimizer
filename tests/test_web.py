@@ -422,3 +422,86 @@ def test_score_fn_affects_pareto_frontier(monkeypatch):
         f"Both items have same Total Stats, should score equally. "
         f"Item1: {scores_totals[0]}, Item2: {scores_totals[1]}"
     )
+
+
+def test_collect_current_build_respects_score_fn(monkeypatch):
+    """RED: collect_current_build should use score_fn to select best item per slot.
+
+    Scenario:
+    - Chest inventory: Item A (70 total: 30 Str + 30 Def + 10 Cool) and Item B (35 total: 35 Str)
+    - With Strength-only scoring: Item B should be selected (score 36 > Item A score 31)
+    - With Total Stats scoring: Item A should be selected (score 70 > Item B score 35)
+    """
+    from gow_optimizer.optimizer import collect_current_build, make_score_fn
+    from gow_optimizer.scraper import STAT_COLS
+    import pandas as pd
+
+    # Create mock CSV data
+    chest_data = [
+        {
+            "Piece Name": "Chest A",
+            "Piece Type": "Chest",
+            "Level": 5,
+            "Total Stats": 70,
+            "Strength": 30,
+            "Defense": 30,
+            "Runic": 5,
+            "Vitality": 3,
+            "Cooldown": 1,
+            "Luck": 1,
+        },
+        {
+            "Piece Name": "Chest B",
+            "Piece Type": "Chest",
+            "Level": 5,
+            "Total Stats": 35,
+            "Strength": 35,
+            "Defense": 0,
+            "Runic": 0,
+            "Vitality": 0,
+            "Cooldown": 0,
+            "Luck": 0,
+        },
+    ]
+    all_pieces_df = pd.DataFrame(chest_data)
+
+    # Inventory: own both items at level 5
+    inventory = [
+        ("Chest A", 5, "Chest", False),
+        ("Chest B", 5, "Chest", False),
+    ]
+
+    # Baseline (current armor stats — starting with no armor)
+    baseline = {
+        "Strength": 0,
+        "Defense": 0,
+        "Runic": 0,
+        "Vitality": 0,
+        "Cooldown": 0,
+        "Luck": 0,
+    }
+
+    # Test 1: With Strength-only scoring
+    score_fn_strength = make_score_fn(["Strength"], baseline)
+    current_strength, _ = collect_current_build(
+        inventory, all_pieces_df, [], pd.DataFrame(), score_fns={"Armatura — Chest": score_fn_strength}
+    )
+
+    # Should select Chest B (higher Strength gain)
+    assert len(current_strength) == 1
+    assert current_strength[0]["Item Name"] == "Chest B", (
+        f"Strength-only scoring should select Chest B (35 Str), "
+        f"but selected {current_strength[0]['Item Name']}"
+    )
+
+    # Test 2: With Total Stats scoring (no score_fns)
+    current_totals, _ = collect_current_build(
+        inventory, all_pieces_df, [], pd.DataFrame(), score_fns=None
+    )
+
+    # Should select Chest A (higher total stats)
+    assert len(current_totals) == 1
+    assert current_totals[0]["Item Name"] == "Chest A", (
+        f"Total Stats scoring should select Chest A (70 total), "
+        f"but selected {current_totals[0]['Item Name']}"
+    )

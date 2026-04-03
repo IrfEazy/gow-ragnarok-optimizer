@@ -108,40 +108,103 @@ def build_weapon_available_df(all_weapons_df, w_inventory):
 # ─── Build attuale ──────────────────────────────────────────
 
 
-def collect_current_build(inventory, available_df, w_inventory, w_available_df):
-    """Restituisce (armor_current, weapon_current) — liste di Series pandas."""
-    inv_lookup = {(name, pt): (lvl, craft) for name, lvl, pt, craft in inventory}
+def collect_current_build(inventory, available_df, w_inventory, w_available_df, score_fns=None):
+    """Restituisce (armor_current, weapon_current) — liste di Series pandas.
+
+    If score_fns dict is provided (keyed by slot_label), selects best item per slot
+    using the corresponding score_fn instead of just returning the highest-level item owned.
+
+    Args:
+        score_fns: Optional dict mapping slot_label (e.g., "Armatura — Chest") to score_fn.
+    """
     armor_current = []
-    for (piece_name, piece_type), (max_lvl, needs_craft) in inv_lookup.items():
-        if needs_craft:
-            continue
-        row = available_df[
-            (available_df["Piece Name"] == piece_name)
-            & (available_df["Piece Type"] == piece_type)
-            & (available_df["Level"] == max_lvl)
+    for pt in ["Chest", "Wrist", "Waist"]:
+        # Collect all items in inventory for this piece type
+        items_in_slot = [
+            (name, lvl, craft)
+            for name, lvl, t, craft in inventory
+            if t == pt and not craft
         ]
-        if not row.empty:
-            r = row.iloc[0].copy()
-            r["Slot"] = f"Armatura — {piece_type}"
-            r["Item Name"] = piece_name
-            r["Item Level"] = max_lvl
+
+        if not items_in_slot:
+            continue
+
+        # Find best item using score_fn if provided
+        best_item = None
+        best_score = -1
+        slot_label = f"Armatura — {pt}"
+        score_fn = (score_fns or {}).get(slot_label)
+
+        for name, lvl, _ in items_in_slot:
+            row = available_df[
+                (available_df["Piece Name"] == name)
+                & (available_df["Piece Type"] == pt)
+                & (available_df["Level"] == lvl)
+            ]
+            if row.empty:
+                continue
+
+            per_stat = {col: row.iloc[0].get(col, 0) for col in STAT_COLS}
+
+            if score_fn is not None:
+                score = score_fn(per_stat)
+            else:
+                score = row.iloc[0]["Total Stats"]
+
+            if score > best_score:
+                best_score = score
+                best_item = (row.iloc[0].copy(), name, lvl)
+
+        if best_item:
+            r, name, lvl = best_item
+            r["Slot"] = slot_label
+            r["Item Name"] = name
+            r["Item Level"] = lvl
             armor_current.append(r)
 
-    w_inv_lookup = {(name, cat): (lvl, craft) for name, lvl, cat, craft in w_inventory}
     weapon_current = []
-    for (wname, cat), (max_lvl, needs_craft) in w_inv_lookup.items():
-        if needs_craft:
-            continue
-        row = w_available_df[
-            (w_available_df["Weapon Name"] == wname)
-            & (w_available_df["Category"] == cat)
-            & (w_available_df["Level"] == max_lvl)
+    for cat in ["Leviathan Axe", "Blades of Chaos", "Draupnir Spear", "Shield"]:
+        # Collect all items in inventory for this weapon category
+        items_in_slot = [
+            (name, lvl, craft)
+            for name, lvl, c, craft in w_inventory
+            if c == cat and not craft
         ]
-        if not row.empty:
-            r = row.iloc[0].copy()
-            r["Slot"] = f"Arma — {cat}"
-            r["Item Name"] = wname
-            r["Item Level"] = max_lvl
+
+        if not items_in_slot:
+            continue
+
+        # Find best item using score_fn if provided
+        best_item = None
+        best_score = -1
+        slot_label = f"Arma — {cat}"
+        score_fn = (score_fns or {}).get(slot_label)
+
+        for name, lvl, _ in items_in_slot:
+            row = w_available_df[
+                (w_available_df["Weapon Name"] == name)
+                & (w_available_df["Category"] == cat)
+                & (w_available_df["Level"] == lvl)
+            ]
+            if row.empty:
+                continue
+
+            per_stat = {col: row.iloc[0].get(col, 0) for col in STAT_COLS}
+
+            if score_fn is not None:
+                score = score_fn(per_stat)
+            else:
+                score = row.iloc[0]["Total Stats"]
+
+            if score > best_score:
+                best_score = score
+                best_item = (row.iloc[0].copy(), name, lvl)
+
+        if best_item:
+            r, name, lvl = best_item
+            r["Slot"] = slot_label
+            r["Item Name"] = name
+            r["Item Level"] = lvl
             weapon_current.append(r)
 
     return armor_current, weapon_current
