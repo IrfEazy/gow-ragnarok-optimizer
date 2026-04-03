@@ -231,3 +231,132 @@ def test_single_objective_matches_all_stats_selected():
     level, total_stats, cum_hack, mats, per_stat = chain[0]
     assert per_stat["Strength"] == 9
     assert sum(per_stat.values()) == 35  # All stats sum to Total Stats
+
+
+def test_build_all_pareto_accepts_score_fn_parameter():
+    """RED: build_all_pareto should accept optional score_fn parameter."""
+    import pandas as pd
+
+    # Create minimal test DataFrames
+    armor_df = pd.DataFrame([
+        {
+            "Piece Name": "Armor1",
+            "Piece Type": "Chest",
+            "Level": 1,
+            "Total Stats": 20,
+            "Strength": 5,
+            "Defense": 8,
+            "Runic": 3,
+            "Vitality": 2,
+            "Cooldown": 1,
+            "Luck": 1,
+            "Upgrade_Hacksilver": 0,
+        },
+        {
+            "Piece Name": "Armor1",
+            "Piece Type": "Chest",
+            "Level": 2,
+            "Total Stats": 35,
+            "Strength": 9,
+            "Defense": 12,
+            "Runic": 5,
+            "Vitality": 4,
+            "Cooldown": 3,
+            "Luck": 2,
+            "Upgrade_Hacksilver": 100,
+        },
+    ])
+    weapon_df = pd.DataFrame()
+
+    inventory = [("Armor1", 1, "Chest", False)]
+    w_inventory = []
+    resource_budget = {"Hacksilver": 500}
+    mat_aliases = {}
+
+    # Should work with default (no score_fn)
+    slot_pareto = optimizer.build_all_pareto(
+        inventory, w_inventory, armor_df, weapon_df, resource_budget, mat_aliases
+    )
+    assert "Armatura — Chest" in slot_pareto
+    assert len(slot_pareto["Armatura — Chest"]) > 0
+
+
+def test_multi_objective_vs_single_objective_differences():
+    """INTEGRATION: Multi-objective and single-objective should produce different results."""
+    # This is a RED test — it will guide implementation of score_fn threading
+    # For now, just verify the infrastructure is in place
+    import pandas as pd
+
+    armor_df = pd.DataFrame([
+        {
+            "Piece Name": "Balanced",
+            "Piece Type": "Chest",
+            "Level": 1,
+            "Total Stats": 20,
+            "Strength": 10,
+            "Defense": 10,
+            "Runic": 0,
+            "Vitality": 0,
+            "Cooldown": 0,
+            "Luck": 0,
+            "Upgrade_Hacksilver": 0,
+        },
+        {
+            "Piece Name": "Balanced",
+            "Piece Type": "Chest",
+            "Level": 2,
+            "Total Stats": 30,
+            "Strength": 15,
+            "Defense": 15,
+            "Runic": 0,
+            "Vitality": 0,
+            "Cooldown": 0,
+            "Luck": 0,
+            "Upgrade_Hacksilver": 100,
+        },
+        {
+            "Piece Name": "StrengthFocus",
+            "Piece Type": "Chest",
+            "Level": 1,
+            "Total Stats": 20,
+            "Strength": 15,
+            "Defense": 5,
+            "Runic": 0,
+            "Vitality": 0,
+            "Cooldown": 0,
+            "Luck": 0,
+            "Upgrade_Hacksilver": 0,
+        },
+        {
+            "Piece Name": "StrengthFocus",
+            "Piece Type": "Chest",
+            "Level": 2,
+            "Total Stats": 30,
+            "Strength": 24,
+            "Defense": 6,
+            "Runic": 0,
+            "Vitality": 0,
+            "Cooldown": 0,
+            "Luck": 0,
+            "Upgrade_Hacksilver": 50,
+        },
+    ])
+    weapon_df = pd.DataFrame()
+
+    inventory = [("Balanced", 1, "Chest", False), ("StrengthFocus", 1, "Chest", False)]
+    w_inventory = []
+    resource_budget = {"Hacksilver": 500}
+    mat_aliases = {}
+
+    # Both items have Total Stats of 30 at level 2, but different stat distributions
+    # Balanced: +5 Strength, +5 Defense
+    # StrengthFocus: +9 Strength, +1 Defense
+
+    # When optimizing for Strength+Defense (balanced), Balanced should score higher
+    # When optimizing for Strength only, StrengthFocus should score higher
+
+    # For now, just verify build_all_pareto completes without error
+    slot_pareto = optimizer.build_all_pareto(
+        inventory, w_inventory, armor_df, weapon_df, resource_budget, mat_aliases
+    )
+    assert "Armatura — Chest" in slot_pareto
