@@ -337,6 +337,79 @@ def scrape_and_save(armor_csv, weapons_csv) -> Any:
     return all_pieces_df, all_weapons_df
 
 
+def extract_all_pieces() -> dict[str, list[tuple[str, float]]]:
+    """Extract all unique pieces from CSVs with their minimum levels.
+
+    Returns:
+        Dict mapping slot_key to list of (piece_name, min_level) tuples.
+        Example: {
+            "chest_pieces": [("Piece 1", 1.0), ("Piece 2", 3.0), ...],
+            "wrist_pieces": [(...), ...],
+            ...
+        }
+    """
+    from gow_optimizer.config import SLOT_TO_KEY
+    from gow_optimizer.paths import DATA_DIR
+
+    armor_csv = DATA_DIR / "all_pieces.csv"
+    weapons_csv = DATA_DIR / "all_weapons.csv"
+
+    result = {
+        "chest_pieces": [],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+
+    # Load armor pieces
+    if armor_csv.exists():
+        armor_df = pd.read_csv(armor_csv)
+        armor_df["Level"] = pd.to_numeric(armor_df["Level"], errors="coerce")
+
+        # Map armor piece types to slot keys
+        type_to_slot = {
+            "Chest": "chest_pieces",
+            "Wrist": "wrist_pieces",
+            "Waist": "waist_pieces",
+        }
+
+        for piece_type, slot_key in type_to_slot.items():
+            pieces = armor_df[armor_df["Piece Type"] == piece_type]
+            # Group by piece name and get minimum level for each
+            min_levels = pieces.groupby("Piece Name")["Level"].min()
+            result[slot_key] = sorted(
+                [(name, float(level)) for name, level in min_levels.items()],
+                key=lambda x: x[0],  # Sort by name alphabetically
+            )
+
+    # Load weapon attachments
+    if weapons_csv.exists():
+        weapons_df = pd.read_csv(weapons_csv)
+        weapons_df["Level"] = pd.to_numeric(weapons_df["Level"], errors="coerce")
+
+        # Map weapon categories to slot keys
+        category_to_slot = {
+            "Leviathan Axe": "axe_attachments",
+            "Blades of Chaos": "blades_attachments",
+            "Draupnir Spear": "spear_attachments",
+            "Shield": "shield_attachments",
+        }
+
+        for category, slot_key in category_to_slot.items():
+            weapons = weapons_df[weapons_df["Category"] == category]
+            # Group by weapon name and get minimum level for each
+            min_levels = weapons.groupby("Weapon Name")["Level"].min()
+            result[slot_key] = sorted(
+                [(name, float(level)) for name, level in min_levels.items()],
+                key=lambda x: x[0],  # Sort by name alphabetically
+            )
+
+    return result
+
+
 if __name__ == "__main__":
     from gow_optimizer.paths import DATA_DIR
 

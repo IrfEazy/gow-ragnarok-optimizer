@@ -93,7 +93,15 @@ def _build_inventory_from_web(web_data):
     return parse_inventory_from_config(cfg_like)
 
 
-def _serialize_best_item(record, target_stats=None):
+def _get_craft_status_from_inventory(inventory, item_name, piece_type):
+    """Look up craft status for an item in inventory. Returns True if needs crafting, False if owned."""
+    for name, level, ptype, needs_craft in inventory:
+        if name == item_name and ptype == piece_type:
+            return needs_craft
+    return False
+
+
+def _serialize_best_item(record, target_stats=None, craft_flag=False):
     # Handle rows from CSV data (use "Piece Name") or processed rows (use "Item Name")
     name_col = ITEM_NAME_COL if ITEM_NAME_COL in record else "Piece Name"
     name_col = name_col if name_col in record else "Weapon Name"  # For weapons
@@ -110,10 +118,11 @@ def _serialize_best_item(record, target_stats=None):
         "level": int(record[level_col]),
         "total": int(record[TOTAL_STATS_COL]),
         "stats": {stat: int(record.get(stat, 0)) for stat in stats_to_show},
+        "craft": craft_flag,
     }
 
 
-def _build_best_armor(armor_current, target_stats=None):
+def _build_best_armor(armor_current, target_stats=None, inventory=None):
     best_armor = {}
     armor_total = 0
 
@@ -126,13 +135,16 @@ def _build_best_armor(armor_current, target_stats=None):
             best = max(candidates, key=lambda row: sum(row.get(s, 0) for s in target_stats))
         else:
             best = max(candidates, key=lambda row: row[TOTAL_STATS_COL])
-        best_armor[armor_type] = _serialize_best_item(best, target_stats=target_stats)
+        craft_status = False
+        if inventory:
+            craft_status = _get_craft_status_from_inventory(inventory, best["Item Name"], armor_type)
+        best_armor[armor_type] = _serialize_best_item(best, target_stats=target_stats, craft_flag=craft_status)
         armor_total += best[TOTAL_STATS_COL]
 
     return best_armor, armor_total
 
 
-def _build_best_weapons(weapon_current, target_stats=None):
+def _build_best_weapons(weapon_current, target_stats=None, w_inventory=None):
     best_weapons = {}
     weapon_total = 0
 
@@ -145,7 +157,10 @@ def _build_best_weapons(weapon_current, target_stats=None):
             best = max(candidates, key=lambda row: sum(row.get(s, 0) for s in target_stats))
         else:
             best = max(candidates, key=lambda row: row[TOTAL_STATS_COL])
-        best_weapons[category] = _serialize_best_item(best, target_stats=target_stats)
+        craft_status = False
+        if w_inventory:
+            craft_status = _get_craft_status_from_inventory(w_inventory, best["Item Name"], category)
+        best_weapons[category] = _serialize_best_item(best, target_stats=target_stats, craft_flag=craft_status)
         weapon_total += best[TOTAL_STATS_COL]
 
     return best_weapons, weapon_total
@@ -365,163 +380,6 @@ def _collect_blocked_weapons(w_inventory, all_weapons_df, resource_budget, mat_a
     )
 
 
-def _candidate_step_action(
-    slot,
-    options,
-    current_stats,
-    used_budget,
-    used_mats,
-    resource_budget,
-    mat_aliases,
-    target_stats=None,
-    score_fns=None,
-):
-    best_action = None
-    best_eff = -1
-
-    for hack, stats, label, mats in options:
-        if hack == 0 or stats <= current_stats:
-            continue
-        test = Counter(used_mats)
-        test.update(mats)
-        if not all(
-            test[material] <= get_available(material, resource_budget, mat_aliases)
-            for material in test
-        ):
-            continue
-        if used_budget + hack > resource_budget["Hacksilver"]:
-            continue
-        gain = stats - current_stats
-        eff = gain / hack * 1000
-        if eff <= best_eff:
-            continue
-        best_eff = eff
-        best_action = (slot, hack, stats, label, gain, eff, mats)
-
-    return best_action
-
-
-def _find_best_step_action(
-    remaining_slots,
-    cur_stats,
-    used_budget,
-    used_mats,
-    resource_budget,
-    mat_aliases,
-    target_stats=None,
-    score_fns=None,
-):
-    best_action = None
-    best_eff = -1
-
-    for slot, options in remaining_slots.items():
-        action = _candidate_step_action(
-            slot,
-            options,
-            cur_stats[slot],
-            used_budget,
-            used_mats,
-            resource_budget,
-            mat_aliases,
-            target_stats=target_stats,
-            score_fns=score_fns,
-        )
-        if action is None or action[5] <= best_eff:
-            continue
-        best_eff = action[5]
-        best_action = action
-
-    return best_action
-
-
-def _apply_step_action(step_i, action, remaining_slots, cur_stats, used_mats, running):
-    slot, hack, stats, label, gain, eff, mats = action
-    running += gain
-    cur_stats[slot] = stats
-    used_mats.update(mats)
-    remaining_slots[slot] = [
-        (cur_hack, cur_stats_value, cur_label, cur_mats)
-        for cur_hack, cur_stats_value, cur_label, cur_mats in remaining_slots[slot]
-        if cur_stats_value > stats
-    ]
-    step = {
-        "step": step_i,
-        "label": label,
-        "slot": slot,
-        "gain": int(gain),
-        "hack": hack,
-        "eff": round(eff, 2),
-        "grand_total": int(running),
-        "mats": dict(sorted(mats.items())) if mats else {},
-    }
-    return step, running, hack
-
-
-def _serialize_consumed_mats(used_mats, resource_budget, mat_aliases):
-    consumed = []
-    for material, used in sorted(used_mats.items()):
-        available = get_available(material, resource_budget, mat_aliases)
-        consumed.append(
-            {
-                "name": material,
-                "used": used,
-                "available": available,
-                "remaining": available - used,
-            }
-        )
-    return consumed
-
-
-def _build_step_plan(slot_pareto, resource_budget, mat_aliases, grand_total, target_stats=None, score_fns=None):
-    remaining_slots = {slot: list(options) for slot, options in slot_pareto.items() if options}
-    cur_stats = {slot: options[0][1] for slot, options in slot_pareto.items() if options}
-    running = grand_total
-    used_budget = 0
-    used_mats = Counter()
-    steps = []
-
-    for step_i in range(1, 50):
-        best_action = _find_best_step_action(
-            remaining_slots,
-            cur_stats,
-            used_budget,
-            used_mats,
-            resource_budget,
-            mat_aliases,
-            target_stats=target_stats,
-            score_fns=score_fns,
-        )
-        if best_action is None:
-            break
-
-        step, running, spent_hack = _apply_step_action(
-            step_i,
-            best_action,
-            remaining_slots,
-            cur_stats,
-            used_mats,
-            running,
-        )
-        used_budget += spent_hack
-        step["cum_hack"] = used_budget
-        steps.append(step)
-
-    step_mats_consumed = _serialize_consumed_mats(
-        used_mats,
-        resource_budget,
-        mat_aliases,
-    )
-
-    return {
-        "steps": steps,
-        "step_final_total": int(running),
-        "step_final_gain": int(running - grand_total),
-        "step_hack_spent": used_budget,
-        "step_hack_remaining": resource_budget["Hacksilver"] - used_budget,
-        "step_mats_consumed": step_mats_consumed,
-    }
-
-
 def _serialize_resources(resource_budget):
     return [
         {"name": material, "qty": quantity}
@@ -700,8 +558,8 @@ def _compute_all(web_data=None, target_stats=None):
         target_stats=target_stats,
     )
 
-    best_armor, armor_total = _build_best_armor(armor_current, target_stats=target_stats)
-    best_weapons, weapon_total = _build_best_weapons(weapon_current, target_stats=target_stats)
+    best_armor, armor_total = _build_best_armor(armor_current, target_stats=target_stats, inventory=inventory)
+    best_weapons, weapon_total = _build_best_weapons(weapon_current, target_stats=target_stats, w_inventory=w_inventory)
     grand_total = armor_total + weapon_total
 
     # Build rankings from all available items (not just current build),
@@ -775,17 +633,29 @@ def _compute_all(web_data=None, target_stats=None):
         resource_budget,
         mat_aliases,
     )
-    step_plan = _build_step_plan(
-        slot_pareto,
-        resource_budget,
-        mat_aliases,
-        grand_total,
-        target_stats=target_stats,
-        score_fns=score_fns,
-    )
     resources = _serialize_resources(resource_budget)
     stat_presets = load_stat_presets()
     stat_preferences = load_stat_preferences() or []
+
+    # Build all_pieces display data for Inventory Manager UI
+    from gow_optimizer.scraper import extract_all_pieces
+    from gow_optimizer.config import PIECE_KEYS
+
+    all_pieces_csv = extract_all_pieces()
+    owned_names = {
+        (slot_key, piece.get("name"))
+        for slot_key in PIECE_KEYS
+        for piece in web_data.get(slot_key, [])
+    }
+
+    all_pieces_display = {}
+    for slot_key in PIECE_KEYS:
+        all_pieces_display[slot_key] = [
+            {"name": name, "min_level": level, "owned": (slot_key, name) in owned_names}
+            for name, level in sorted(
+                all_pieces_csv.get(slot_key, []), key=lambda x: x[0]
+            )
+        ]
 
     return {
         "best_armor": best_armor,
@@ -803,8 +673,8 @@ def _compute_all(web_data=None, target_stats=None):
         "blocked": blocked,
         "stat_presets": stat_presets,
         "stat_preferences": stat_preferences,
+        "all_pieces": all_pieces_display,
         **optimal_plan,
-        **step_plan,
     }
 
 
@@ -859,6 +729,26 @@ def create_app(test_config=None) -> Flask:
 
     if test_config:
         app.config.update(test_config)
+
+    # Auto-initialize all pieces in config.yaml on startup
+    try:
+        from gow_optimizer.config import ensure_all_pieces_in_config
+
+        counts = ensure_all_pieces_in_config()
+        if counts["armor_added"] > 0 or counts["weapons_added"] > 0:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.info(
+                "Inventory initialized: added %d armor pieces, %d weapon attachments",
+                counts["armor_added"],
+                counts["weapons_added"],
+            )
+    except Exception as e:
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error("Failed to initialize inventory: %s", e)
 
     @app.get("/")
     def index():
@@ -1108,6 +998,85 @@ def create_app(test_config=None) -> Flask:
             return jsonify({"error": f"Build slot not found: {e}"}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 400
+
+    @app.route("/api/toggle-piece", methods=["POST"])
+    def api_toggle_piece():
+        """Add or remove a piece from inventory.
+
+        Payload:
+            {
+                "slot": "chest_pieces",  # or wrist_pieces, axe_attachments, etc.
+                "name": "Piece Name",
+                "action": "add" | "remove",
+                "craft": true | false  # Only used when action=="add"
+            }
+        """
+        payload = request.get_json(force=True)
+        slot = payload.get("slot", "")
+        name = payload.get("name", "")
+        action = payload.get("action", "").lower()
+        craft = payload.get("craft", True)  # Default to True if not specified
+
+        if not slot or not name or not action:
+            return jsonify({"error": "Missing slot, name, or action"}), 400
+
+        from gow_optimizer.config import PIECE_KEYS
+
+        if slot not in PIECE_KEYS:
+            return jsonify({"error": f"Invalid slot: {slot}"}), 400
+
+        web_data = load_web_inventory()
+
+        try:
+            if action == "add":
+                # Get the min level for this piece from CSV
+                from gow_optimizer.scraper import extract_all_pieces
+
+                all_pieces = extract_all_pieces()
+                pieces_in_slot = all_pieces.get(slot, [])
+                piece_info = next(
+                    (p for p in pieces_in_slot if p[0] == name), None
+                )
+
+                if piece_info is None:
+                    return jsonify({"error": f"Piece '{name}' not found in {slot}"}), 400
+
+                piece_name, min_level = piece_info
+
+                # Check if already in inventory
+                current_pieces = web_data.get(slot, [])
+                if any(p.get("name") == name for p in current_pieces):
+                    return (
+                        jsonify({"error": f"Piece '{name}' already in inventory"}),
+                        400,
+                    )
+
+                # Add the piece
+                current_pieces.append(
+                    {"name": piece_name, "level": min_level, "craft": bool(craft)}
+                )
+                web_data[slot] = current_pieces
+
+            elif action == "remove":
+                # Remove the piece from inventory
+                current_pieces = web_data.get(slot, [])
+                web_data[slot] = [p for p in current_pieces if p.get("name") != name]
+
+            else:
+                return jsonify({"error": f"Unknown action: {action}"}), 400
+
+            # Persist and recalculate
+            save_web_inventory(web_data)
+            target_stats = load_stat_preferences()
+            data = _compute_all(web_data=web_data, target_stats=target_stats)
+            data["stat_preferences"] = target_stats or []
+            return jsonify(data)
+
+        except Exception as e:
+            import logging
+
+            logging.getLogger(__name__).exception("Error in toggle-piece handler")
+            return jsonify({"error": str(e)}), 500
 
     return app
 

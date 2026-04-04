@@ -35,6 +35,15 @@ EMPTY_COMPUTE_RESULT = {
     "step_mats_consumed": [],
     "stat_preferences": [],
     "stat_presets": {},
+    "all_pieces": {
+        "chest_pieces": [],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    },
 }
 
 
@@ -66,6 +75,9 @@ def _patch_runtime_store(monkeypatch, state):
 def test_create_app_has_expected_routes(monkeypatch):
     monkeypatch.setattr(web, "_compute_all", lambda web_data=None, target_stats=None: EMPTY_COMPUTE_RESULT)
     monkeypatch.setattr(web, "load_stat_preferences", lambda: None)
+    # Mock ensure_all_pieces_in_config to avoid CSV reads during test
+    from gow_optimizer import config
+    monkeypatch.setattr(config, "ensure_all_pieces_in_config", lambda: {"armor_added": 0, "weapons_added": 0})
 
     app = web.create_app({"TESTING": True})
     client = app.test_client()
@@ -688,147 +700,6 @@ def test_build_slot_options_no_action_respects_score_fn(monkeypatch):
     )
 
 # ─── Multi-objective step planner tests ──────────────────────────────────
-
-
-def test_candidate_step_action_accepts_target_stats_parameter():
-    """Test: _candidate_step_action accepts target_stats and score_fns parameters."""
-    from collections import Counter
-
-    options = [(100, 50, "Item A 1→2", {})]
-    result = web._candidate_step_action(
-        "Armatura — Chest",
-        options,
-        current_stats=40,
-        used_budget=0,
-        used_mats=Counter(),
-        resource_budget={"Hacksilver": 1000},
-        mat_aliases={},
-        target_stats=["Strength", "Defense"],
-        score_fns={},
-    )
-    assert result is not None
-
-
-def test_find_best_step_action_accepts_target_stats_parameter():
-    """Test: _find_best_step_action accepts target_stats and score_fns parameters."""
-    from collections import Counter
-
-    remaining_slots = {
-        "Armatura — Chest": [(100, 50, "Item A 1→2", {})]
-    }
-    result = web._find_best_step_action(
-        remaining_slots,
-        cur_stats={"Armatura — Chest": 40},
-        used_budget=0,
-        used_mats=Counter(),
-        resource_budget={"Hacksilver": 1000},
-        mat_aliases={},
-        target_stats=["Strength", "Defense"],
-        score_fns={},
-    )
-    assert result is None or isinstance(result, tuple)
-
-
-def test_build_step_plan_accepts_target_stats_parameter(monkeypatch):
-    """Test: _build_step_plan accepts target_stats and score_fns parameters."""
-    from gow_optimizer.optimizer import make_score_fn
-
-    slot_pareto = {
-        "Armatura — Chest": [(0, 30, "— nessuna azione —", {})],
-        "Armatura — Wrist": [(0, 20, "— nessuna azione —", {})],
-        "Armatura — Waist": [(0, 15, "— nessuna azione —", {})],
-    }
-    resource_budget = {"Hacksilver": 5000}
-    mat_aliases = {}
-    grand_total = 65
-    target_stats = ["Strength", "Defense"]
-    score_fns = {
-        "Armatura — Chest": make_score_fn(target_stats, {"Strength": 10, "Defense": 20, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0}),
-    }
-
-    result = web._build_step_plan(
-        slot_pareto,
-        resource_budget,
-        mat_aliases,
-        grand_total,
-        target_stats=target_stats,
-        score_fns=score_fns,
-    )
-
-    assert "steps" in result
-    assert "step_final_total" in result
-    assert "step_final_gain" in result
-
-
-def test_build_step_plan_works_backwards_compatible(monkeypatch):
-    """Test: _build_step_plan still works without target_stats parameter (backwards compatible)."""
-    slot_pareto = {
-        "Armatura — Chest": [(0, 30, "— nessuna azione —", {})],
-        "Armatura — Wrist": [(0, 20, "— nessuna azione —", {})],
-    }
-    resource_budget = {"Hacksilver": 5000}
-    mat_aliases = {}
-    grand_total = 50
-
-    # Call without target_stats
-    result = web._build_step_plan(
-        slot_pareto,
-        resource_budget,
-        mat_aliases,
-        grand_total,
-    )
-
-    assert "steps" in result
-    assert "step_final_total" in result
-    assert result["step_final_total"] == 50
-    assert result["step_final_gain"] == 0
-
-
-def test_build_step_plan_with_multi_objective_options(monkeypatch):
-    """Test: _build_step_plan handles options scored with multi-objective metrics."""
-    from gow_optimizer.optimizer import make_score_fn
-
-    # Create a Pareto frontier where options are scored with multi-objective metrics
-    target_stats = ["Strength", "Defense"]
-    baseline = {
-        "Strength": 10,
-        "Defense": 20,
-        "Runic": 0,
-        "Vitality": 0,
-        "Cooldown": 0,
-        "Luck": 0,
-    }
-    score_fn = make_score_fn(target_stats, baseline)
-
-    # Build a Pareto frontier with geometric mean scores
-    # These represent options where stats are already scored with score_fn
-    slot_pareto = {
-        "Armatura — Chest": [
-            (0, score_fn(baseline), "— nessuna azione —", {}),
-            (100, score_fn({"Strength": 12, "Defense": 22, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0}), "Strong Item 1→2", {}),
-        ],
-        "Armatura — Wrist": [
-            (0, 1.0, "— nessuna azione —", {}),
-        ],
-    }
-
-    score_fns = {
-        "Armatura — Chest": score_fn,
-    }
-
-    result = web._build_step_plan(
-        slot_pareto,
-        {"Hacksilver": 5000},
-        {},
-        sum(opt[1] for slot in slot_pareto.values() for opt in slot),
-        target_stats=target_stats,
-        score_fns=score_fns,
-    )
-
-    # Verify result structure
-    assert "steps" in result
-    assert isinstance(result["steps"], list)
-    # Should recommend the upgrade since it has positive efficiency
 
 
 def test_api_stat_presets_list_action(monkeypatch):

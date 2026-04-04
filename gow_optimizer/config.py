@@ -169,3 +169,76 @@ def delete_preset(preset_name: str) -> None:
         raise KeyError(f"Preset '{preset_name}' not found")
     del presets[preset_name]
     save_stat_presets(presets)
+
+
+def generate_initial_inventory() -> dict[str, list[dict[str, Any]]]:
+    """Generate initial inventory with all unique pieces at min level.
+
+    Uses extract_all_pieces() from scraper to get all pieces from CSVs,
+    then creates inventory structure with each piece at minimum level
+    and craft=true (needs crafting).
+
+    Returns:
+        Dict with all PIECE_KEYS, each mapping to list of piece dicts.
+        Example: {
+            "chest_pieces": [
+                {"name": "Piece 1", "level": 1.0, "craft": true},
+                ...
+            ],
+            ...
+        }
+    """
+    from gow_optimizer.scraper import extract_all_pieces
+
+    all_pieces = extract_all_pieces()
+
+    result = {}
+    for slot_key in PIECE_KEYS:
+        pieces_list = all_pieces.get(slot_key, [])
+        result[slot_key] = [
+            {"name": name, "level": level, "craft": True}
+            for name, level in pieces_list
+        ]
+
+    return result
+
+
+def ensure_all_pieces_in_config() -> dict[str, int]:
+    """Ensure all pieces are present in config.yaml, adding missing ones.
+
+    Loads current config, generates all pieces, merges them (preserves
+    existing entries), and saves back. Returns count of added pieces.
+
+    Returns:
+        Dict with counts: {"armor_added": N, "weapons_added": M}
+    """
+    cfg = load_config()
+    generated = generate_initial_inventory()
+
+    added_armor = 0
+    added_weapons = 0
+
+    for slot_key in PIECE_KEYS:
+        # Get current pieces for this slot
+        current_pieces = cfg.get(slot_key, [])
+        current_names = {p["name"] for p in current_pieces if isinstance(p, dict)}
+
+        # Get generated pieces
+        generated_pieces = generated.get(slot_key, [])
+
+        # Add missing pieces from generated list
+        for gen_piece in generated_pieces:
+            if gen_piece["name"] not in current_names:
+                current_pieces.append(gen_piece)
+                # Track counts (armor vs weapons)
+                if slot_key in ["chest_pieces", "wrist_pieces", "waist_pieces"]:
+                    added_armor += 1
+                else:
+                    added_weapons += 1
+
+        cfg[slot_key] = current_pieces
+
+    # Save back to config.yaml
+    save_yaml(CONFIG_PATH, cfg)
+
+    return {"armor_added": added_armor, "weapons_added": added_weapons}
