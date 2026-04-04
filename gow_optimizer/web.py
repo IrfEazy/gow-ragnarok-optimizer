@@ -16,11 +16,15 @@ from gow_optimizer.config import (
     PIECE_KEYS,
     SLOT_TO_KEY,
     coerce_resource_budget,
+    delete_preset,
     get_data_file_paths,
     load_config,
     load_stat_preferences,
+    load_stat_presets,
     load_web_inventory,
+    save_current_as_preset,
     save_stat_preferences,
+    save_stat_presets,
     save_web_inventory,
 )
 from gow_optimizer.optimizer import (
@@ -780,6 +784,8 @@ def _compute_all(web_data=None, target_stats=None):
         score_fns=score_fns,
     )
     resources = _serialize_resources(resource_budget)
+    stat_presets = load_stat_presets()
+    stat_preferences = load_stat_preferences() or []
 
     return {
         "best_armor": best_armor,
@@ -795,6 +801,8 @@ def _compute_all(web_data=None, target_stats=None):
         "hacksilver": resource_budget.get("Hacksilver", 0),
         "pareto_data": pareto_data,
         "blocked": blocked,
+        "stat_presets": stat_presets,
+        "stat_preferences": stat_preferences,
         **optimal_plan,
         **step_plan,
     }
@@ -974,6 +982,86 @@ def create_app(test_config=None) -> Flask:
         data = _compute_all(web_data=web_data, target_stats=target_stats)
         data["stat_preferences"] = target_stats or []
         return jsonify(data)
+
+    @app.route("/api/stat-presets", methods=["POST"])
+    def api_manage_stat_presets():
+        """Create, load, delete, or list stat selection presets.
+
+        Expected JSON payload:
+        {
+            "action": "list|save|load|delete",
+            "preset_name": "Defensive" (required for save/load/delete),
+            "current_stats": ["Strength", "Defense"] (only for save action)
+        }
+        """
+        payload = request.get_json(force=True)
+        action = payload.get("action", "").lower()
+        preset_name = payload.get("preset_name", "").strip()
+        current_stats = payload.get("current_stats")
+
+        if not action:
+            return jsonify({"error": "Missing action"}), 400
+
+        try:
+            if action == "list":
+                presets = load_stat_presets()
+                return jsonify({"presets": presets}), 200
+
+            elif action == "save":
+                if not preset_name:
+                    return jsonify({"error": "Missing preset_name"}), 400
+                if not isinstance(current_stats, (list, type(None))):
+                    return jsonify({"error": "current_stats must be list or null"}), 400
+
+                save_current_as_preset(preset_name, current_stats)
+
+                # Recalculate with saved stats
+                web_data = load_web_inventory()
+                data = _compute_all(web_data=web_data, target_stats=current_stats)
+                data["stat_presets"] = load_stat_presets()
+                data["stat_preferences"] = current_stats or []
+                return jsonify(data), 200
+
+            elif action == "load":
+                if not preset_name:
+                    return jsonify({"error": "Missing preset_name"}), 400
+
+                presets = load_stat_presets()
+                if preset_name not in presets:
+                    return jsonify({"error": f"Preset '{preset_name}' not found"}), 404
+
+                loaded_stats = presets[preset_name]
+                save_stat_preferences(loaded_stats)
+
+                # Recalculate with loaded stats
+                web_data = load_web_inventory()
+                data = _compute_all(web_data=web_data, target_stats=loaded_stats)
+                data["stat_presets"] = presets
+                data["stat_preferences"] = loaded_stats or []
+                return jsonify(data), 200
+
+            elif action == "delete":
+                if not preset_name:
+                    return jsonify({"error": "Missing preset_name"}), 400
+
+                delete_preset(preset_name)
+
+                # Return updated presets list
+                web_data = load_web_inventory()
+                current_prefs = load_stat_preferences()
+                data = _compute_all(web_data=web_data, target_stats=current_prefs)
+                data["stat_presets"] = load_stat_presets()
+                return jsonify(data), 200
+
+            else:
+                return jsonify({"error": f"Unknown action: {action}"}), 400
+
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+        except KeyError as e:
+            return jsonify({"error": str(e)}), 404
+        except Exception as e:
+            return jsonify({"error": f"Server error: {str(e)}"}), 500
 
     @app.route("/api/build-slots", methods=["GET"])
     def api_list_build_slots():

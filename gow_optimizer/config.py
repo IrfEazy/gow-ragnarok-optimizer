@@ -103,3 +103,64 @@ def save_stat_preferences(target_stats: list[str] | None) -> None:
     else:
         cfg["optimization_stats"] = [str(s) for s in target_stats]
     save_yaml(CONFIG_PATH, cfg)
+
+
+def load_stat_presets() -> dict[str, list[str]]:
+    """Load all saved stat selection presets from config.yaml.
+
+    Returns dict mapping preset name → list of stat names.
+    Example: {"Defensive": ["Defense", "Vitality"], "Aggressive": ["Strength", "Runic"]}
+    Returns empty dict if no presets are defined or if the format is invalid.
+    """
+    cfg = load_config()
+    presets = cfg.get("stat_presets", {})
+    # Validate: presets should be dict of lists
+    if not isinstance(presets, dict):
+        return {}
+    return {k: v for k, v in presets.items() if isinstance(v, list)}
+
+
+def save_stat_presets(presets: dict[str, list[str]]) -> None:
+    """Persist stat selection presets to config.yaml.
+
+    Args:
+        presets: Dict mapping preset name → list of stat names
+    """
+    cfg = load_config()
+    cfg["stat_presets"] = deepcopy(presets)
+    save_yaml(CONFIG_PATH, cfg)
+
+
+def save_current_as_preset(preset_name: str, current_stats: list[str] | None) -> None:
+    """Save current stat selection as a named preset.
+
+    Args:
+        preset_name: Name for the new preset (required, non-empty)
+        current_stats: List of currently selected stats (or None for all stats)
+
+    Raises:
+        ValueError: If preset_name is empty or invalid
+    """
+    if not preset_name or not isinstance(preset_name, str) or not preset_name.strip():
+        raise ValueError("Preset name must be a non-empty string")
+
+    preset_name = preset_name.strip()
+    presets = load_stat_presets()
+    presets[preset_name] = current_stats or []
+    save_stat_presets(presets)
+
+
+def delete_preset(preset_name: str) -> None:
+    """Delete a named preset from config.yaml.
+
+    Args:
+        preset_name: Name of preset to delete
+
+    Raises:
+        KeyError: If preset does not exist
+    """
+    presets = load_stat_presets()
+    if preset_name not in presets:
+        raise KeyError(f"Preset '{preset_name}' not found")
+    del presets[preset_name]
+    save_stat_presets(presets)
