@@ -129,7 +129,7 @@ score = (stat1 * stat2 * stat3 * ...) ^ (1/n)
 - Stat selections persist across browser sessions via localStorage (client-side) and `optimization_stats` in config.yaml
 - Users can save named presets of stat selections and quickly switch between them (e.g., "Defensive", "Aggressive", "Balanced")
 - All reports (optimal build, optimal plan, step-by-step plan) respect the selected stat preferences
-- If no stats selected, all stats are implicitly weighted equally
+- If no stats are selected, all stats are implicitly weighted equally
 
 ## Key Files & Responsibilities
 
