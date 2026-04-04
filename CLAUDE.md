@@ -41,20 +41,25 @@ python -m gow_optimizer
 
 3. **Web layer** (`web.py`): Flask endpoints + JSON API
    - **Static data cache**: Loads CSVs once, reuses for all requests
+   - **Multi-objective optimization**: Geometric mean scoring allows users to prioritize multiple stats simultaneously
    - **4 required reports** (all computed in `_compute_all()`):
-     1. **Current optimal build**: Best item for each armor/weapon slot within current inventory
-     2. **Optimal plan**: One-shot Pareto optimization with resource constraints
-     3. **Step-by-step plan**: Sequential greedy upgrade recommendations
+     1. **Current optimal build**: Best item for each armor/weapon slot within current inventory (respects multi-objective preferences)
+     2. **Optimal plan**: One-shot Pareto optimization with resource constraints (applies multi-objective scoring)
+     3. **Step-by-step plan**: Sequential greedy upgrade recommendations (respects multi-objective preferences)
      4. **Blocked items**: Armor/weapons locked by missing materials, plus ranking by total stats
    - **Endpoints**:
      - `GET /` — renders `index.html` with full computed data
      - `POST /api/recalc` — recalculate with modified resource budget (temporary)
      - `POST /api/save-inventory` — persist resources + armor/weapon choices to config.yaml
      - `POST /api/apply-upgrade` — apply a step-by-step upgrade (deduct resources, level up item)
+     - `POST /api/stat-preferences` — set/clear optimization stat selection (persisted to config.yaml)
+     - `POST /api/stat-presets` — multi-action endpoint (list/save/load/delete named stat presets)
 
 4. **Configuration** (`config.py`): YAML + runtime inventory management
-   - Loads `config.yaml`: material aliases, CSV paths, resource budget, inventory state
+   - Loads `config.yaml`: material aliases, CSV paths, resource budget, inventory state, stat preferences, stat presets
    - Functions bridge YAML serialization and in-memory data structures
+   - Stat preferences: selected stats for multi-objective optimization (persisted as `optimization_stats` list)
+   - Stat presets: named collections of stat selections for quick switching (persisted as `stat_presets` dict)
    - Single source of truth: config.yaml (survives app restart)
 
 5. **Paths** (`paths.py`): Resolves all file paths relative to project root, making the app independent of current working directory
@@ -111,16 +116,31 @@ Each armor/weapon slot has a Pareto frontier: a list of `(hacksilver_cost, total
 
 The solver picks the best frontier choice per slot that fits the budget and material constraints.
 
+### Multi-Objective Optimization
+
+Users can select multiple stats to optimize for (e.g., "Strength + Defense"). The system uses **geometric mean scoring** to combine multiple stats into a single score:
+
+```python
+score = (stat1 * stat2 * stat3 * ...) ^ (1/n)
+```
+
+**Key behaviors:**
+- Allows simultaneous optimization for multiple stats without losing balance
+- Stat selections persist across browser sessions via localStorage (client-side) and `optimization_stats` in config.yaml
+- Users can save named presets of stat selections and quickly switch between them (e.g., "Defensive", "Aggressive", "Balanced")
+- All reports (optimal build, optimal plan, step-by-step plan) respect the selected stat preferences
+- If no stats are selected, all stats are implicitly weighted equally
+
 ## Key Files & Responsibilities
 
 | File | Lines | Purpose |
 |---|---|---|
-| `web.py` | ~670 | Flask app, API routes, report computation helpers |
-| `optimizer.py` | ~305 | Pareto + greedy solver + inventory parsing |
+| `web.py` | ~1070 | Flask app, API routes, report computation, preset management |
+| `optimizer.py` | ~305 | Pareto + greedy solver + multi-objective geometric mean scoring |
 | `scraper.py` | ~450 | IGN wiki parsing + CSV generation |
-| `config.py` | ~84 | YAML load/save, inventory serialization |
+| `config.py` | ~160 | YAML load/save, inventory + preferences + presets serialization |
 | `paths.py` | ~21 | Path resolution helpers |
-| `templates/index.html` | ~900 | Single-page app (Jinja2 + vanilla JS) |
+| `templates/index.html` | ~1100 | Single-page app (Jinja2 + vanilla JS, stat selector, presets UI) |
 
 ## Testing
 
@@ -132,10 +152,15 @@ pytest -k "armor"         # Run tests matching pattern
 ```
 
 **Test structure:**
-- `tests/test_config.py`: YAML load/save, inventory parsing
-- `tests/test_web.py`: API routes, computation pipeline (uses mocked scraper data)
+- `tests/test_config.py`: YAML load/save, inventory parsing, stat preferences, stat presets (~21 tests)
+- `tests/test_web.py`: API routes, computation pipeline, multi-objective scoring, preset management (~47 tests)
+- `tests/test_optimizer.py`: Pareto frontier, greedy solver, geometric mean scoring (~18 tests)
+- `tests/test_build_slots.py`: Build slot save/load/delete (~5 tests)
+- `tests/test_export.py`: JSON export functionality (~5 tests)
+- Additional test files for API-specific functionality (~13 tests)
+- **Total: 88 tests, all passing**
 
-**Important**: Tests monkeypatch `_load_static()` to inject pre-computed CSV dataframes, avoiding expensive web scraping during test runs.
+**Important**: Tests monkeypatch `_load_static()` to inject pre-computed CSV dataframes, avoiding expensive web scraping during test runs. Config tests use `monkeypatch` on `CONFIG_PATH` to prevent real config.yaml modifications during CI/test runs.
 
 ## Git Workflow
 
@@ -407,6 +432,28 @@ gh pr list --state open     # PR #9 should not be listed
 4. **Italian code comments**: Some variable/function names and comments are in Italian (e.g., `normalize_mat` function comments, `optimizer.py` header). This is intentional domain-specific language for this project.
 
 5. **Material cost tracking**: Upgrade costs are embedded in the CSV (e.g., `Upgrade_Smoldering Embers` column). The optimizer respects these costs when building Pareto frontiers.
+
+## Stat Presets & Preferences
+
+### Stat Preferences
+- **What**: User's current selection of which stats to optimize for
+- **Storage**: 
+  - Client-side: localStorage key `stat_preferences` (quick access, survives page refresh)
+  - Server-side: `config.yaml` under `optimization_stats` key (survives app restart)
+- **API**: `POST /api/stat-preferences` with action (set/clear)
+- **Affects**: All computed reports apply selected stat preferences via geometric mean scoring
+
+### Stat Presets
+- **What**: Named collections of stat selections that users can save and load
+- **Storage**: `config.yaml` under `stat_presets` key (dict mapping preset name → list of stats)
+- **Default presets**: Defensive, Aggressive, Balanced (shipped with config.yaml)
+- **API**: `POST /api/stat-presets` with multi-action pattern:
+  - `action: "list"` → returns all presets
+  - `action: "save"` → saves current stats as named preset
+  - `action: "load"` → loads preset and recalculates reports
+  - `action: "delete"` → removes preset from config.yaml
+- **UI**: Dropdown to load presets, text input to save as new preset, delete button
+- **Example workflow**: User saves "Defensive" preset (Defense + Vitality), later loads it from dropdown to quickly switch strategies
 
 ## Common Tasks
 
