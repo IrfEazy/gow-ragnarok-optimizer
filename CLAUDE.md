@@ -143,6 +143,25 @@ pytest -k "armor"         # Run tests matching pattern
 - `.gitignore` excludes: `data/`, `__pycache__/`, `.pytest_cache/`, `.venv/`, etc.
 - Configuration (`config.yaml`) **is committed** with example inventory + resource budget
 
+### Branch Protection (Main Branch)
+
+The main branch has GitHub branch protection enabled to prevent accidental damage:
+
+- ✅ **Force pushes disabled** — Cannot rewrite history on main
+- ✅ **Deletion disabled** — Cannot delete main branch
+- ✅ **Admin enforcement** — Rules apply to everyone, including admins
+- ✅ **Conversation resolution** — All comments must be resolved before merge
+- ✅ **Status checks** — Tests must pass before merging (when CI is added)
+
+**If you need to bypass protection** (emergency only):
+1. Contact repository admin
+2. Temporarily disable protection
+3. Make the critical fix
+4. Re-enable protection immediately
+5. Document why in the PR/commit
+
+**Never disable protection for routine work** — Use the pre-merge checklist instead.
+
 ## GitHub Issues and Pull Requests
 
 ### Creating and Linking Issues with PRs
