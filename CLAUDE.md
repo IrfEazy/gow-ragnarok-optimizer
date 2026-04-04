@@ -205,7 +205,23 @@ pytest -k "armor"         # Run tests matching pattern
 
 **NEVER merge to main without verifying ALL of these:**
 
-1. ✅ **CI/CD Passes**
+1. ✅ **Sourcery AI Review Complete**
+   - Check the PR for comments from `sourcery-ai` bot
+   - Read all suggestions and issues raised
+   - Address every Sourcery comment before merging
+   - Mark comments as resolved once addressed
+   - If disagreeing with a suggestion, document your reasoning
+   - **Do not merge with unresolved Sourcery comments**
+   ```
+   Steps:
+   1. View the "Conversation" tab on the PR
+   2. Look for comments from sourcery-ai
+   3. Read each suggestion carefully
+   4. Either fix the code or reply explaining why you're not following it
+   5. Click "Resolve conversation" once addressed
+   ```
+
+2. ✅ **CI/CD Passes**
    - All automated tests pass in the PR checks
    - No flaky tests or intermittent failures
    - If CI fails, fix the code — do not merge
@@ -214,7 +230,7 @@ pytest -k "armor"         # Run tests matching pattern
    pytest -xvs
    ```
 
-2. ✅ **No Conflicts with Main**
+3. ✅ **No Conflicts with Main**
    - Rebase or merge main into the feature branch to resolve any conflicts
    - Test after resolving conflicts
    ```bash
@@ -225,21 +241,21 @@ pytest -k "armor"         # Run tests matching pattern
    pytest -xvs
    ```
 
-3. ✅ **Code Quality Standards**
+4. ✅ **Code Quality Standards**
    - **New functions have docstrings**: Every new function must have a clear docstring explaining its purpose, parameters, and return value
    - **Tests verify functionality**: New code must have corresponding tests; test coverage should be >80%
    - **No test placeholders**: Don't commit tests for unimplemented functions (TDD red phase tests are OK locally, but don't merge red tests to main)
    - **Code is formatted correctly**: Follow PEP 8 for Python; use existing code style as reference
    - **No debugging artifacts**: Remove `print()`, `console.log()`, debugger statements, and commented-out code
 
-4. ✅ **All Tests Pass** (both new and existing)
+5. ✅ **All Tests Pass** (both new and existing)
    ```bash
    pytest                          # All tests pass
    pytest -v                       # View full output
    pytest --cov                    # Check coverage (if available)
    ```
 
-5. ✅ **Main Branch Health**
+6. ✅ **Main Branch Health**
    - After merging, verify main branch still works:
    ```bash
    git checkout main
@@ -250,7 +266,7 @@ pytest -k "armor"         # Run tests matching pattern
 
 ### Merge Process
 
-5. **When merging the PR to main** (after pre-merge checklist passes)
+7. **When merging the PR to main** (after pre-merge checklist passes)
    ```bash
    git checkout main
    git merge --ff-only feat/short-description
@@ -259,7 +275,7 @@ pytest -k "armor"         # Run tests matching pattern
    
    The `Closes #N` in the commit automatically closes the issue when merged.
 
-6. **Clean up after merge and verify**
+8. **Clean up after merge and verify**
    - Delete the feature branch:
    ```bash
    git push origin --delete feat/short-description
@@ -300,6 +316,26 @@ pytest -k "armor"         # Run tests matching pattern
 2. Fix the issue on a feature branch
 3. Re-test thoroughly before attempting merge again
 4. Document what went wrong in the PR description
+
+### Branch Protection Rules
+
+The main branch is protected with GitHub branch protection rules to prevent accidental damage:
+
+- **No Force Pushes**: History cannot be rewritten on main
+- **No Branch Deletion**: Main branch cannot be deleted
+- **No Direct Commits**: All changes must come through pull requests and pass the pre-merge checklist
+- **Admin Enforcement**: Branch protection applies to all users, including admins
+- **Conversation Resolution**: All review comments must be resolved before merge
+- **Status Checks**: Tests must pass before merge
+
+**How to merge to main:**
+1. Create a feature branch from main
+2. Make changes and commit with `Closes #N` in the message (to link the issue)
+3. Push the branch and create a PR
+4. Address all Sourcery AI review comments
+5. Ensure CI/CD passes and no conflicts with main
+6. Merge the PR (GitHub will handle the fast-forward)
+7. Branch and issue automatically close
 
 ### Key Points
 
