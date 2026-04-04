@@ -11,11 +11,11 @@ mat_aliases:
   s Broken Bracers: Lunda's Broken Bracers
   s Broken Belt: Lunda's Broken Belt
 chest_pieces:
-- craft: true
+- craft: false
   level: 5
   name: Lunda's Lost Cuirass
-- craft: true
-  level: 4
+- craft: false
+  level: 5
   name: Spiritual Shoulder Straps
 - craft: false
   level: 4
@@ -39,17 +39,20 @@ chest_pieces:
   level: 1
   name: Shoulder Guard of Survival
 - craft: false
-  level: 4
-  name: Spiritual Shoulder Straps
+  level: 5
+  name: Giptumadr's Breastplate
+- craft: false
+  level: 5
+  name: Breastplate of Guiding Light
 wrist_pieces:
 - craft: true
   level: 4
   name: Sol's Wraps of Courage
-- craft: true
+- craft: false
   level: 4
   name: Gauntlets of Radiance
 - craft: false
-  level: 5
+  level: 6
   name: Spiritual Wraps
 - craft: true
   level: 3
@@ -69,9 +72,12 @@ wrist_pieces:
 - craft: false
   level: 1
   name: Wraps of Survival
-waist_pieces:
-- craft: true
+- craft: false
   level: 5
+  name: Gauntlets of Guiding Light
+waist_pieces:
+- craft: false
+  level: 6
   name: Lunda's Lost Belt
 - craft: true
   level: 4
@@ -100,6 +106,12 @@ waist_pieces:
 - craft: false
   level: 1
   name: Belt of Survival
+- craft: false
+  level: 5
+  name: Waist Guard of Guiding Light
+- craft: false
+  level: 3
+  name: Girdle of Raven Tears
 axe_attachments:
 - craft: false
   level: 5
@@ -121,7 +133,7 @@ axe_attachments:
   name: The Furious Maul
 blades_attachments:
 - craft: false
-  level: 5
+  level: 6
   name: Hardened War Handles
 - craft: true
   level: 4
@@ -141,7 +153,7 @@ blades_attachments:
 spear_attachments: []
 shield_attachments:
 - craft: false
-  level: 5
+  level: 6
   name: Rond of Affliction
 - craft: false
   level: 3
@@ -152,44 +164,47 @@ shield_attachments:
 - craft: false
   level: 2
   name: Rond of Aggravation
+- craft: false
+  level: 5
+  name: Rond of Purification
 resource_budget:
-  Asgardian Ingot: 1
+  Asgardian Ingot: 0
   Blazing Embers: 0
-  Bonded Leather: 35
+  Bonded Leather: 120
   Celestial Fossil: 0
   Divine Ashes: 0
-  Dragon Claw: 0
-  Dragon Tooth: 4
-  Dust of Realms: 5
-  Dwarven Steel: 15
+  Dragon Claw: 1
+  Dragon Tooth: 14
+  Dust of Realms: 25
+  Dwarven Steel: 46
   Essence of Hel: 0
-  Forged Iron: 68
+  Forged Iron: 114
   Forsaken Breath: 0
   Fortified Remnants: 0
   Gleaming Crystal: 0
   Glowing Embers: 0
-  Hacksilver: 7801
+  Hacksilver: 2194
   Hardened Remnants: 0
-  Honed Metal: 14
+  Honed Metal: 30
   Lindwyrm Scales: 0
   Luminous Alloy: 0
   Lunda's Broken Belt: 0
-  Lunda's Broken Bracers: 0
+  Lunda's Broken Bracers: 1
   Lunda's Broken Cuirass: 0
   Mountain Root: 0
   Nidavellir Ore: 6
-  Petrified Bone: 0
+  Petrified Bone: 1
   Purified Crystalline: 0
-  Rawhide: 48
+  Rawhide: 100
   Shining Crystal: 0
   Skap Slag: 0
-  Slag Deposits: 35
+  Slag Deposits: 65
   Smoldering Embers: 0
-  Sovereign Coals: 0
+  Sovereign Coals: 4
   Sparkling Crystal: 0
-  Stonewood: 14
+  Stonewood: 43
   Tempered Remnants: 0
-  Whispering Slab: 62
+  Whispering Slab: 221
 optimization_stats:
 - Strength
 - Defense

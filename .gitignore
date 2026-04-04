@@ -17,6 +17,22 @@ data/all_weapons.csv
 .pytest_cache/
 .mypy_cache/
 .vscode/
+.coverage
 
 # Claude Code
 .claude/
+
+# Development/test artifacts (temporary session files, not part of project)
+before_update.png
+after_update.png
+final_screenshot.png
+current-page.png
+final-test.png
+test-defense.png
+defense-only-build.md
+initial-page.md
+test-update.md
+build-ottimale-section.png
+
+# Playwright test artifacts
+.playwright-mcp/

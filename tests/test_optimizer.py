@@ -390,3 +390,310 @@ def test_build_slot_options_with_score_fn_applied():
 
     # Should have: no-op, Balanced->2, StrengthFocus->2
     assert len(options) >= 1
+
+
+def test_build_available_df_filters_by_level():
+    """Should only include pieces up to owned level."""
+    import pandas as pd
+
+    df = pd.DataFrame([
+        {"Piece Name": "Armor A", "Piece Type": "Chest", "Level": 1, "Total Stats": 10},
+        {"Piece Name": "Armor A", "Piece Type": "Chest", "Level": 2, "Total Stats": 20},
+        {"Piece Name": "Armor A", "Piece Type": "Chest", "Level": 3, "Total Stats": 30},
+        {"Piece Name": "Armor B", "Piece Type": "Chest", "Level": 1, "Total Stats": 15},
+    ])
+
+    # Own Armor A at level 2 and Armor B at level 1
+    inventory = [
+        ("Armor A", 2, "Chest", False),
+        ("Armor B", 1, "Chest", False),
+    ]
+
+    result = optimizer.build_available_df(df, inventory)
+
+    # Should include Armor A levels 1-2, and Armor B level 1, but NOT Armor A level 3
+    assert len(result) == 3
+    assert result[result["Level"] == 3].empty
+
+
+def test_build_weapon_available_df_empty_inventory():
+    """Should return empty DataFrame when weapon inventory is empty."""
+    import pandas as pd
+
+    df = pd.DataFrame([
+        {"Weapon Name": "Axe", "Category": "Leviathan Axe", "Level": 1, "Total Stats": 10},
+    ])
+
+    result = optimizer.build_weapon_available_df(df, [])
+
+    assert result.empty
+
+
+def test_build_weapon_available_df_filters_by_level():
+    """Should only include weapon levels up to owned level."""
+    import pandas as pd
+
+    df = pd.DataFrame([
+        {"Weapon Name": "Spear", "Category": "Draupnir Spear", "Level": 1, "Total Stats": 10},
+        {"Weapon Name": "Spear", "Category": "Draupnir Spear", "Level": 2, "Total Stats": 20},
+        {"Weapon Name": "Spear", "Category": "Draupnir Spear", "Level": 3, "Total Stats": 30},
+    ])
+
+    # Own Spear at level 2
+    w_inventory = [("Spear", 2, "Draupnir Spear", False)]
+
+    result = optimizer.build_weapon_available_df(df, w_inventory)
+
+    # Should include levels 1-2, not 3
+    assert len(result) == 2
+    assert result[result["Level"] == 3].empty
+
+
+def test_collect_current_build_excludes_crafted_items():
+    """Should exclude items with needs_craft=True from current build."""
+    import pandas as pd
+
+    df = pd.DataFrame([
+        {"Piece Name": "Armor A", "Piece Type": "Chest", "Level": 1, "Total Stats": 10, "Strength": 5, "Defense": 5, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0},
+        {"Piece Name": "Armor A", "Piece Type": "Chest", "Level": 2, "Total Stats": 20, "Strength": 10, "Defense": 10, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0},
+        {"Piece Name": "Armor B", "Piece Type": "Chest", "Level": 1, "Total Stats": 15, "Strength": 8, "Defense": 7, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0},
+    ])
+    empty_df = pd.DataFrame()
+
+    # Own Armor A at level 2 (needs crafting), and Armor B at level 1 (owned)
+    inventory = [
+        ("Armor A", 2, "Chest", True),  # needs_craft=True, should be excluded
+        ("Armor B", 1, "Chest", False),  # needs_craft=False, should be included
+    ]
+    w_inventory = []
+
+    available_df = optimizer.build_available_df(df, inventory)
+    w_available_df = optimizer.build_weapon_available_df(empty_df, w_inventory)
+
+    armor_current, weapon_current = optimizer.collect_current_build(
+        inventory, available_df, w_inventory, w_available_df
+    )
+
+    # Should only include Armor B (Armor A is excluded because needs_craft=True)
+    assert len(armor_current) == 1
+    assert armor_current[0]["Item Name"] == "Armor B"
+
+
+def test_collect_current_build_respects_target_stats():
+    """Should select items based on target stats when specified."""
+    import pandas as pd
+
+    df = pd.DataFrame([
+        {"Piece Name": "Balanced", "Piece Type": "Chest", "Level": 1, "Total Stats": 20, "Strength": 10, "Defense": 10, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0},
+        {"Piece Name": "StrengthFocus", "Piece Type": "Chest", "Level": 1, "Total Stats": 20, "Strength": 15, "Defense": 5, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0},
+    ])
+    empty_df = pd.DataFrame()
+
+    inventory = [
+        ("Balanced", 1, "Chest", False),
+        ("StrengthFocus", 1, "Chest", False),
+    ]
+    w_inventory = []
+
+    available_df = optimizer.build_available_df(df, inventory)
+    w_available_df = optimizer.build_weapon_available_df(empty_df, w_inventory)
+
+    # When targeting Strength only, should prefer StrengthFocus
+    armor_current, _ = optimizer.collect_current_build(
+        inventory, available_df, w_inventory, w_available_df, target_stats=["Strength"]
+    )
+
+    # Should select StrengthFocus (15 Strength vs 10 Strength)
+    assert len(armor_current) == 1
+    assert armor_current[0]["Item Name"] == "StrengthFocus"
+
+
+def test_solve_with_resources_respects_budget():
+    """Should only select upgrades within Hacksilver budget."""
+    slot_pareto = {
+        "Armatura — Chest": [
+            (100, 15, "No-action", {}),
+            (200, 25, "Upgrade A", {}),
+            (500, 40, "Upgrade B", {}),
+        ],
+    }
+    budget_hack = 300
+    resource_budget = {"Hacksilver": 300}
+    mat_aliases = {}
+
+    total_stats, choices = optimizer.solve_with_resources(
+        slot_pareto, budget_hack, resource_budget, mat_aliases
+    )
+
+    # Should pick Upgrade A (200 Hacksilver, 25 stats) over Upgrade B (exceeds budget)
+    assert total_stats == 25
+    assert "Armatura — Chest" in choices
+    assert choices["Armatura — Chest"][2] == "Upgrade A"
+
+
+def test_solve_with_resources_combines_multiple_slots():
+    """Should find best combination across multiple slots within budget."""
+    slot_pareto = {
+        "Armatura — Chest": [
+            (0, 0, "No-action", {}),
+            (100, 20, "Chest Upgrade", {}),
+        ],
+        "Armatura — Wrist": [
+            (0, 0, "No-action", {}),
+            (100, 15, "Wrist Upgrade", {}),
+        ],
+    }
+    budget_hack = 150
+    resource_budget = {"Hacksilver": 150}
+    mat_aliases = {}
+
+    total_stats, choices = optimizer.solve_with_resources(
+        slot_pareto, budget_hack, resource_budget, mat_aliases
+    )
+
+    # Should combine both upgrades (100 + 100 = 200... wait that exceeds, so should be 100+50 or 100+0)
+    # Actually should pick: Chest (100) + Wrist (100) but that's 200 > 150
+    # So either Chest (100, 20 stats) alone or Wrist (100, 15 stats) alone
+    # Both use same cost, Chest gives more stats, so should pick Chest + no-action Wrist
+    assert total_stats == 20
+    assert choices["Armatura — Chest"][2] == "Chest Upgrade"
+    assert choices["Armatura — Wrist"][2] == "No-action"
+
+
+def test_collect_current_build_skips_missing_armor():
+    """Should skip armor items not found in available_df (line 145 coverage)."""
+    import pandas as pd
+
+    df = pd.DataFrame([
+        {"Piece Name": "Armor A", "Piece Type": "Chest", "Level": 1, "Total Stats": 10, "Strength": 5, "Defense": 5, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0},
+        {"Piece Name": "Armor A", "Piece Type": "Chest", "Level": 2, "Total Stats": 20, "Strength": 10, "Defense": 10, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0},
+        # Note: Armor B is NOT in the dataframe
+    ])
+    empty_df = pd.DataFrame()
+
+    # Inventory includes Armor B which doesn't exist in df
+    inventory = [
+        ("Armor A", 2, "Chest", False),
+        ("Armor B", 1, "Chest", False),  # This one is missing from df
+    ]
+    w_inventory = []
+
+    available_df = optimizer.build_available_df(df, inventory)
+    w_available_df = optimizer.build_weapon_available_df(empty_df, w_inventory)
+
+    armor_current, weapon_current = optimizer.collect_current_build(
+        inventory, available_df, w_inventory, w_available_df
+    )
+
+    # Should only include Armor A, skipping Armor B which isn't in df
+    assert len(armor_current) == 1
+    assert armor_current[0]["Item Name"] == "Armor A"
+
+
+def test_collect_current_build_skips_missing_weapons():
+    """Should skip weapon items not found in available_df (lines 181-213 coverage)."""
+    import pandas as pd
+
+    armor_df = pd.DataFrame()
+    weapon_df = pd.DataFrame([
+        {"Weapon Name": "Spear", "Category": "Draupnir Spear", "Level": 1, "Total Stats": 10, "Strength": 5, "Defense": 5, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0},
+        {"Weapon Name": "Spear", "Category": "Draupnir Spear", "Level": 2, "Total Stats": 20, "Strength": 10, "Defense": 10, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0},
+        # Note: Axe is NOT in the dataframe
+    ])
+
+    inventory = []
+    # Have a weapon that exists and one that doesn't
+    w_inventory = [
+        ("Spear", 2, "Draupnir Spear", False),
+        ("Axe", 1, "Leviathan Axe", False),  # This one is missing from df
+    ]
+
+    available_df = optimizer.build_available_df(armor_df, inventory)
+    w_available_df = optimizer.build_weapon_available_df(weapon_df, w_inventory)
+
+    armor_current, weapon_current = optimizer.collect_current_build(
+        inventory, available_df, w_inventory, w_available_df
+    )
+
+    # Should only include Spear, skipping Axe which isn't in df
+    assert len(weapon_current) == 1
+    assert weapon_current[0]["Item Name"] == "Spear"
+    assert weapon_current[0]["Category"] == "Draupnir Spear"
+
+
+def test_collect_current_build_with_missing_stats():
+    """Should handle NaN/missing stats gracefully with target_stats (line 150-153 coverage)."""
+    import pandas as pd
+
+    df = pd.DataFrame([
+        {"Piece Name": "Sparse Armor", "Piece Type": "Chest", "Level": 1, "Total Stats": 20, "Strength": 10, "Defense": None, "Runic": 10, "Vitality": 0, "Cooldown": 0, "Luck": 0},
+    ])
+    empty_df = pd.DataFrame()
+
+    inventory = [("Sparse Armor", 1, "Chest", False)]
+    w_inventory = []
+
+    available_df = optimizer.build_available_df(df, inventory)
+    w_available_df = optimizer.build_weapon_available_df(empty_df, w_inventory)
+
+    # When Defense is None/NaN, should treat as 0 when summing
+    armor_current, _ = optimizer.collect_current_build(
+        inventory, available_df, w_inventory, w_available_df, target_stats=["Strength", "Defense"]
+    )
+
+    assert len(armor_current) == 1
+    # Should have included Strength (10) but Defense is NaN (treated as 0)
+    assert armor_current[0]["Item Name"] == "Sparse Armor"
+
+
+def test_build_all_pareto_with_weapons_only():
+    """Should build Pareto frontier with weapons inventory (lines 432-469 coverage)."""
+    import pandas as pd
+
+    armor_df = pd.DataFrame()  # No armor
+    weapon_df = pd.DataFrame([
+        {"Weapon Name": "Axe", "Category": "Leviathan Axe", "Level": 1, "Total Stats": 15, "Strength": 8, "Defense": 7, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0, "Upgrade_Hacksilver": 0},
+        {"Weapon Name": "Axe", "Category": "Leviathan Axe", "Level": 2, "Total Stats": 25, "Strength": 13, "Defense": 12, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0, "Upgrade_Hacksilver": 100},
+    ])
+
+    inventory = []
+    w_inventory = [("Axe", 1, "Leviathan Axe", False)]
+    resource_budget = {"Hacksilver": 500}
+    mat_aliases = {}
+
+    slot_pareto = optimizer.build_all_pareto(
+        inventory, w_inventory, armor_df, weapon_df, resource_budget, mat_aliases
+    )
+
+    # Should have weapon slot with actual options
+    assert "Arma — Leviathan Axe" in slot_pareto
+    assert len(slot_pareto["Arma — Leviathan Axe"]) > 0
+
+
+def test_build_all_pareto_with_empty_weapon_slots():
+    """Should handle weapon categories with no inventory (lines 460 coverage)."""
+    import pandas as pd
+
+    armor_df = pd.DataFrame([
+        {"Piece Name": "Chest", "Piece Type": "Chest", "Level": 1, "Total Stats": 20, "Strength": 10, "Defense": 10, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0, "Upgrade_Hacksilver": 0},
+    ])
+    weapon_df = pd.DataFrame([
+        {"Weapon Name": "Axe", "Category": "Leviathan Axe", "Level": 1, "Total Stats": 15, "Strength": 8, "Defense": 7, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0, "Upgrade_Hacksilver": 0},
+        {"Weapon Name": "Spear", "Category": "Draupnir Spear", "Level": 1, "Total Stats": 15, "Strength": 8, "Defense": 7, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0, "Upgrade_Hacksilver": 0},
+    ])
+
+    inventory = [("Chest", 1, "Chest", False)]
+    # Only have axe in inventory, no spear or blades
+    w_inventory = [("Axe", 1, "Leviathan Axe", False)]
+    resource_budget = {"Hacksilver": 500}
+    mat_aliases = {}
+
+    slot_pareto = optimizer.build_all_pareto(
+        inventory, w_inventory, armor_df, weapon_df, resource_budget, mat_aliases
+    )
+
+    # Should have Axe slot
+    assert "Arma — Leviathan Axe" in slot_pareto
+    # Should NOT have Spear or Blades slots (if condition at line 460)
+    assert "Arma — Draupnir Spear" not in slot_pareto
+    assert "Arma — Blades of Chaos" not in slot_pareto

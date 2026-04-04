@@ -79,6 +79,8 @@ def parse_inventory_from_config(cfg):
 
 def build_available_df(all_pieces_df, inventory):
     """Filtra il DF armature ai soli pezzi in inventario (fino al livello posseduto)."""
+    if not inventory:
+        return pd.DataFrame()
     filters = []
     for piece_name, max_lvl, piece_type, _ in inventory:
         mask = (
