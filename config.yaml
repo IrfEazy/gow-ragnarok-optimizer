@@ -212,3 +212,15 @@ optimization_stats:
 - Vitality
 - Cooldown
 - Luck
+stat_presets:
+  Defensive:
+  - Defense
+  - Vitality
+  Aggressive:
+  - Strength
+  - Runic
+  Balanced:
+  - Strength
+  - Defense
+  - Runic
+  - Vitality

@@ -770,6 +770,21 @@
                 ↻ Ripristina Predefiniti
             </button>
         </div>
+        <!-- Preset Management Section -->
+        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(200, 200, 200, 0.1); border-radius: 0.5rem;">
+            <div style="margin-bottom: 1rem;">
+                <label for="stat-preset-dropdown" style="font-weight: bold; margin-right: 0.5rem;">📋 Preset:</label>
+                <select id="stat-preset-dropdown" style="padding: 0.25rem 0.5rem; font-size: 0.9rem;">
+                    <option value="">-- Carica un preset --</option>
+                </select>
+                <button onclick="loadSelectedPreset()" style="margin-left: 0.5rem; padding: 0.25rem 0.75rem;">📂 Carica</button>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="preset-name-input" placeholder="Nome nuovo preset..." style="flex: 1; padding: 0.25rem 0.5rem; font-size: 0.9rem;" />
+                <button onclick="saveAsPreset()" style="padding: 0.25rem 0.75rem;">💾 Salva come Preset</button>
+                <button onclick="deleteSelectedPreset()" id="delete-preset-btn" style="padding: 0.25rem 0.75rem;" disabled>🗑️ Elimina</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1028,6 +1043,7 @@ async function applyStatPreferences() {
         const d = await resp.json();
         updateAllSections(d);
         toggleStatPreferences();
+        updatePresetDropdownAfterPreferenceChange();
         toast(selected.length > 0
             ? `Preferenze salvate: ${selected.join(', ')}`
             : 'Preferenze salvate: Total Stats', 'success');
@@ -1083,6 +1099,181 @@ async function resetStatPreferences() {
 
     toast('Ripristinati i valori predefiniti (Forza + Difesa)', 'success');
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Stat Presets Management
+   ═══════════════════════════════════════════════════════════ */
+
+function populatePresetDropdown(presets) {
+    const dropdown = document.getElementById("stat-preset-dropdown");
+    if (!dropdown) return;
+
+    // Clear existing options except the placeholder
+    dropdown.innerHTML = '<option value="">-- Carica un preset --</option>';
+
+    // Add each preset as an option
+    if (presets && typeof presets === 'object') {
+        Object.keys(presets).forEach(presetName => {
+            const option = document.createElement("option");
+            option.value = presetName;
+            option.textContent = presetName;
+            dropdown.appendChild(option);
+        });
+    }
+
+    // Enable/disable delete button based on selection
+    updateDeleteButtonState();
+}
+
+function updateDeleteButtonState() {
+    const dropdown = document.getElementById("stat-preset-dropdown");
+    const deleteBtn = document.getElementById("delete-preset-btn");
+    if (dropdown && deleteBtn) {
+        deleteBtn.disabled = !dropdown.value;
+    }
+}
+
+async function loadSelectedPreset() {
+    const dropdown = document.getElementById("stat-preset-dropdown");
+    if (!dropdown.value) {
+        toast("⚠️ Seleziona un preset");
+        return;
+    }
+
+    const presetName = dropdown.value;
+    const payload = {
+        action: "load",
+        preset_name: presetName
+    };
+
+    showLoading(true);
+    try {
+        const resp = await fetch("/api/stat-presets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const d = await resp.json();
+        if (d.error) {
+            toast(`❌ Errore: ${d.error}`);
+            return;
+        }
+        toast(`✅ Preset "${presetName}" caricato`);
+        loadStatPreferences(d.stat_preferences || []);
+        updateAllSections(d);
+        updatePresetDropdownAfterPreferenceChange();
+    } catch(e) {
+        toast(`❌ Errore: ${e.message}`);
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function saveAsPreset() {
+    const input = document.getElementById("preset-name-input");
+    if (!input.value.trim()) {
+        toast("⚠️ Inserisci nome del preset");
+        return;
+    }
+
+    const presetName = input.value.trim();
+    const currentStats = getSelectedStats();
+
+    const payload = {
+        action: "save",
+        preset_name: presetName,
+        current_stats: currentStats
+    };
+
+    showLoading(true);
+    try {
+        const resp = await fetch("/api/stat-presets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const d = await resp.json();
+        if (d.error) {
+            toast(`❌ Errore: ${d.error}`);
+            return;
+        }
+        toast(`✅ Preset "${presetName}" salvato`);
+        input.value = "";
+        populatePresetDropdown(d.stat_presets);
+        updateAllSections(d);
+    } catch(e) {
+        toast(`❌ Errore: ${e.message}`);
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function deleteSelectedPreset() {
+    const dropdown = document.getElementById("stat-preset-dropdown");
+    if (!dropdown.value) {
+        toast("⚠️ Seleziona un preset da eliminare");
+        return;
+    }
+
+    const presetName = dropdown.value;
+    if (!confirm(`Sei sicuro di voler eliminare il preset "${presetName}"?`)) {
+        return;
+    }
+
+    const payload = {
+        action: "delete",
+        preset_name: presetName
+    };
+
+    showLoading(true);
+    try {
+        const resp = await fetch("/api/stat-presets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const d = await resp.json();
+        if (d.error) {
+            toast(`❌ Errore: ${d.error}`);
+            return;
+        }
+        toast(`✅ Preset eliminato`);
+        populatePresetDropdown(d.stat_presets);
+        updateAllSections(d);
+    } catch(e) {
+        toast(`❌ Errore: ${e.message}`);
+    } finally {
+        showLoading(false);
+    }
+}
+
+function getSelectedStats() {
+    const stats = [];
+    const statNames = ["Strength", "Defense", "Runic", "Vitality", "Cooldown", "Luck"];
+    statNames.forEach(stat => {
+        const checkbox = document.getElementById(`stat-selector`).querySelector(`input[value="${stat}"]:checked`);
+        if (checkbox) {
+            stats.push(stat);
+        }
+    });
+    return stats;
+}
+
+function updatePresetDropdownAfterPreferenceChange() {
+    const dropdown = document.getElementById("stat-preset-dropdown");
+    if (dropdown) {
+        dropdown.value = ""; // Clear selection
+        updateDeleteButtonState();
+    }
+}
+
+// Hook: Update dropdown state on input change
+document.addEventListener("DOMContentLoaded", function() {
+    const dropdown = document.getElementById("stat-preset-dropdown");
+    if (dropdown) {
+        dropdown.addEventListener("change", updateDeleteButtonState);
+    }
+});
 
 
 /* ═══════════════════════════════════════════════════════════
@@ -1675,6 +1866,7 @@ document.querySelectorAll('.section-header').forEach(hdr => {
 
 // Load saved stat preferences from server data (passed by Jinja2)
 loadStatPreferences({{ stat_preferences | tojson }});
+populatePresetDropdown({{ stat_presets | tojson }});
 
 </script>
 </body>

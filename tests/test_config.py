@@ -1,10 +1,16 @@
+import pytest
+
 from gow_optimizer import config as config_module
 from gow_optimizer.config import (
     coerce_resource_budget,
+    delete_preset,
     get_data_file_paths,
     load_config,
     load_stat_preferences,
+    load_stat_presets,
+    save_current_as_preset,
     save_stat_preferences,
+    save_stat_presets,
 )
 from gow_optimizer.paths import PROJECT_ROOT
 
@@ -216,3 +222,150 @@ optimization_stats:
 
     result = load_stat_preferences()
     assert result is None
+
+
+def test_load_stat_presets_returns_empty_dict_when_not_set(tmp_path, monkeypatch):
+    """Should return empty dict when stat_presets not in config."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
+
+    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+
+    result = load_stat_presets()
+
+    assert result == {}
+
+
+def test_load_stat_presets_returns_presets_when_set(tmp_path, monkeypatch):
+    """Should return presets dict when stat_presets is set."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+resource_budget:
+  Hacksilver: 100
+stat_presets:
+  Defensive:
+  - Defense
+  - Vitality
+  Aggressive:
+  - Strength
+  - Runic
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+
+    result = load_stat_presets()
+
+    assert result == {
+        "Defensive": ["Defense", "Vitality"],
+        "Aggressive": ["Strength", "Runic"],
+    }
+
+
+def test_load_stat_presets_handles_invalid_format(tmp_path, monkeypatch):
+    """Should return empty dict when stat_presets is not a dict."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "resource_budget:\n  Hacksilver: 100\nstat_presets: invalid_string\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+
+    result = load_stat_presets()
+
+    assert result == {}
+
+
+def test_save_current_as_preset_creates_preset(tmp_path, monkeypatch):
+    """Should create new preset with given name and stats."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
+
+    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+
+    save_current_as_preset("TestPreset", ["Strength", "Defense"])
+
+    result = load_stat_presets()
+    assert result["TestPreset"] == ["Strength", "Defense"]
+
+
+def test_save_current_as_preset_rejects_empty_name(tmp_path, monkeypatch):
+    """Should raise ValueError when preset_name is empty."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
+
+    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+
+    with pytest.raises(ValueError):
+        save_current_as_preset("", ["Strength"])
+
+    with pytest.raises(ValueError):
+        save_current_as_preset("   ", ["Strength"])
+
+    with pytest.raises(ValueError):
+        save_current_as_preset(None, ["Strength"])
+
+
+def test_save_current_as_preset_overwrites_existing(tmp_path, monkeypatch):
+    """Should overwrite existing preset with same name."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+resource_budget:
+  Hacksilver: 100
+stat_presets:
+  MyPreset:
+  - Defense
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+
+    save_current_as_preset("MyPreset", ["Strength", "Runic"])
+
+    result = load_stat_presets()
+    assert result["MyPreset"] == ["Strength", "Runic"]
+
+
+def test_delete_preset_removes_preset(tmp_path, monkeypatch):
+    """Should delete preset by name."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+resource_budget:
+  Hacksilver: 100
+stat_presets:
+  Defensive:
+  - Defense
+  - Vitality
+  Aggressive:
+  - Strength
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+
+    delete_preset("Defensive")
+
+    result = load_stat_presets()
+    assert "Defensive" not in result
+    assert "Aggressive" in result
+
+
+def test_delete_preset_raises_keyerror_when_not_found(tmp_path, monkeypatch):
+    """Should raise KeyError when preset does not exist."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
+
+    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+
+    with pytest.raises(KeyError):
+        delete_preset("NonExistent")

@@ -34,6 +34,7 @@ EMPTY_COMPUTE_RESULT = {
     "step_hack_remaining": 0,
     "step_mats_consumed": [],
     "stat_preferences": [],
+    "stat_presets": {},
 }
 
 
@@ -828,3 +829,216 @@ def test_build_step_plan_with_multi_objective_options(monkeypatch):
     assert "steps" in result
     assert isinstance(result["steps"], list)
     # Should recommend the upgrade since it has positive efficiency
+
+
+def test_api_stat_presets_list_action(monkeypatch):
+    """Test: /api/stat-presets with action=list returns all presets."""
+    from gow_optimizer import config
+
+    state = {
+        "resource_budget": {},
+        "stat_presets": {
+            "Defensive": ["Defense", "Vitality"],
+            "Aggressive": ["Strength"],
+        }
+    }
+    _patch_runtime_store(monkeypatch, state)
+
+    # Mock load_config to return our test state
+    monkeypatch.setattr(config, "load_config", lambda: state)
+
+    client = web.app.test_client()
+    resp = client.post(
+        '/api/stat-presets',
+        json={"action": "list"},
+        content_type='application/json'
+    )
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "stat_presets" in data
+    assert data["stat_presets"]["Defensive"] == ["Defense", "Vitality"]
+    assert data["stat_presets"]["Aggressive"] == ["Strength"]
+
+
+def test_api_stat_presets_save_action(monkeypatch):
+    """Test: /api/stat-presets with action=save creates new preset."""
+    from gow_optimizer import config
+
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "stat_presets": {},
+        "chest_pieces": [],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+    _patch_runtime_store(monkeypatch, state)
+
+    monkeypatch.setattr(config, "load_config", lambda: state)
+
+    client = web.app.test_client()
+    resp = client.post(
+        '/api/stat-presets',
+        json={
+            "action": "save",
+            "preset_name": "TestPreset",
+            "current_stats": ["Strength", "Defense"]
+        },
+        content_type='application/json'
+    )
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "stat_presets" in data
+    assert data["stat_presets"]["TestPreset"] == ["Strength", "Defense"]
+
+
+def test_api_stat_presets_load_action(monkeypatch):
+    """Test: /api/stat-presets with action=load applies preset stats."""
+    from gow_optimizer import config
+
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "stat_presets": {
+            "Defensive": ["Defense", "Vitality"],
+        },
+        "chest_pieces": [],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+    _patch_runtime_store(monkeypatch, state)
+
+    monkeypatch.setattr(config, "load_config", lambda: state)
+
+    client = web.app.test_client()
+    resp = client.post(
+        '/api/stat-presets',
+        json={
+            "action": "load",
+            "preset_name": "Defensive",
+        },
+        content_type='application/json'
+    )
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "stat_preferences" in data
+    assert data["stat_preferences"] == ["Defense", "Vitality"]
+
+
+def test_api_stat_presets_delete_action(monkeypatch):
+    """Test: /api/stat-presets with action=delete removes preset."""
+    from gow_optimizer import config
+
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "stat_presets": {
+            "ToDelete": ["Strength"],
+            "ToKeep": ["Defense"],
+        },
+        "chest_pieces": [],
+        "wrist_pieces": [],
+        "waist_pieces": [],
+        "axe_attachments": [],
+        "blades_attachments": [],
+        "spear_attachments": [],
+        "shield_attachments": [],
+    }
+    _patch_runtime_store(monkeypatch, state)
+
+    monkeypatch.setattr(config, "load_config", lambda: state)
+
+    client = web.app.test_client()
+    resp = client.post(
+        '/api/stat-presets',
+        json={
+            "action": "delete",
+            "preset_name": "ToDelete",
+        },
+        content_type='application/json'
+    )
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "stat_presets" in data
+    assert "ToDelete" not in data["stat_presets"]
+    assert "ToKeep" in data["stat_presets"]
+
+
+def test_api_stat_presets_invalid_inputs(monkeypatch):
+    """Test: /api/stat-presets validates inputs."""
+    from gow_optimizer import config
+
+    state = {
+        "resource_budget": {"Hacksilver": 5000},
+        "stat_presets": {},
+    }
+    _patch_runtime_store(monkeypatch, state)
+
+    client = web.app.test_client()
+
+    # Missing action
+    resp = client.post(
+        '/api/stat-presets',
+        json={},
+        content_type='application/json'
+    )
+    assert resp.status_code == 400
+    assert "Missing action" in resp.get_json()["error"]
+
+    # Missing preset_name for save
+    resp = client.post(
+        '/api/stat-presets',
+        json={"action": "save"},
+        content_type='application/json'
+    )
+    assert resp.status_code == 400
+    assert "Missing preset_name" in resp.get_json()["error"]
+
+    # Invalid current_stats type
+    resp = client.post(
+        '/api/stat-presets',
+        json={
+            "action": "save",
+            "preset_name": "Test",
+            "current_stats": "invalid"
+        },
+        content_type='application/json'
+    )
+    assert resp.status_code == 400
+    assert "current_stats must be list or null" in resp.get_json()["error"]
+
+    # Missing preset_name for load
+    resp = client.post(
+        '/api/stat-presets',
+        json={"action": "load"},
+        content_type='application/json'
+    )
+    assert resp.status_code == 400
+    assert "Missing preset_name" in resp.get_json()["error"]
+
+    # Missing preset_name for delete
+    resp = client.post(
+        '/api/stat-presets',
+        json={"action": "delete"},
+        content_type='application/json'
+    )
+    assert resp.status_code == 400
+    assert "Missing preset_name" in resp.get_json()["error"]
+
+    # Unknown action value
+    resp = client.post(
+        '/api/stat-presets',
+        json={"action": "unknown_action"},
+        content_type='application/json'
+    )
+    assert resp.status_code == 400
+    assert "Unknown action" in resp.get_json()["error"]
