@@ -642,8 +642,9 @@ def _compute_all(web_data=None, target_stats=None):
     from gow_optimizer.config import PIECE_KEYS
 
     all_pieces_csv = extract_all_pieces()
+    # Map (slot_key, name) to owned status: True if craft=False, False if craft=True
     owned_names = {
-        (slot_key, piece.get("name"))
+        (slot_key, piece.get("name")): not piece.get("craft", True)
         for slot_key in PIECE_KEYS
         for piece in web_data.get(slot_key, [])
     }
@@ -651,7 +652,7 @@ def _compute_all(web_data=None, target_stats=None):
     all_pieces_display = {}
     for slot_key in PIECE_KEYS:
         all_pieces_display[slot_key] = [
-            {"name": name, "min_level": level, "owned": (slot_key, name) in owned_names}
+            {"name": name, "min_level": level, "owned": owned_names.get((slot_key, name), False)}
             for name, level in sorted(
                 all_pieces_csv.get(slot_key, []), key=lambda x: x[0]
             )

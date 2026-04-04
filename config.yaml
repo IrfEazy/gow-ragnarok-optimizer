@@ -13,9 +13,6 @@ mat_aliases:
 chest_pieces:
 - craft: false
   level: 5
-  name: Lunda's Lost Cuirass
-- craft: false
-  level: 5
   name: Spiritual Shoulder Straps
 - craft: false
   level: 4
@@ -44,6 +41,57 @@ chest_pieces:
 - craft: false
   level: 5
   name: Breastplate of Guiding Light
+- name: Cuirass of Ares
+  level: 7.0
+  craft: true
+- name: Cuirass of Raven Tears
+  level: 3.0
+  craft: true
+- name: Cuirass of Zeus
+  level: 10.0
+  craft: true
+- name: Darkdale Plackart
+  level: 1.0
+  craft: true
+- name: Dragon Scaled Breastplate
+  level: 6.0
+  craft: true
+- name: Fate Breaker Shoulder Guard
+  level: 6.0
+  craft: true
+- name: Glory of Sparta
+  level: 9.1
+  craft: true
+- name: Hunter's Pauldron
+  level: 6.0
+  craft: true
+- name: Mani's Pauldron of Wisdom
+  level: 5.0
+  craft: true
+- name: Plackart of Fallen Stars
+  level: 6.0
+  craft: true
+- name: Risen Snow Breastplate
+  level: 1.0
+  craft: true
+- name: Shoulder Guard of Undying Pyres
+  level: 6.0
+  craft: true
+- name: Shoulder Straps of Radiance
+  level: 4.0
+  craft: true
+- name: Steinbjorn Plackart
+  level: 6.0
+  craft: true
+- name: Surtr's Scorched Cuirass
+  level: 7.0
+  craft: true
+- name: Lunda's Lost Cuirass
+  level: 5.0
+  craft: false
+- name: Berserker Cuirass
+  level: 5.0
+  craft: false
 wrist_pieces:
 - craft: true
   level: 4
@@ -75,6 +123,57 @@ wrist_pieces:
 - craft: false
   level: 5
   name: Gauntlets of Guiding Light
+- name: Berserker Gauntlets
+  level: 5.0
+  craft: true
+- name: Bracers of Fallen Stars
+  level: 6.0
+  craft: true
+- name: Bracers of Raven Tears
+  level: 3.0
+  craft: true
+- name: Bracers of Undying Pyres
+  level: 6.0
+  craft: true
+- name: Darkdale Arm Guards
+  level: 1.0
+  craft: true
+- name: Dragon Scaled Bracers
+  level: 6.0
+  craft: true
+- name: Fate Breaker Wraps
+  level: 6.0
+  craft: true
+- name: Gauntlets of Ares
+  level: 7.0
+  craft: true
+- name: Gauntlets of Zeus
+  level: 10.0
+  craft: true
+- name: Giptumadr's Gauntlets
+  level: 5.0
+  craft: true
+- name: Hunter's Gauntlets
+  level: 6.0
+  craft: true
+- name: Lunda's Lost Bracers
+  level: 5.0
+  craft: true
+- name: Mani's Bracers of Wisdom
+  level: 5.0
+  craft: true
+- name: Pride of Sparta
+  level: 9.1
+  craft: true
+- name: Risen Snow Gauntlets
+  level: 1.0
+  craft: true
+- name: Steinbjorn Gauntlets
+  level: 6.0
+  craft: true
+- name: Surtr's Scorched Arm
+  level: 7.0
+  craft: true
 waist_pieces:
 - craft: false
   level: 6
@@ -112,6 +211,51 @@ waist_pieces:
 - craft: false
   level: 3
   name: Girdle of Raven Tears
+- name: Berserker Waist Guard
+  level: 5.0
+  craft: true
+- name: Darkdale Waist Guard
+  level: 1.0
+  craft: true
+- name: Dragon Scaled Girdle
+  level: 6.0
+  craft: true
+- name: Fate Breaker Belt
+  level: 6.0
+  craft: true
+- name: Giptumadr's Waist Guard
+  level: 5.0
+  craft: true
+- name: Girdle of Undying Pyres
+  level: 6.0
+  craft: true
+- name: Hunter's Belt
+  level: 6.0
+  craft: true
+- name: Mani's Belt of Wisdom
+  level: 5.0
+  craft: true
+- name: Mark of Sparta
+  level: 9.1
+  craft: true
+- name: Risen Snow Girdle
+  level: 1.0
+  craft: true
+- name: Steinbjorn Waist Guard
+  level: 6.0
+  craft: true
+- name: Surtr's Scorched Girdle
+  level: 7.0
+  craft: true
+- name: Waist Guard of Fallen Stars
+  level: 6.0
+  craft: true
+- name: War Belt of Ares
+  level: 7.0
+  craft: true
+- name: War Belt of Zeus
+  level: 10.0
+  craft: true
 axe_attachments:
 - craft: false
   level: 5
@@ -131,6 +275,24 @@ axe_attachments:
 - craft: true
   level: 2
   name: The Furious Maul
+- name: Banahogg Knob
+  level: 6.0
+  craft: true
+- name: Fortified Frost Knob
+  level: 2.0
+  craft: true
+- name: Grip of Darkdale
+  level: 1.0
+  craft: true
+- name: Grip of Healing Harmony
+  level: 5.0
+  craft: true
+- name: Grip of Radiant Reflection
+  level: 6.0
+  craft: true
+- name: Runic Hailstone Knob
+  level: 6.0
+  craft: true
 blades_attachments:
 - craft: false
   level: 6
@@ -150,7 +312,55 @@ blades_attachments:
 - craft: false
   level: 2
   name: Cursed Empress Handles
-spear_attachments: []
+- name: Darkdale Handles
+  level: 1.0
+  craft: true
+- name: Deadly Obsidian Handles
+  level: 1.0
+  craft: true
+- name: Luminous Recovery Handles
+  level: 6.0
+  craft: true
+- name: Pommels of Burning Unity
+  level: 6.0
+  craft: true
+- name: Pommels of the True Flame
+  level: 6.0
+  craft: true
+- name: Pommels of the Undying Spark
+  level: 2.0
+  craft: true
+spear_attachments:
+- name: Battle-Scarred Sauroter
+  level: 6.0
+  craft: true
+- name: Charging Assault Sauroter
+  level: 5.0
+  craft: true
+- name: Hind of Attuned Elements
+  level: 5.0
+  craft: true
+- name: Hind of Volatile Might
+  level: 6.0
+  craft: true
+- name: Hind of Weightless Recovery
+  level: 6.0
+  craft: true
+- name: Hind of the Four Winds
+  level: 5.0
+  craft: true
+- name: Lion's Roar Sauroter
+  level: 5.0
+  craft: true
+- name: Mighty Olympic Sauroter
+  level: 5.0
+  craft: true
+- name: Soldier's Sauroter
+  level: 4.0
+  craft: true
+- name: Warrior's Echo Sauroter
+  level: 6.0
+  craft: true
 shield_attachments:
 - craft: false
   level: 6
@@ -167,6 +377,27 @@ shield_attachments:
 - craft: false
   level: 5
   name: Rond of Purification
+- name: Rond of Absorption
+  level: 6.0
+  craft: true
+- name: Rond of Deflection
+  level: 5.0
+  craft: true
+- name: Rond of Disruption
+  level: 7.0
+  craft: true
+- name: Rond of Fortification
+  level: 6.0
+  craft: true
+- name: Rond of Obliteration
+  level: 8.0
+  craft: true
+- name: Rond of Restoration
+  level: 4.0
+  craft: true
+- name: Rond of the Nine Realms
+  level: 6.0
+  craft: true
 resource_budget:
   Asgardian Ingot: 0
   Blazing Embers: 0
