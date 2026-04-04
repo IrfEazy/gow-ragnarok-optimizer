@@ -33,6 +33,7 @@ EMPTY_COMPUTE_RESULT = {
     "step_hack_spent": 0,
     "step_hack_remaining": 0,
     "step_mats_consumed": [],
+    "stat_preferences": [],
 }
 
 
@@ -46,10 +47,11 @@ def _patch_runtime_store(monkeypatch, state):
 
     monkeypatch.setattr(web, "load_web_inventory", load)
     monkeypatch.setattr(web, "save_web_inventory", save)
+    monkeypatch.setattr(web, "load_stat_preferences", lambda: None)
     monkeypatch.setattr(
         web,
         "_compute_all",
-        lambda web_data=None: {
+        lambda web_data=None, target_stats=None: {
             **EMPTY_COMPUTE_RESULT,
             "hacksilver": (web_data or state)["resource_budget"].get("Hacksilver", 0),
             "resources": [
@@ -61,7 +63,8 @@ def _patch_runtime_store(monkeypatch, state):
 
 
 def test_create_app_has_expected_routes(monkeypatch):
-    monkeypatch.setattr(web, "_compute_all", lambda web_data=None: EMPTY_COMPUTE_RESULT)
+    monkeypatch.setattr(web, "_compute_all", lambda web_data=None, target_stats=None: EMPTY_COMPUTE_RESULT)
+    monkeypatch.setattr(web, "load_stat_preferences", lambda: None)
 
     app = web.create_app({"TESTING": True})
     client = app.test_client()
@@ -304,8 +307,8 @@ def test_home_page_includes_reset_stats_button(monkeypatch):
     assert "Ripristina Predefiniti" in html
 
 
-def test_home_page_includes_localstorage_functions(monkeypatch):
-    """Test: GET / should include localStorage persistence functions."""
+def test_home_page_includes_stat_preference_functions(monkeypatch):
+    """Test: GET / should include server-based stat preference persistence functions."""
     state = {
         "resource_budget": {"Hacksilver": 5000},
         "chest_pieces": [],
@@ -325,19 +328,18 @@ def test_home_page_includes_localstorage_functions(monkeypatch):
     assert response.status_code == 200
     html = response.data.decode()
 
-    # Check for localStorage functions
-    assert "function saveStatSelection" in html
-    assert "localStorage.setItem('gow_optimizer_stats'" in html
-    assert "function loadStatSelection" in html
-    assert "localStorage.getItem('gow_optimizer_stats')" in html
-    assert "function resetStatSelection" in html
-    assert "localStorage.removeItem('gow_optimizer_stats')" in html
-    # Verify loadStatSelection is called on page initialization
-    assert "loadStatSelection()" in html
+    # Check for server-based preference functions
+    assert "function toggleStatPreferences" in html
+    assert "function applyStatPreferences" in html
+    assert "function loadStatPreferences" in html
+    assert "function resetStatPreferences" in html
+    assert "/api/stat-preferences" in html
+    # Verify loadStatPreferences is called on page initialization
+    assert "loadStatPreferences(" in html
 
 
-def test_apply_stat_selection_includes_save_logic(monkeypatch):
-    """Test: applyStatSelection should call saveStatSelection."""
+def test_apply_stat_preferences_calls_api(monkeypatch):
+    """Test: applyStatPreferences should call /api/stat-preferences endpoint."""
     state = {
         "resource_budget": {"Hacksilver": 5000},
         "chest_pieces": [],
@@ -357,9 +359,9 @@ def test_apply_stat_selection_includes_save_logic(monkeypatch):
     assert response.status_code == 200
     html = response.data.decode()
 
-    # Verify applyStatSelection function includes saveStatSelection call
-    assert "async function applyStatSelection()" in html
-    assert "saveStatSelection(selected)" in html
+    # Verify applyStatPreferences function calls /api/stat-preferences
+    assert "async function applyStatPreferences()" in html
+    assert "fetch('/api/stat-preferences'" in html
 
 
 def test_score_fn_affects_pareto_frontier(monkeypatch):
@@ -554,4 +556,132 @@ def test_collect_current_build_respects_preference_baseline(monkeypatch):
     assert current_totals[0]["Item Name"] == "Chest A", (
         f"Total Stats should select Chest A (70 total), "
         f"but selected {current_totals[0]['Item Name']}"
+    )
+
+
+def test_collect_current_build_handles_nan_stats_when_filtering_by_target_stats(monkeypatch):
+    """RED: collect_current_build should handle NaN stat values when filtering by target_stats.
+
+    When a stat is NaN for an item, it should be treated as 0 for scoring purposes.
+    Otherwise, NaN propagates through the sum and breaks comparisons.
+    """
+    from gow_optimizer.optimizer import collect_current_build
+    import pandas as pd
+    import numpy as np
+
+    # Create mock inventory with two wrist items
+    inventory = [
+        ("Item A", 5, "Wrist", False),
+        ("Item B", 5, "Wrist", False),
+    ]
+
+    # Item A: Has Defense=30, Strength=NaN (should score 30 for Defense-only)
+    # Item B: Has Defense=NaN, Strength=20 (should score 0 for Defense-only)
+    item_a_data = {
+        "Piece Name": "Item A",
+        "Piece Type": "Wrist",
+        "Level": 5,
+        "Total Stats": 50,
+        "Defense": 30.0,
+        "Strength": np.nan,
+        "Runic": np.nan,
+        "Vitality": np.nan,
+        "Cooldown": np.nan,
+        "Luck": np.nan,
+    }
+
+    item_b_data = {
+        "Piece Name": "Item B",
+        "Piece Type": "Wrist",
+        "Level": 5,
+        "Total Stats": 20,
+        "Defense": np.nan,
+        "Strength": 20.0,
+        "Runic": np.nan,
+        "Vitality": np.nan,
+        "Cooldown": np.nan,
+        "Luck": np.nan,
+    }
+
+    available_df = pd.DataFrame([item_a_data, item_b_data])
+    empty_w_inventory = []
+    empty_w_available_df = pd.DataFrame()
+
+    # Test with target_stats=["Defense"]
+    current, _ = collect_current_build(
+        inventory, available_df, empty_w_inventory, empty_w_available_df,
+        target_stats=["Defense"]
+    )
+
+    # Item A (Defense=30) should be selected, not Item B (Defense=NaN-&gt;0)
+    assert len(current) == 1, "Should select exactly 1 wrist item"
+    assert current[0]["Item Name"] == "Item A", (
+        f"Defense-only should select Item A (Defense=30), "
+        f"but selected {current[0]['Item Name']}"
+    )
+
+
+def test_build_slot_options_no_action_respects_score_fn(monkeypatch):
+    """RED: no-action option should use score_fn when provided, not Total Stats.
+
+    This test reproduces the bug: when score_fn is provided for multi-objective
+    optimization, the "no-action" option incorrectly uses Total Stats instead of
+    score_fn, causing it to be incorrectly ranked against alternatives that use
+    score_fn for scoring.
+    """
+    from gow_optimizer.optimizer import build_slot_options_with_mats, make_score_fn
+
+    # Create two items:
+    # Item A: high Total Stats (70) but low Defense (22)
+    # Item B: low Total Stats (30) but high Defense (40)
+
+    # When optimizing for Defense only, Item B should rank higher.
+    # But the bug causes "no-action" to be scored as 70 (Total Stats)
+    # instead of using the Defense-only score_fn.
+
+    baseline = {
+        "Defense": 20, "Strength": 10, "Runic": 0,
+        "Vitality": 0, "Cooldown": 0, "Luck": 0
+    }
+    score_fn = make_score_fn(["Defense"], baseline)
+
+    # Current item's per_stat (this is what the no-action option should score)
+    current_per_stat = baseline.copy()
+
+    # Mock chains with per_stat dicts
+    items_with_chains = [
+        # Item A: total=70, but Defense gain only +2 (from 20 to 22)
+        (
+            "Item A", 5, 70,
+            [(5, 70, 0, {}, {
+                "Defense": 22, "Strength": 30, "Runic": 10,
+                "Vitality": 0, "Cooldown": 0, "Luck": 8
+            })],
+            False
+        ),
+        # Item B: total=30, but Defense gain +20 (from 20 to 40)
+        (
+            "Item B", 5, 30,
+            [(5, 30, 0, {}, {
+                "Defense": 40, "Strength": -10, "Runic": 0,
+                "Vitality": 0, "Cooldown": 0, "Luck": 0
+            })],
+            False
+        ),
+    ]
+
+    options = build_slot_options_with_mats(
+        items_with_chains, score_fn=score_fn, current_per_stat=current_per_stat
+    )
+
+    # First option: "— nessuna azione —" (no action)
+    no_action = options[0]
+    assert no_action[2] == "— nessuna azione —"
+
+    # With the fix, no_action[1] should be score_fn(current_per_stat) = 1.0
+    # (since current_per_stat == baseline, gain is 0)
+    expected_score = score_fn(current_per_stat)
+    assert no_action[1] == expected_score, (
+        f"no-action should use score_fn(current_per_stat)={expected_score}, "
+        f"but got {no_action[1]}"
     )

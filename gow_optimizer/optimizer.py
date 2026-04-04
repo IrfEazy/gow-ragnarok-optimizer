@@ -146,7 +146,11 @@ def collect_current_build(inventory, available_df, w_inventory, w_available_df, 
 
             # Compute score based on target_stats or Total Stats
             if target_stats:
-                score = sum(row.iloc[0].get(s, 0) for s in target_stats)
+                # Sum selected stats, treating NaN as 0
+                score = sum(
+                    v if pd.notna(v) else 0
+                    for v in (row.iloc[0].get(s, 0) for s in target_stats)
+                )
             else:
                 score = row.iloc[0]["Total Stats"]
 
@@ -189,7 +193,11 @@ def collect_current_build(inventory, available_df, w_inventory, w_available_df, 
 
             # Compute score based on target_stats or Total Stats
             if target_stats:
-                score = sum(row.iloc[0].get(s, 0) for s in target_stats)
+                # Sum selected stats, treating NaN as 0
+                score = sum(
+                    v if pd.notna(v) else 0
+                    for v in (row.iloc[0].get(s, 0) for s in target_stats)
+                )
             else:
                 score = row.iloc[0]["Total Stats"]
 
@@ -256,19 +264,29 @@ def get_upgrade_chain_with_mats(
     return chain
 
 
-def build_slot_options_with_mats(items_with_chains, score_fn=None):
+def build_slot_options_with_mats(items_with_chains, score_fn=None, current_per_stat=None):
     """Build upgrade options for a slot, optionally using a multi-objective score function.
 
     Args:
         items_with_chains: List of (name, lvl, stats, chain, needs_craft) tuples.
         score_fn: Optional function that takes per_stat dict and returns a score.
                  If None, uses Total Stats (original behavior).
+        current_per_stat: Optional dict of {stat_name: value} for current item. Used to score
+                         the no-action option when score_fn is provided.
 
     Returns:
         List of (hack, score, label, mats) tuples representing upgrade options.
     """
     current_best = max((s for _, _, s, _, _ in items_with_chains), default=0)
-    options = [(0, current_best, "— nessuna azione —", {})]
+
+    # When score_fn is provided (multi-objective), score the no-action option using score_fn
+    # Otherwise use current_best (Total Stats) for backwards compatibility
+    if score_fn is not None and current_per_stat is not None:
+        no_action_score = score_fn(current_per_stat)
+    else:
+        no_action_score = current_best
+
+    options = [(0, no_action_score, "— nessuna azione —", {})]
 
     for item_name, item_lvl, item_stats, chain, needs_craft in items_with_chains:
         other_best = max(
@@ -363,6 +381,7 @@ def build_all_pareto(
 
     for pt in ["Chest", "Wrist", "Waist"]:
         items = []
+        current_best_row = None
         for name, lvl, t, needs_craft in inventory:
             if t != pt:
                 continue
@@ -376,7 +395,13 @@ def build_all_pareto(
                     & (all_pieces_df["Piece Type"] == pt)
                     & (all_pieces_df["Level"] == lvl)
                 ]
-                stats = row.iloc[0]["Total Stats"] if not row.empty else 0
+                if not row.empty:
+                    stats = row.iloc[0]["Total Stats"]
+                    # Track the best current item for scoring no-action option
+                    if current_best_row is None or stats > current_best_row["Total Stats"]:
+                        current_best_row = row.iloc[0]
+                else:
+                    stats = 0
             chain = get_upgrade_chain_with_mats(
                 all_pieces_df,
                 "Piece Name",
@@ -390,12 +415,17 @@ def build_all_pareto(
             items.append((name, lvl, stats, chain, needs_craft))
         slot_label = f"Armatura — {pt}"
         score_fn = (score_fns or {}).get(slot_label)
+        # Compute current_per_stat for no-action option when score_fn is present
+        current_per_stat = None
+        if score_fn is not None and current_best_row is not None:
+            current_per_stat = {col: current_best_row.get(col, 0) for col in STAT_COLS}
         slot_pareto[slot_label] = pareto_frontier_with_mats(
-            build_slot_options_with_mats(items, score_fn=score_fn)
+            build_slot_options_with_mats(items, score_fn=score_fn, current_per_stat=current_per_stat)
         )
 
     for cat in ["Leviathan Axe", "Blades of Chaos", "Shield"]:
         items = []
+        current_best_row = None
         for name, lvl, c, needs_craft in w_inventory:
             if c != cat:
                 continue
@@ -409,7 +439,13 @@ def build_all_pareto(
                     & (all_weapons_df["Category"] == cat)
                     & (all_weapons_df["Level"] == lvl)
                 ]
-                stats = row.iloc[0]["Total Stats"] if not row.empty else 0
+                if not row.empty:
+                    stats = row.iloc[0]["Total Stats"]
+                    # Track the best current item for scoring no-action option
+                    if current_best_row is None or stats > current_best_row["Total Stats"]:
+                        current_best_row = row.iloc[0]
+                else:
+                    stats = 0
             chain = get_upgrade_chain_with_mats(
                 all_weapons_df,
                 "Weapon Name",
@@ -424,8 +460,12 @@ def build_all_pareto(
         if items:
             slot_label = f"Arma — {cat}"
             score_fn = (score_fns or {}).get(slot_label)
+            # Compute current_per_stat for no-action option when score_fn is present
+            current_per_stat = None
+            if score_fn is not None and current_best_row is not None:
+                current_per_stat = {col: current_best_row.get(col, 0) for col in STAT_COLS}
             slot_pareto[slot_label] = pareto_frontier_with_mats(
-                build_slot_options_with_mats(items, score_fn=score_fn)
+                build_slot_options_with_mats(items, score_fn=score_fn, current_per_stat=current_per_stat)
             )
 
     return slot_pareto

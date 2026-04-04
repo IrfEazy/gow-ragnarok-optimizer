@@ -11,147 +11,147 @@ mat_aliases:
   s Broken Bracers: Lunda's Broken Bracers
   s Broken Belt: Lunda's Broken Belt
 chest_pieces:
-- name: Lunda's Lost Cuirass
+- craft: true
   level: 5
-  craft: true
-- name: Spiritual Shoulder Straps
+  name: Lunda's Lost Cuirass
+- craft: true
   level: 4
-  craft: true
-- name: Sol's Spaulders of Courage
+  name: Spiritual Shoulder Straps
+- craft: false
   level: 4
-  craft: false
-- name: Spaulders of Enlightenment
+  name: Sol's Spaulders of Courage
+- craft: true
   level: 3
-  craft: true
-- name: Fortified Husk Cuirass
+  name: Spaulders of Enlightenment
+- craft: true
   level: 3
-  craft: true
-- name: Nidavellir's Finest Plackart
+  name: Fortified Husk Cuirass
+- craft: true
   level: 2
-  craft: true
-- name: Cloak of the Black Bear
+  name: Nidavellir's Finest Plackart
+- craft: false
   level: 2
-  craft: false
-- name: Vidar's Pauldron of Might
+  name: Cloak of the Black Bear
+- craft: true
   level: 1
-  craft: true
-- name: Shoulder Guard of Survival
+  name: Vidar's Pauldron of Might
+- craft: false
   level: 1
-  craft: false
-- name: Spiritual Shoulder Straps
+  name: Shoulder Guard of Survival
+- craft: false
   level: 4
-  craft: false
+  name: Spiritual Shoulder Straps
 wrist_pieces:
-- name: Sol's Wraps of Courage
+- craft: true
   level: 4
-  craft: true
-- name: Gauntlets of Radiance
+  name: Sol's Wraps of Courage
+- craft: true
   level: 4
-  craft: true
-- name: Spiritual Wraps
+  name: Gauntlets of Radiance
+- craft: false
   level: 5
-  craft: false
-- name: Bracers of Enlightenment
+  name: Spiritual Wraps
+- craft: true
   level: 3
-  craft: true
-- name: Wraps of the Black Bear
+  name: Bracers of Enlightenment
+- craft: false
   level: 3
-  craft: false
-- name: Nidavellir's Finest Arm Guards
+  name: Wraps of the Black Bear
+- craft: true
   level: 2
-  craft: true
-- name: Vidar's Bracers of Might
+  name: Nidavellir's Finest Arm Guards
+- craft: true
   level: 1
-  craft: true
-- name: Fortified Husk Arm Guards
+  name: Vidar's Bracers of Might
+- craft: true
   level: 1
-  craft: true
-- name: Wraps of Survival
+  name: Fortified Husk Arm Guards
+- craft: false
   level: 1
-  craft: false
+  name: Wraps of Survival
 waist_pieces:
-- name: Lunda's Lost Belt
+- craft: true
   level: 5
-  craft: true
-- name: Sol's Belt of Courage
+  name: Lunda's Lost Belt
+- craft: true
   level: 4
-  craft: true
-- name: Belt of Radiance
+  name: Sol's Belt of Courage
+- craft: false
   level: 4
-  craft: false
-- name: Spiritual Belt
+  name: Belt of Radiance
+- craft: false
   level: 5
-  craft: false
-- name: Belt of Enlightenment
+  name: Spiritual Belt
+- craft: true
   level: 3
-  craft: true
-- name: Belt of the Black Bear
+  name: Belt of Enlightenment
+- craft: false
   level: 3
-  craft: false
-- name: Nidavellir's Finest Waist Guard
+  name: Belt of the Black Bear
+- craft: true
   level: 2
-  craft: true
-- name: Vidar's Belt of Might
+  name: Nidavellir's Finest Waist Guard
+- craft: true
   level: 1
-  craft: true
-- name: Fortified Husk Girdle
+  name: Vidar's Belt of Might
+- craft: true
   level: 1
-  craft: true
-- name: Belt of Survival
+  name: Fortified Husk Girdle
+- craft: false
   level: 1
-  craft: false
+  name: Belt of Survival
 axe_attachments:
-- name: Grip of the Fallen Alchemist
+- craft: false
   level: 5
-  craft: false
-- name: Grip of Weighted Recovery
+  name: Grip of the Fallen Alchemist
+- craft: true
   level: 4
-  craft: true
-- name: Stonecutter's Knob
+  name: Grip of Weighted Recovery
+- craft: false
   level: 4
-  craft: false
-- name: Haur's Lucky Knob
+  name: Stonecutter's Knob
+- craft: false
   level: 3
-  craft: false
-- name: Wooden Knob
+  name: Haur's Lucky Knob
+- craft: false
   level: 3
-  craft: false
-- name: The Furious Maul
+  name: Wooden Knob
+- craft: true
   level: 2
-  craft: true
+  name: The Furious Maul
 blades_attachments:
-- name: Hardened War Handles
+- craft: false
   level: 5
-  craft: false
-- name: Pommels of Brutal Might
+  name: Hardened War Handles
+- craft: true
   level: 4
-  craft: true
-- name: Pommels of Agile Deceit
+  name: Pommels of Brutal Might
+- craft: false
   level: 4
-  craft: false
-- name: Steel Handles
+  name: Pommels of Agile Deceit
+- craft: false
   level: 4
-  craft: false
-- name: Radiant Warden Handles
+  name: Steel Handles
+- craft: false
   level: 3
-  craft: false
-- name: Cursed Empress Handles
+  name: Radiant Warden Handles
+- craft: false
   level: 2
-  craft: false
+  name: Cursed Empress Handles
 spear_attachments: []
 shield_attachments:
-- name: Rond of Affliction
+- craft: false
   level: 5
-  craft: false
-- name: Rond of Expedition
+  name: Rond of Affliction
+- craft: false
   level: 3
-  craft: false
-- name: Rond of Volition
+  name: Rond of Expedition
+- craft: false
   level: 1
-  craft: false
-- name: Rond of Aggravation
+  name: Rond of Volition
+- craft: false
   level: 2
-  craft: false
+  name: Rond of Aggravation
 resource_budget:
   Asgardian Ingot: 1
   Blazing Embers: 0
@@ -168,7 +168,7 @@ resource_budget:
   Fortified Remnants: 0
   Gleaming Crystal: 0
   Glowing Embers: 0
-  Hacksilver: 78010
+  Hacksilver: 7801
   Hardened Remnants: 0
   Honed Metal: 14
   Lindwyrm Scales: 0
@@ -190,3 +190,10 @@ resource_budget:
   Stonewood: 14
   Tempered Remnants: 0
   Whispering Slab: 62
+optimization_stats:
+- Strength
+- Defense
+- Runic
+- Vitality
+- Cooldown
+- Luck

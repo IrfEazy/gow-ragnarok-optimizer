@@ -8,9 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- AOS - Animate On Scroll -->
-    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
     <style>
         :root {
             --bg: #0b0d13;
@@ -539,32 +536,32 @@
 <header class="hero-background py-16">
     <div class="hero-runes">⚔ ⚡ 🛡</div>
     <h1 class="title-animate">GOD OF WAR RAGNARÖK</h1>
-    <p data-aos="fade-up" data-aos-delay="200">Build Optimizer — Analisi inventario e piano di upgrade ottimo</p>
-    <p data-aos="fade-up" data-aos-delay="400" style="font-size: 0.85em; color: var(--text3); margin-top: 8px;">
+    <p>Build Optimizer — Analisi inventario e piano di upgrade ottimo</p>
+    <p style="font-size: 0.85em; color: var(--text3); margin-top: 8px;">
         ⚔ Armour · Weapon · Stats ⚔
     </p>
 </header>
 
 <!-- ═══ Summary ═══ -->
 <div class="summary-bar" id="summary-bar">
-    <div class="summary-card" data-aos="zoom-in" data-aos-delay="0">
+    <div class="summary-card">
         <div class="label">Armatura</div>
         <div class="value">{{ armor_total }}</div>
     </div>
-    <div class="summary-card" data-aos="zoom-in" data-aos-delay="100">
+    <div class="summary-card">
         <div class="label">Armi</div>
         <div class="value">{{ weapon_total }}</div>
     </div>
-    <div class="summary-card" data-aos="zoom-in" data-aos-delay="200">
+    <div class="summary-card">
         <div class="label">Grand Total</div>
         <div class="value">{{ grand_total }}</div>
     </div>
-    <div class="summary-card" data-aos="zoom-in" data-aos-delay="300">
+    <div class="summary-card">
         <div class="label">Hacksilver</div>
         <div class="value">{{ "{:,}".format(hacksilver) }}</div>
     </div>
     {% if opt_gain > 0 %}
-    <div class="summary-card" data-aos="zoom-in" data-aos-delay="400">
+    <div class="summary-card">
         <div class="label">Upgrade possibile</div>
         <div class="value green">+{{ opt_gain }}</div>
     </div>
@@ -572,7 +569,7 @@
 </div>
 
 <!-- ═══ Build Ottimale ═══ -->
-<div class="section" data-aos="fade-up" data-aos-delay="100">
+<div class="section">
     <div class="section-header" onclick="toggle(this)">
         <span>🛡 Build Ottimale</span>
         <span class="toggle">▼</span>
@@ -632,7 +629,7 @@
 </div>
 
 <!-- ═══ Classifica per Slot ═══ -->
-<div class="section collapsed" data-aos="fade-up" data-aos-delay="200">
+<div class="section collapsed">
     <div class="section-header" onclick="toggle(this)">
         <span>📊 Classifica per Slot</span>
         <span class="toggle">▼</span>
@@ -680,7 +677,7 @@
 </div>
 
 <!-- ═══ Pezzi da Craftare ═══ -->
-<div class="section collapsed" id="craft-section" {% if not (craft_armor or craft_weapons) %}style="display:none"{% endif %} data-aos="fade-up" data-aos-delay="300">
+<div class="section collapsed" id="craft-section" {% if not (craft_armor or craft_weapons) %}style="display:none"{% endif %}>
     <div class="section-header" onclick="toggle(this)">
         <span id="craft-header-text">⚠ Pezzi da Craftare ({{ craft_armor|length + craft_weapons|length }})</span>
         <span class="toggle">▼</span>
@@ -704,7 +701,7 @@
 </div>
 
 <!-- ═══ Build Actions Toolbar ═══ -->
-<div class="section" data-aos="fade-up" data-aos-delay="350">
+<div class="section">
     <div class="section-header" style="cursor: default;">
         <span>🛠 Azioni Build</span>
     </div>
@@ -730,21 +727,22 @@
 </div>
 
 <!-- ═══ Ottimizzazione Multi-Obiettivo ═══ -->
-<div class="section" id="stat-selector-section" data-aos="fade-up" data-aos-delay="350">
-    <div class="section-header" style="cursor: default;">
+<div class="section" id="stat-selector-section">
+    <div class="section-header" onclick="toggleStatPreferences()" style="cursor: pointer;">
         <span>🎯 Seleziona Obiettivi di Ottimizzazione</span>
+        <span class="toggle" id="stat-section-toggle">▶</span>
     </div>
-    <div class="section-body">
+    <div class="section-body" id="stat-section-body" style="display: none;">
         <div class="info-box" style="background: var(--surface2); border-left: 4px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--text2);">
             <strong>💡 Multi-Obiettivo:</strong> Seleziona le statistiche che desideri massimizzare. Il sistema utilizzerà la media geometrica per bilanciare i miglioramenti tra i valori selezionati. Se deselezioni tutto, verrà usato il totale statistiche (comportamento classico).
         </div>
         <div id="stat-selector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
             <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
-                <input type="checkbox" name="stat" value="Strength" checked style="width: 18px; height: 18px; cursor: pointer;">
+                <input type="checkbox" name="stat" value="Strength" style="width: 18px; height: 18px; cursor: pointer;">
                 <span style="flex: 1;">⚔️ Forza</span>
             </label>
             <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
-                <input type="checkbox" name="stat" value="Defense" checked style="width: 18px; height: 18px; cursor: pointer;">
+                <input type="checkbox" name="stat" value="Defense" style="width: 18px; height: 18px; cursor: pointer;">
                 <span style="flex: 1;">🛡️ Difesa</span>
             </label>
             <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
@@ -765,10 +763,10 @@
             </label>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
-            <button class="btn btn-primary" id="btn-apply-stats" onclick="applyStatSelection()">
-                ✓ Applica e Ricalcola
+            <button class="btn btn-primary" id="btn-apply-stats" onclick="applyStatPreferences()">
+                ✓ Salva Preferenze
             </button>
-            <button class="btn btn-secondary" id="btn-reset-stats" onclick="resetStatSelection()">
+            <button class="btn btn-secondary" id="btn-reset-stats" onclick="resetStatPreferences()">
                 ↻ Ripristina Predefiniti
             </button>
         </div>
@@ -776,7 +774,7 @@
 </div>
 
 <!-- ═══ Risorse Disponibili ═══ -->
-<div class="section" id="resources-section" data-aos="fade-up" data-aos-delay="400">
+<div class="section" id="resources-section">
     <div class="section-header" onclick="toggle(this)">
         <span>💰 Risorse Disponibili</span>
         <span class="toggle">▼</span>
@@ -811,7 +809,7 @@
 </div>
 
 <!-- ═══ Frontiere di Pareto ═══ -->
-<div class="section collapsed" data-aos="fade-up" data-aos-delay="500">
+<div class="section collapsed">
     <div class="section-header" onclick="toggle(this)">
         <span>📈 Frontiere di Pareto</span>
         <span class="toggle">▼</span>
@@ -841,7 +839,7 @@
 </div>
 
 <!-- ═══ Piano Ottimo ═══ -->
-<div class="section" data-aos="fade-up" data-aos-delay="600">
+<div class="section">
     <div class="section-header" onclick="toggle(this)">
         <span>🎯 Piano Ottimo</span>
         <span class="toggle">▼</span>
@@ -886,7 +884,7 @@
 </div>
 
 <!-- ═══ Slot Bloccati ═══ -->
-<div class="section collapsed" id="blocked-section" {% if not blocked %}style="display:none"{% endif %} data-aos="fade-up" data-aos-delay="700">
+<div class="section collapsed" id="blocked-section" {% if not blocked %}style="display:none"{% endif %}>
     <div class="section-header" onclick="toggle(this)">
         <span id="blocked-header-text">🔒 Slot Bloccati ({{ blocked|length }})</span>
         <span class="toggle">▼</span>
@@ -907,7 +905,7 @@
 </div>
 
 <!-- ═══ Step-by-Step ═══ -->
-<div class="section" data-aos="fade-up" data-aos-delay="800">
+<div class="section">
     <div class="section-header" onclick="toggle(this)">
         <span>📋 Step-by-Step</span>
         <span class="toggle">▼</span>
@@ -1000,92 +998,88 @@ function toast(msg, type) {
 /* ═══════════════════════════════════════════════════════════
    Multi-objective stat selection
    ═══════════════════════════════════════════════════════════ */
-async function applyStatSelection() {
+function toggleStatPreferences() {
+    const body = document.getElementById('stat-section-body');
+    const toggle = document.getElementById('stat-section-toggle');
+    if (body.style.display === 'none') {
+        body.style.display = 'block';
+        toggle.textContent = '▼';
+    } else {
+        body.style.display = 'none';
+        toggle.textContent = '▶';
+    }
+}
+
+async function applyStatPreferences() {
     const selected = Array.from(
         document.querySelectorAll('#stat-selector input[name="stat"]:checked')
     ).map(cb => cb.value);
 
-    // Collect current resource budget from display
-    const budget = {};
-    document.querySelectorAll('#resources-grid .res-item').forEach(item => {
-        const matName = item.dataset.mat;
-        const span = item.querySelector('.res-qty');
-        if (matName && span) {
-            // Parse "X/Y (restano Z)" format
-            const match = span.textContent.match(/^(\d+)/);
-            if (match) budget[matName] = parseInt(match[1], 10);
-        }
-    });
-
     showLoading(true);
     try {
-        const resp = await fetch('/api/recalc', {
+        const resp = await fetch('/api/stat-preferences', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                resource_budget: budget,
-                target_stats: selected,
+                target_stats: selected.length > 0 ? selected : null,
             })
         });
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         const d = await resp.json();
         updateAllSections(d);
+        toggleStatPreferences();
         toast(selected.length > 0
-            ? `Ottimizzazione per: ${selected.join(', ')}`
-            : 'Ottimizzazione per Total Stats', 'success');
+            ? `Preferenze salvate: ${selected.join(', ')}`
+            : 'Preferenze salvate: Total Stats', 'success');
     } catch(e) {
-        toast('Errore durante ricalcolo: ' + e.message, 'error');
+        toast('Errore nel salvare preferenze: ' + e.message, 'error');
     } finally {
         showLoading(false);
     }
-    // Save selected stats to localStorage
-    saveStatSelection(selected);
 }
 
-function saveStatSelection(selected) {
-    // Save selected stats to localStorage.
-    try {
-        localStorage.setItem('gow_optimizer_stats', JSON.stringify(selected));
-    } catch(e) {
-        console.warn('Failed to save stat selection to localStorage:', e);
-    }
+function loadStatPreferences(preferences) {
+    // Load and restore stat preferences from server data.
+    if (!Array.isArray(preferences)) return;
+
+    // Uncheck all first
+    document.querySelectorAll('#stat-selector input[name="stat"]').forEach(cb => {
+        cb.checked = false;
+    });
+
+    // Check only the saved ones
+    preferences.forEach(stat => {
+        const cb = document.querySelector(`#stat-selector input[name="stat"][value="${stat}"]`);
+        if (cb) cb.checked = true;
+    });
 }
 
-function loadStatSelection() {
-    // Load and restore saved stat selection from localStorage.
+async function resetStatPreferences() {
+    // Reset stat preferences to null (all stats) and save to server.
+    showLoading(true);
     try {
-        const saved = localStorage.getItem('gow_optimizer_stats');
-        if (!saved) return;  // No saved selection
-        const selected = JSON.parse(saved);
-        if (!Array.isArray(selected)) return;
+        const resp = await fetch('/api/stat-preferences', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                target_stats: null,
+            })
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const d = await resp.json();
+        updateAllSections(d);
 
-        // Uncheck all first
+        // Reset checkboxes to show all unchecked
         document.querySelectorAll('#stat-selector input[name="stat"]').forEach(cb => {
             cb.checked = false;
         });
 
-        // Check only the saved ones
-        selected.forEach(stat => {
-            const cb = document.querySelector(`#stat-selector input[name="stat"][value="${stat}"]`);
-            if (cb) cb.checked = true;
-        });
+        toast('Preferenze ripristinate: Total Stats', 'success');
     } catch(e) {
-        console.warn('Failed to load stat selection from localStorage:', e);
+        toast('Errore nel ripristinare preferenze: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
     }
-}
-
-function resetStatSelection() {
-    // Reset stat selection to defaults (Strength + Defense) and clear localStorage.
-    try {
-        localStorage.removeItem('gow_optimizer_stats');
-    } catch(e) {
-        console.warn('Failed to clear localStorage:', e);
-    }
-
-    // Reset to defaults: Strength and Defense checked, rest unchecked
-    document.querySelectorAll('#stat-selector input[name="stat"]').forEach(cb => {
-        cb.checked = (cb.value === 'Strength' || cb.value === 'Defense');
-    });
 
     toast('Ripristinati i valori predefiniti (Forza + Difesa)', 'success');
 }
@@ -1678,39 +1672,10 @@ document.querySelectorAll('.section-header').forEach(hdr => {
     }).observe(sec, { attributes: true, attributeFilter: ['class'] });
 });
 
-// Auto-refresh leggero: sincronizza la UI con il server senza ricaricare la pagina.
-async function refreshFromServerSilently() {
-    if (_editMode) return;
-    try {
-        const resp = await fetch('/api/recalc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({})
-        });
-        if (!resp.ok) return;
-        const d = await resp.json();
-        updateAllSections(d);
-    } catch (_) {
-        // Ignora errori transienti: il prossimo tick riprovera'.
-    }
-}
 
-setInterval(() => {
-    if (document.visibilityState === 'visible') {
-        refreshFromServerSilently();
-    }
-}, 5000);
+// Load saved stat preferences from server data (passed by Jinja2)
+loadStatPreferences({{ stat_preferences | tojson }});
 
-// Load saved stat selection from localStorage
-loadStatSelection();
-
-// Initialize AOS (Animate On Scroll)
-AOS.init({
-    duration: 600,
-    easing: 'ease-out-quad',
-    once: true,
-    offset: 50
-});
 </script>
 </body>
 </html>

@@ -81,3 +81,25 @@ def save_web_inventory(data: dict[str, Any]) -> None:
     for key in PIECE_KEYS:
         cfg[key] = deepcopy(data.get(key, []))
     save_yaml(CONFIG_PATH, cfg)
+
+
+def load_stat_preferences() -> list[str] | None:
+    """Load saved optimization stat preferences. Returns None if not set."""
+    cfg = load_config()
+    prefs = cfg.get("optimization_stats")
+    if prefs is None:
+        return None
+    # Ensure it's a list of strings
+    if isinstance(prefs, list):
+        return [str(s) for s in prefs]
+    return None
+
+
+def save_stat_preferences(target_stats: list[str] | None) -> None:
+    """Persist optimization stat preferences to config.yaml."""
+    cfg = load_config()
+    if target_stats is None:
+        cfg.pop("optimization_stats", None)
+    else:
+        cfg["optimization_stats"] = [str(s) for s in target_stats]
+    save_yaml(CONFIG_PATH, cfg)

@@ -18,7 +18,9 @@ from gow_optimizer.config import (
     coerce_resource_budget,
     get_data_file_paths,
     load_config,
+    load_stat_preferences,
     load_web_inventory,
+    save_stat_preferences,
     save_web_inventory,
 )
 from gow_optimizer.optimizer import (
@@ -87,25 +89,27 @@ def _build_inventory_from_web(web_data):
     return parse_inventory_from_config(cfg_like)
 
 
-def _serialize_best_item(record):
+def _serialize_best_item(record, target_stats=None):
     # Handle rows from CSV data (use "Piece Name") or processed rows (use "Item Name")
     name_col = ITEM_NAME_COL if ITEM_NAME_COL in record else "Piece Name"
     name_col = name_col if name_col in record else "Weapon Name"  # For weapons
     level_col = ITEM_LEVEL_COL if ITEM_LEVEL_COL in record else "Level"
 
+    # If target_stats specified, show only those stats; otherwise show all > 0
+    if target_stats:
+        stats_to_show = [s for s in target_stats if record.get(s, 0) > 0]
+    else:
+        stats_to_show = [s for s in STAT_COLS if record.get(s, 0) > 0]
+
     return {
         "name": record[name_col],
         "level": int(record[level_col]),
         "total": int(record[TOTAL_STATS_COL]),
-        "stats": {
-            stat: int(record.get(stat, 0))
-            for stat in STAT_COLS
-            if record.get(stat, 0) > 0
-        },
+        "stats": {stat: int(record.get(stat, 0)) for stat in stats_to_show},
     }
 
 
-def _build_best_armor(armor_current):
+def _build_best_armor(armor_current, target_stats=None):
     best_armor = {}
     armor_total = 0
 
@@ -113,14 +117,18 @@ def _build_best_armor(armor_current):
         candidates = [row for row in armor_current if row[PIECE_TYPE_COL] == armor_type]
         if not candidates:
             continue
-        best = max(candidates, key=lambda row: row[TOTAL_STATS_COL])
-        best_armor[armor_type] = _serialize_best_item(best)
+        # Score by target_stats (sum) if provided, otherwise by Total Stats
+        if target_stats:
+            best = max(candidates, key=lambda row: sum(row.get(s, 0) for s in target_stats))
+        else:
+            best = max(candidates, key=lambda row: row[TOTAL_STATS_COL])
+        best_armor[armor_type] = _serialize_best_item(best, target_stats=target_stats)
         armor_total += best[TOTAL_STATS_COL]
 
     return best_armor, armor_total
 
 
-def _build_best_weapons(weapon_current):
+def _build_best_weapons(weapon_current, target_stats=None):
     best_weapons = {}
     weapon_total = 0
 
@@ -128,8 +136,12 @@ def _build_best_weapons(weapon_current):
         candidates = [row for row in weapon_current if row[CATEGORY_COL] == category]
         if not candidates:
             continue
-        best = max(candidates, key=lambda row: row[TOTAL_STATS_COL])
-        best_weapons[category] = _serialize_best_item(best)
+        # Score by target_stats (sum) if provided, otherwise by Total Stats
+        if target_stats:
+            best = max(candidates, key=lambda row: sum(row.get(s, 0) for s in target_stats))
+        else:
+            best = max(candidates, key=lambda row: row[TOTAL_STATS_COL])
+        best_weapons[category] = _serialize_best_item(best, target_stats=target_stats)
         weapon_total += best[TOTAL_STATS_COL]
 
     return best_weapons, weapon_total
@@ -162,7 +174,7 @@ def _build_rankings(items, group_key, values, target_stats=None):
                 reverse=True,
             )
 
-        rankings[value] = [_serialize_best_item(row) for row in sorted_items]
+        rankings[value] = [_serialize_best_item(row, target_stats=target_stats) for row in sorted_items]
     return rankings
 
 
@@ -451,8 +463,8 @@ def _serialize_consumed_mats(used_mats, resource_budget, mat_aliases):
 
 
 def _build_step_plan(slot_pareto, resource_budget, mat_aliases, grand_total):
-    remaining_slots = {slot: list(options) for slot, options in slot_pareto.items()}
-    cur_stats = {slot: options[0][1] for slot, options in slot_pareto.items()}
+    remaining_slots = {slot: list(options) for slot, options in slot_pareto.items() if options}
+    cur_stats = {slot: options[0][1] for slot, options in slot_pareto.items() if options}
     running = grand_total
     used_budget = 0
     used_mats = Counter()
@@ -631,51 +643,6 @@ def save_build_slots(slots):
     with open(CONFIG_FILE, "w") as f:
         yaml.dump(cfg, f, default_flow_style=False)
 
-
-# ---------------------------------------------------------------------------
-# Validation and error handling
-# ---------------------------------------------------------------------------
-
-
-def validate_build_data(build_data):
-    """Validate build data structure. Raises ValueError if invalid."""
-    if "resource_budget" not in build_data:
-        raise ValueError("Build data missing 'resource_budget' key")
-
-    resource_budget = build_data["resource_budget"]
-    if "Hacksilver" not in resource_budget:
-        raise ValueError("resource_budget missing required 'Hacksilver' key")
-
-    return True
-
-
-def validate_inventory_piece(piece):
-    """Validate an inventory piece. Raises ValueError if invalid."""
-    level = piece.get("level", 0)
-    if not (1 <= level <= 9):
-        raise ValueError(f"Piece level must be 1-9, got {level}")
-
-    return True
-
-
-def validate_csv_integrity(csv_dict):
-    """Validate CSV data has required columns. Raises ValueError if missing."""
-    required_columns = ["Item Name", "Total Stats"]
-    for col in required_columns:
-        if col not in csv_dict:
-            raise ValueError(f"CSV missing required column: '{col}'")
-
-    return True
-
-
-def format_missing_materials_error(missing_mats):
-    """Format a readable error message for missing materials."""
-    lines = ["Missing materials:"]
-    for material, quantity in sorted(missing_mats.items()):
-        lines.append(f"  • {material}: {quantity}")
-    return "\n".join(lines)
-
-
 def safe_resource_update(resources, deduction):
     """Safely deduct resources, raises ValueError if would go negative."""
     result = deepcopy(resources)
@@ -689,151 +656,6 @@ def safe_resource_update(resources, deduction):
 
     return result
 
-
-# ---------------------------------------------------------------------------
-# UI/UX Helper functions (accessibility, mobile, feedback)
-# ---------------------------------------------------------------------------
-
-
-def generate_loading_spinner(message):
-    """Generate HTML markup for loading spinner with message."""
-    return f'<div class="spinner" aria-label="Loading"><div class="spinner-icon"></div><p>{message}</p></div>'
-
-
-def generate_error_alert(message):
-    """Generate accessible error alert HTML."""
-    return f'<div class="alert alert-error" role="alert" aria-live="assertive">{message}</div>'
-
-
-def generate_success_message(message):
-    """Generate success message HTML."""
-    return f'<div class="alert alert-success" role="status" aria-live="polite">{message}</div>'
-
-
-def generate_button(label, aria_label):
-    """Generate button with accessibility attributes."""
-    return f'<button aria-label="{aria_label}">{label}</button>'
-
-
-def generate_form_field(field_id, label_text, placeholder):
-    """Generate form field with label association."""
-    return f'<label for="{field_id}">{label_text}</label><input id="{field_id}" type="text" placeholder="{placeholder}" />'
-
-
-def generate_responsive_grid(items):
-    """Generate responsive grid layout."""
-    item_html = "".join(f"<div class='grid-item'>{item}</div>" for item in items)
-    return f'<div class="responsive-grid grid-auto-fit">{item_html}</div>'
-
-
-def generate_tooltip(text, description):
-    """Generate tooltip with accessible content."""
-    return f'<span class="tooltip" title="{description}" aria-describedby="tooltip-{id(text)}">{text}</span>'
-
-
-def generate_focusable_element(text):
-    """Generate element with keyboard focus support."""
-    return f'<div tabindex="0" class="focusable" style="outline: 2px solid transparent; outline-offset: 2px;">{text}</div>'
-
-
-def validate_color_contrast(fg_color, bg_color):
-    """Validate color contrast meets WCAG AA standards (simplified)."""
-    # Simplified contrast check - in production use proper WCAG algorithm
-    # This just checks if colors are different enough
-    fg_hex = fg_color.lstrip("#")
-    bg_hex = bg_color.lstrip("#")
-
-    if fg_hex == bg_hex:
-        return False
-
-    # Convert hex to RGB
-    try:
-        fg_r, fg_g, fg_b = int(fg_hex[0:2], 16), int(fg_hex[2:4], 16), int(fg_hex[4:6], 16)
-        bg_r, bg_g, bg_b = int(bg_hex[0:2], 16), int(bg_hex[2:4], 16), int(bg_hex[4:6], 16)
-    except (ValueError, IndexError):
-        return False
-
-    # Simple luminance calculation
-    fg_luminance = (0.299 * fg_r + 0.587 * fg_g + 0.114 * fg_b) / 255
-    bg_luminance = (0.299 * bg_r + 0.587 * bg_g + 0.114 * bg_b) / 255
-
-    # WCAG AA contrast ratio of 4.5:1 or more for normal text
-    max_lum = max(fg_luminance, bg_luminance)
-    min_lum = min(fg_luminance, bg_luminance)
-    contrast_ratio = (max_lum + 0.05) / (min_lum + 0.05)
-
-    return contrast_ratio >= 4.5
-
-
-def generate_notification_center(notifications):
-    """Generate notification UI that works on mobile."""
-    notif_html = ""
-    for notif in notifications:
-        notif_type = notif.get("type", "info")
-        message = notif.get("message", "")
-        notif_html += f'<div class="notification notification-{notif_type}" role="status">{message}</div>'
-    return f'<div class="notification-center">{notif_html}</div>'
-
-
-# ---------------------------------------------------------------------------
-# Performance optimization
-# ---------------------------------------------------------------------------
-
-
-def generate_inventory_cache_key(inventory):
-    """Generate consistent cache key for inventory state."""
-    json_str = json.dumps(inventory, sort_keys=True, separators=(",", ":"))
-    return hashlib.md5(json_str.encode()).hexdigest()
-
-
-def batch_resource_deductions(resources, deductions):
-    """Batch multiple material deductions efficiently."""
-    result = deepcopy(resources)
-    for deduction in deductions:
-        result = safe_resource_update(result, deduction)
-    return result
-
-
-class LazyDataLoader:
-    """Lazy load CSV data on first access."""
-
-    def __init__(self, load_fn):
-        self._load_fn = load_fn
-        self._data = None
-
-    def get_data(self):
-        """Get data, loading only on first access."""
-        if self._data is None:
-            self._data = self._load_fn()
-        return self._data
-
-
-def generate_cache_headers(max_age=3600):
-    """Generate HTTP cache headers for responses."""
-    return {
-        "Cache-Control": f"public, max-age={max_age}",
-    }
-
-
-def generate_etag(content):
-    """Generate ETag for response validation."""
-    if isinstance(content, str):
-        content_bytes = content.encode()
-    else:
-        content_bytes = json.dumps(content, separators=(",", ":")).encode()
-
-    return hashlib.md5(content_bytes).hexdigest()
-
-
-def should_compress_response(response_content):
-    """Determine if response should be compressed."""
-    # Compress if larger than 1KB
-    return len(str(response_content)) > 1024
-
-
-def filter_inventory_by_level(inventory, min_level=1):
-    """Filter inventory items by minimum level efficiently."""
-    return [item for item in inventory if item.get("level", 0) >= min_level]
 
 
 def _compute_all(web_data=None, target_stats=None):
@@ -866,8 +688,8 @@ def _compute_all(web_data=None, target_stats=None):
         target_stats=target_stats,
     )
 
-    best_armor, armor_total = _build_best_armor(armor_current)
-    best_weapons, weapon_total = _build_best_weapons(weapon_current)
+    best_armor, armor_total = _build_best_armor(armor_current, target_stats=target_stats)
+    best_weapons, weapon_total = _build_best_weapons(weapon_current, target_stats=target_stats)
     grand_total = armor_total + weapon_total
 
     # Build rankings from all available items (not just current build),
@@ -1017,7 +839,9 @@ def create_app(test_config=None) -> Flask:
 
     @app.get("/")
     def index():
-        data = _compute_all()
+        target_stats = load_stat_preferences()
+        data = _compute_all(target_stats=target_stats)
+        data["stat_preferences"] = target_stats or []
         return render_template("index.html", **data)
 
     @app.route("/api/recalc", methods=["POST"])
@@ -1105,7 +929,6 @@ def create_app(test_config=None) -> Flask:
         """Import an exported build."""
         payload = request.get_json(force=True)
         imported_data = import_build(payload)
-        validate_build_data(imported_data)
         save_web_inventory(imported_data)
         data = _compute_all(web_data=imported_data)
         return jsonify(data)
@@ -1118,6 +941,24 @@ def create_app(test_config=None) -> Flask:
         base_url = request.host_url.rstrip("/")
         share_url = generate_shareable_url(base_url, web_data)
         return jsonify({"url": share_url})
+
+    @app.route("/api/stat-preferences", methods=["POST"])
+    def api_save_stat_preferences():
+        """Save user's optimization stat preferences."""
+        payload = request.get_json(force=True)
+        target_stats = payload.get("target_stats")
+
+        # Validate target_stats is None or a list of strings
+        if target_stats is not None and not isinstance(target_stats, list):
+            return jsonify({"error": "target_stats must be null or a list"}), 400
+
+        save_stat_preferences(target_stats)
+
+        # Recalculate with new preferences
+        web_data = load_web_inventory()
+        data = _compute_all(web_data=web_data, target_stats=target_stats)
+        data["stat_preferences"] = target_stats or []
+        return jsonify(data)
 
     @app.route("/api/build-slots", methods=["GET"])
     def api_list_build_slots():
