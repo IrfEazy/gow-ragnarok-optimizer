@@ -143,6 +143,142 @@ pytest -k "armor"         # Run tests matching pattern
 - `.gitignore` excludes: `data/`, `__pycache__/`, `.pytest_cache/`, `.venv/`, etc.
 - Configuration (`config.yaml`) **is committed** with example inventory + resource budget
 
+## GitHub Issues and Pull Requests
+
+### Creating and Linking Issues with PRs
+
+**Standard workflow for features and bug fixes:**
+
+1. **Create the GitHub Issue** (if not already open)
+   ```bash
+   gh issue create --title "Brief description of feature or bug" \
+     --body "## Description
+   Detailed explanation of what needs to be done.
+   
+   ## Acceptance Criteria
+   - [ ] Criterion 1
+   - [ ] Criterion 2
+   - [ ] All tests passing"
+   ```
+   This creates issue #N (note the issue number)
+
+2. **Create a feature branch** (naming convention: `feat/`, `fix/`, `refactor/`, etc.)
+   ```bash
+   git checkout -b feat/short-description main
+   ```
+
+3. **Make commits with proper linking**
+   - Make real changes to the codebase (not empty commits)
+   - Include `Closes #N` in commit message to auto-link the issue:
+   ```bash
+   git commit -m "feat: Add feature description
+   
+   Detailed explanation of changes.
+   
+   Closes #N
+   
+   Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
+   ```
+
+4. **Push the branch and create a PR**
+   ```bash
+   git push -u origin feat/short-description
+   ```
+   
+   Then create the PR with proper linking:
+   ```bash
+   gh pr create --title "feat: Feature title" \
+     --body "## Summary
+   Brief summary of changes.
+   
+   ## Related Issue
+   Closes #N
+   
+   ## Acceptance Criteria
+   - [ ] Criterion 1
+   - [ ] Criterion 2
+   
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+   ```
+
+5. **When merging the PR to main**
+   ```bash
+   git checkout main
+   git merge --ff-only feat/short-description
+   git push origin main
+   ```
+   
+   The `Closes #N` in the commit automatically closes the issue when merged.
+
+6. **Clean up after merge**
+   - Close the PR (if not auto-closed)
+   - Delete the feature branch:
+   ```bash
+   gh pr close N --delete-branch
+   ```
+   - Verify issue is closed:
+   ```bash
+   gh issue list --state open
+   gh pr list --state open
+   ```
+
+### Key Points
+
+- **One issue per feature/bug**: Each GitHub issue represents one distinct problem or feature
+- **One PR per issue**: Each PR should have exactly one associated issue via `Closes #N`
+- **Real commits only**: Don't create empty placeholder commits; PRs need actual code changes
+- **Consistent linking**: Both commit messages and PR description should reference the issue
+- **Auto-closure**: When a PR with `Closes #N` is merged, the issue automatically closes
+- **No orphaned issues/PRs**: Before considering work done:
+  - ✅ Issue has associated PR
+  - ✅ PR has `Closes #N` in title or body
+  - ✅ Issue closes automatically when PR merges
+  - ✅ Both are in correct state after merge
+
+### Example Workflow (Complete)
+
+```bash
+# 1. Create issue
+gh issue create --title "feat: Add caching to API responses" \
+  --body "Improve performance by caching expensive computations"
+# Output: https://github.com/user/repo/issues/8
+
+# 2. Create branch
+git checkout -b feat/api-caching main
+
+# 3. Make changes
+# ... implement feature ...
+
+# 4. Commit with issue link
+git commit -m "feat: Add caching to API responses
+
+Cache expensive pareto frontier computations for 5 minutes.
+Improves response time by 60% for typical usage patterns.
+
+Closes #8
+
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
+
+# 5. Push and create PR
+git push -u origin feat/api-caching
+gh pr create --title "feat: Add caching to API responses" \
+  --body "Closes #8
+
+Implements 5-minute cache for pareto frontier calculations."
+
+# 6. After review/testing, merge to main
+git checkout main
+git merge --ff-only feat/api-caching
+git push origin main
+# Issue #8 automatically closes
+
+# 7. Clean up
+gh pr close 9 --delete-branch
+# Verify state
+gh issue list --state open  # Issue #8 should not be listed
+gh pr list --state open     # PR #9 should not be listed
+```
+
 ## Important Notes
 
 1. **Web UI is the single interface**: No CLI. All user interactions go through the Flask app.
