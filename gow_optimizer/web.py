@@ -1005,7 +1005,7 @@ def create_app(test_config=None) -> Flask:
         try:
             if action == "list":
                 presets = load_stat_presets()
-                return jsonify({"presets": presets}), 200
+                return jsonify({"stat_presets": presets}), 200
 
             elif action == "save":
                 if not preset_name:
@@ -1061,7 +1061,8 @@ def create_app(test_config=None) -> Flask:
         except KeyError as e:
             return jsonify({"error": str(e)}), 404
         except Exception as e:
-            return jsonify({"error": f"Server error: {str(e)}"}), 500
+            logging.getLogger(__name__).exception("Unhandled exception in stat-presets handler")
+            return jsonify({"error": "Server error"}), 500
 
     @app.route("/api/build-slots", methods=["GET"])
     def api_list_build_slots():

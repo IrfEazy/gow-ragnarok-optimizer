@@ -105,11 +105,12 @@ def save_stat_preferences(target_stats: list[str] | None) -> None:
     save_yaml(CONFIG_PATH, cfg)
 
 
-def load_stat_presets() -> dict[str, list[str]]:
+def load_stat_presets() -> dict[str, list[str] | None]:
     """Load all saved stat selection presets from config.yaml.
 
-    Returns dict mapping preset name → list of stat names.
-    Example: {"Defensive": ["Defense", "Vitality"], "Aggressive": ["Strength", "Runic"]}
+    Returns dict mapping preset name → list of stat names, or None to mean "all stats"
+    (no explicit filtering for that preset).
+    Example: {"Defensive": ["Defense", "Vitality"], "Aggressive": ["Strength", "Runic"], "All": None}
     Returns empty dict if no presets are defined or if the format is invalid.
     """
     cfg = load_config()
@@ -136,7 +137,8 @@ def save_current_as_preset(preset_name: str, current_stats: list[str] | None) ->
 
     Args:
         preset_name: Name for the new preset (required, non-empty)
-        current_stats: List of currently selected stats (or None for all stats)
+        current_stats: List of currently selected stats, or None to mean "all stats"
+            (i.e., no explicit filtering is applied).
 
     Raises:
         ValueError: If preset_name is empty or invalid
@@ -146,7 +148,10 @@ def save_current_as_preset(preset_name: str, current_stats: list[str] | None) ->
 
     preset_name = preset_name.strip()
     presets = load_stat_presets()
-    presets[preset_name] = current_stats or []
+    # Preserve None so that callers can distinguish between:
+    # - None: "all stats" (no filter)
+    # - []: "no stats selected"
+    presets[preset_name] = current_stats
     save_stat_presets(presets)
 
 

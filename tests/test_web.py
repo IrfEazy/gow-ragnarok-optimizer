@@ -856,9 +856,9 @@ def test_api_stat_presets_list_action(monkeypatch):
 
     assert resp.status_code == 200
     data = resp.get_json()
-    assert "presets" in data
-    assert data["presets"]["Defensive"] == ["Defense", "Vitality"]
-    assert data["presets"]["Aggressive"] == ["Strength"]
+    assert "stat_presets" in data
+    assert data["stat_presets"]["Defensive"] == ["Defense", "Vitality"]
+    assert data["stat_presets"]["Aggressive"] == ["Strength"]
 
 
 def test_api_stat_presets_save_action(monkeypatch):
@@ -1015,3 +1015,30 @@ def test_api_stat_presets_invalid_inputs(monkeypatch):
     )
     assert resp.status_code == 400
     assert "current_stats must be list or null" in resp.get_json()["error"]
+
+    # Missing preset_name for load
+    resp = client.post(
+        '/api/stat-presets',
+        json={"action": "load"},
+        content_type='application/json'
+    )
+    assert resp.status_code == 400
+    assert "Missing preset_name" in resp.get_json()["error"]
+
+    # Missing preset_name for delete
+    resp = client.post(
+        '/api/stat-presets',
+        json={"action": "delete"},
+        content_type='application/json'
+    )
+    assert resp.status_code == 400
+    assert "Missing preset_name" in resp.get_json()["error"]
+
+    # Unknown action value
+    resp = client.post(
+        '/api/stat-presets',
+        json={"action": "unknown_action"},
+        content_type='application/json'
+    )
+    assert resp.status_code == 400
+    assert "Unknown action" in resp.get_json()["error"]
