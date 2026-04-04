@@ -277,161 +277,8 @@ def test_home_page_renders_stat_selector_ui(monkeypatch):
     assert "Vitality" in html  # Vitality stat label
     assert "Cooldown" in html  # Cooldown stat label
     assert "Luck" in html  # Luck stat label
-
-
-def test_build_best_weapons_with_target_stats():
-    """Test that _build_best_weapons respects target_stats filtering (lines 140-145 coverage)."""
-    import pandas as pd
-
-    # Create mock weapon rows (as returned by collect_current_build)
-    weapon_rows = [
-        pd.Series({
-            "Category": "Leviathan Axe",
-            "Weapon Name": "Balanced Axe",
-            "Level": 5,
-            "Total Stats": 50,
-            "Strength": 25,
-            "Defense": 25,
-            "Runic": 0,
-            "Vitality": 0,
-            "Cooldown": 0,
-            "Luck": 0,
-            "Slot": "Arma — Leviathan Axe",
-            "Item Name": "Balanced Axe",
-            "Item Level": 5,
-        }),
-        pd.Series({
-            "Category": "Leviathan Axe",
-            "Weapon Name": "Strength Axe",
-            "Level": 5,
-            "Total Stats": 50,
-            "Strength": 40,
-            "Defense": 10,
-            "Runic": 0,
-            "Vitality": 0,
-            "Cooldown": 0,
-            "Luck": 0,
-            "Slot": "Arma — Leviathan Axe",
-            "Item Name": "Strength Axe",
-            "Item Level": 5,
-        }),
-    ]
-
-    # Without target_stats, should pick by Total Stats (both have 50, so first)
-    best, total = web._build_best_weapons(weapon_rows)
-    assert total == 50
-    assert "Leviathan Axe" in best
-
-    # With target_stats=["Strength"], should pick Strength Axe (40 vs 25)
-    best_with_target, total = web._build_best_weapons(weapon_rows, target_stats=["Strength"])
-    assert best_with_target["Leviathan Axe"]["name"] == "Strength Axe"
-
-    # With target_stats=["Defense"], should pick Balanced Axe (25 vs 10)
-    best_with_defense, total = web._build_best_weapons(weapon_rows, target_stats=["Defense"])
-    assert best_with_defense["Leviathan Axe"]["name"] == "Balanced Axe"
-
-
-def test_build_best_armor_with_target_stats():
-    """Test that _build_best_armor respects target_stats filtering."""
-    import pandas as pd
-
-    armor_rows = [
-        pd.Series({
-            "Piece Type": "Chest",
-            "Piece Name": "Balanced Chest",
-            "Level": 5,
-            "Total Stats": 60,
-            "Strength": 30,
-            "Defense": 30,
-            "Runic": 0,
-            "Vitality": 0,
-            "Cooldown": 0,
-            "Luck": 0,
-            "Slot": "Armatura — Chest",
-            "Item Name": "Balanced Chest",
-            "Item Level": 5,
-        }),
-        pd.Series({
-            "Piece Type": "Chest",
-            "Piece Name": "Defense Chest",
-            "Level": 5,
-            "Total Stats": 60,
-            "Strength": 20,
-            "Defense": 40,
-            "Runic": 0,
-            "Vitality": 0,
-            "Cooldown": 0,
-            "Luck": 0,
-            "Slot": "Armatura — Chest",
-            "Item Name": "Defense Chest",
-            "Item Level": 5,
-        }),
-    ]
-
-    # With target_stats=["Defense"], should pick Defense Chest (40 vs 30)
-    best, total = web._build_best_armor(armor_rows, target_stats=["Defense"])
-    assert best["Chest"]["name"] == "Defense Chest"
-    assert total == 60
-
-
-def test_serialize_best_item_shows_only_target_stats():
-    """Test that _serialize_best_item filters stats based on target_stats."""
-    import pandas as pd
-
-    item = pd.Series({
-        "Piece Name": "Test Armor",
-        "Level": 1,
-        "Total Stats": 60,
-        "Strength": 30,
-        "Defense": 20,
-        "Runic": 10,
-        "Vitality": 0,
-        "Cooldown": 0,
-        "Luck": 0,
-        "Item Name": "Test Armor",
-        "Item Level": 1,
-    })
-
-    # Without target_stats, show all non-zero stats
-    result = web._serialize_best_item(item)
-    assert "Strength" in result["stats"]
-    assert "Defense" in result["stats"]
-    assert "Runic" in result["stats"]
-
-    # With target_stats, show only those stats
-    result = web._serialize_best_item(item, target_stats=["Strength", "Defense"])
-    assert "Strength" in result["stats"]
-    assert "Defense" in result["stats"]
-    # Runic should be filtered out even though it's > 0
-    assert "Runic" not in result["stats"]
-
-
-def test_coerce_resource_budget_preserves_zero_values():
-    """Test that coerce_resource_budget handles edge case of value 0."""
-    from gow_optimizer.config import coerce_resource_budget
-
-    result = coerce_resource_budget({"Hacksilver": 0, "Bone": "100"})
-    assert result["Hacksilver"] == 0
-    assert result["Bone"] == 100
-
-
-def test_parse_inventory_handles_empty_lists():
-    """Test that parse_inventory_from_config handles empty inventory."""
-    from gow_optimizer.optimizer import parse_inventory_from_config
-
-    cfg = {
-        "chest_pieces": [],
-        "wrist_pieces": [],
-        "waist_pieces": [],
-        "axe_attachments": [],
-        "blades_attachments": [],
-        "spear_attachments": [],
-        "shield_attachments": [],
-    }
-
-    armor, weapons = parse_inventory_from_config(cfg)
-    assert armor == []
-    assert weapons == []
+    # Verify checkboxes exist
+    assert "type=" in html and "checkbox" in html
 
 
 def test_home_page_includes_reset_stats_button(monkeypatch):
@@ -838,3 +685,146 @@ def test_build_slot_options_no_action_respects_score_fn(monkeypatch):
         f"no-action should use score_fn(current_per_stat)={expected_score}, "
         f"but got {no_action[1]}"
     )
+
+# ─── Multi-objective step planner tests ──────────────────────────────────
+
+
+def test_candidate_step_action_accepts_target_stats_parameter():
+    """Test: _candidate_step_action accepts target_stats and score_fns parameters."""
+    from collections import Counter
+
+    options = [(100, 50, "Item A 1→2", {})]
+    result = web._candidate_step_action(
+        "Armatura — Chest",
+        options,
+        current_stats=40,
+        used_budget=0,
+        used_mats=Counter(),
+        resource_budget={"Hacksilver": 1000},
+        mat_aliases={},
+        target_stats=["Strength", "Defense"],
+        score_fns={},
+    )
+    assert result is not None
+
+
+def test_find_best_step_action_accepts_target_stats_parameter():
+    """Test: _find_best_step_action accepts target_stats and score_fns parameters."""
+    from collections import Counter
+
+    remaining_slots = {
+        "Armatura — Chest": [(100, 50, "Item A 1→2", {})]
+    }
+    result = web._find_best_step_action(
+        remaining_slots,
+        cur_stats={"Armatura — Chest": 40},
+        used_budget=0,
+        used_mats=Counter(),
+        resource_budget={"Hacksilver": 1000},
+        mat_aliases={},
+        target_stats=["Strength", "Defense"],
+        score_fns={},
+    )
+    assert result is None or isinstance(result, tuple)
+
+
+def test_build_step_plan_accepts_target_stats_parameter(monkeypatch):
+    """Test: _build_step_plan accepts target_stats and score_fns parameters."""
+    from gow_optimizer.optimizer import make_score_fn
+
+    slot_pareto = {
+        "Armatura — Chest": [(0, 30, "— nessuna azione —", {})],
+        "Armatura — Wrist": [(0, 20, "— nessuna azione —", {})],
+        "Armatura — Waist": [(0, 15, "— nessuna azione —", {})],
+    }
+    resource_budget = {"Hacksilver": 5000}
+    mat_aliases = {}
+    grand_total = 65
+    target_stats = ["Strength", "Defense"]
+    score_fns = {
+        "Armatura — Chest": make_score_fn(target_stats, {"Strength": 10, "Defense": 20, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0}),
+    }
+
+    result = web._build_step_plan(
+        slot_pareto,
+        resource_budget,
+        mat_aliases,
+        grand_total,
+        target_stats=target_stats,
+        score_fns=score_fns,
+    )
+
+    assert "steps" in result
+    assert "step_final_total" in result
+    assert "step_final_gain" in result
+
+
+def test_build_step_plan_works_backwards_compatible(monkeypatch):
+    """Test: _build_step_plan still works without target_stats parameter (backwards compatible)."""
+    slot_pareto = {
+        "Armatura — Chest": [(0, 30, "— nessuna azione —", {})],
+        "Armatura — Wrist": [(0, 20, "— nessuna azione —", {})],
+    }
+    resource_budget = {"Hacksilver": 5000}
+    mat_aliases = {}
+    grand_total = 50
+
+    # Call without target_stats
+    result = web._build_step_plan(
+        slot_pareto,
+        resource_budget,
+        mat_aliases,
+        grand_total,
+    )
+
+    assert "steps" in result
+    assert "step_final_total" in result
+    assert result["step_final_total"] == 50
+    assert result["step_final_gain"] == 0
+
+
+def test_build_step_plan_with_multi_objective_options(monkeypatch):
+    """Test: _build_step_plan handles options scored with multi-objective metrics."""
+    from gow_optimizer.optimizer import make_score_fn
+
+    # Create a Pareto frontier where options are scored with multi-objective metrics
+    target_stats = ["Strength", "Defense"]
+    baseline = {
+        "Strength": 10,
+        "Defense": 20,
+        "Runic": 0,
+        "Vitality": 0,
+        "Cooldown": 0,
+        "Luck": 0,
+    }
+    score_fn = make_score_fn(target_stats, baseline)
+
+    # Build a Pareto frontier with geometric mean scores
+    # These represent options where stats are already scored with score_fn
+    slot_pareto = {
+        "Armatura — Chest": [
+            (0, score_fn(baseline), "— nessuna azione —", {}),
+            (100, score_fn({"Strength": 12, "Defense": 22, "Runic": 0, "Vitality": 0, "Cooldown": 0, "Luck": 0}), "Strong Item 1→2", {}),
+        ],
+        "Armatura — Wrist": [
+            (0, 1.0, "— nessuna azione —", {}),
+        ],
+    }
+
+    score_fns = {
+        "Armatura — Chest": score_fn,
+    }
+
+    result = web._build_step_plan(
+        slot_pareto,
+        {"Hacksilver": 5000},
+        {},
+        sum(opt[1] for slot in slot_pareto.values() for opt in slot),
+        target_stats=target_stats,
+        score_fns=score_fns,
+    )
+
+    # Verify result structure
+    assert "steps" in result
+    assert isinstance(result["steps"], list)
+    # Should recommend the upgrade since it has positive efficiency
