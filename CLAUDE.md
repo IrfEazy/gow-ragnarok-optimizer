@@ -201,7 +201,56 @@ pytest -k "armor"         # Run tests matching pattern
    🤖 Generated with [Claude Code](https://claude.com/claude-code)"
    ```
 
-5. **When merging the PR to main**
+### Pre-Merge Checklist (CRITICAL)
+
+**NEVER merge to main without verifying ALL of these:**
+
+1. ✅ **CI/CD Passes**
+   - All automated tests pass in the PR checks
+   - No flaky tests or intermittent failures
+   - If CI fails, fix the code — do not merge
+   ```bash
+   # Verify locally before pushing
+   pytest -xvs
+   ```
+
+2. ✅ **No Conflicts with Main**
+   - Rebase or merge main into the feature branch to resolve any conflicts
+   - Test after resolving conflicts
+   ```bash
+   git fetch origin
+   git rebase origin/main
+   # or
+   git merge origin/main
+   pytest -xvs
+   ```
+
+3. ✅ **Code Quality Standards**
+   - **New functions have docstrings**: Every new function must have a clear docstring explaining its purpose, parameters, and return value
+   - **Tests verify functionality**: New code must have corresponding tests; test coverage should be >80%
+   - **No test placeholders**: Don't commit tests for unimplemented functions (TDD red phase tests are OK locally, but don't merge red tests to main)
+   - **Code is formatted correctly**: Follow PEP 8 for Python; use existing code style as reference
+   - **No debugging artifacts**: Remove `print()`, `console.log()`, debugger statements, and commented-out code
+
+4. ✅ **All Tests Pass** (both new and existing)
+   ```bash
+   pytest                          # All tests pass
+   pytest -v                       # View full output
+   pytest --cov                    # Check coverage (if available)
+   ```
+
+5. ✅ **Main Branch Health**
+   - After merging, verify main branch still works:
+   ```bash
+   git checkout main
+   git pull origin main
+   pytest -xvs
+   ```
+   - If tests fail after merge, revert immediately and fix the issue
+
+### Merge Process
+
+5. **When merging the PR to main** (after pre-merge checklist passes)
    ```bash
    git checkout main
    git merge --ff-only feat/short-description
@@ -210,23 +259,54 @@ pytest -k "armor"         # Run tests matching pattern
    
    The `Closes #N` in the commit automatically closes the issue when merged.
 
-6. **Clean up after merge**
-   - Close the PR (if not auto-closed)
+6. **Clean up after merge and verify**
    - Delete the feature branch:
    ```bash
+   git push origin --delete feat/short-description
+   # or
    gh pr close N --delete-branch
    ```
-   - Verify issue is closed:
+   - Verify main branch is still healthy:
    ```bash
-   gh issue list --state open
-   gh pr list --state open
+   git checkout main
+   git pull origin main
+   pytest -xvs
    ```
+   - Verify issue closed and PR merged:
+   ```bash
+   gh issue list --state open    # Linked issue should be gone
+   gh pr list --state open       # PR should be gone
+   ```
+   - **If any tests fail after merge**: Revert the merge immediately
+   ```bash
+   git revert <merge-commit-hash>
+   git push origin main
+   ```
+
+### Critical Rule: Main Branch Must Always Be Deployable
+
+**The main branch must NEVER have failing tests.** This is non-negotiable.
+
+**Common mistakes that break this rule:**
+- ❌ Merging tests for unimplemented functions (TDD red phase tests belong locally, not in main)
+- ❌ Committing code without corresponding tests
+- ❌ Merging without running full test suite locally
+- ❌ Ignoring CI/CD failures
+- ❌ Committing placeholder functions without implementation
+- ❌ Merging incomplete features with scaffolding code
+
+**If main branch breaks:**
+1. Immediately revert the breaking commit/PR
+2. Fix the issue on a feature branch
+3. Re-test thoroughly before attempting merge again
+4. Document what went wrong in the PR description
 
 ### Key Points
 
 - **One issue per feature/bug**: Each GitHub issue represents one distinct problem or feature
 - **One PR per issue**: Each PR should have exactly one associated issue via `Closes #N`
-- **Real commits only**: Don't create empty placeholder commits; PRs need actual code changes
+- **Real commits only**: Don't create empty placeholder commits; implement the feature completely
+- **Complete tests only**: Only commit tests for code that exists and passes. Don't commit tests for future/unimplemented functions
 - **Consistent linking**: Both commit messages and PR description should reference the issue
 - **Auto-closure**: When a PR with `Closes #N` is merged, the issue automatically closes
 - **No orphaned issues/PRs**: Before considering work done:
@@ -234,6 +314,7 @@ pytest -k "armor"         # Run tests matching pattern
   - ✅ PR has `Closes #N` in title or body
   - ✅ Issue closes automatically when PR merges
   - ✅ Both are in correct state after merge
+  - ✅ All tests pass on main branch after merge
 
 ### Example Workflow (Complete)
 
