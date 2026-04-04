@@ -369,6 +369,8 @@ def _candidate_step_action(
     used_mats,
     resource_budget,
     mat_aliases,
+    target_stats=None,
+    score_fns=None,
 ):
     best_action = None
     best_eff = -1
@@ -402,6 +404,8 @@ def _find_best_step_action(
     used_mats,
     resource_budget,
     mat_aliases,
+    target_stats=None,
+    score_fns=None,
 ):
     best_action = None
     best_eff = -1
@@ -415,6 +419,8 @@ def _find_best_step_action(
             used_mats,
             resource_budget,
             mat_aliases,
+            target_stats=target_stats,
+            score_fns=score_fns,
         )
         if action is None or action[5] <= best_eff:
             continue
@@ -462,7 +468,7 @@ def _serialize_consumed_mats(used_mats, resource_budget, mat_aliases):
     return consumed
 
 
-def _build_step_plan(slot_pareto, resource_budget, mat_aliases, grand_total):
+def _build_step_plan(slot_pareto, resource_budget, mat_aliases, grand_total, target_stats=None, score_fns=None):
     remaining_slots = {slot: list(options) for slot, options in slot_pareto.items() if options}
     cur_stats = {slot: options[0][1] for slot, options in slot_pareto.items() if options}
     running = grand_total
@@ -478,6 +484,8 @@ def _build_step_plan(slot_pareto, resource_budget, mat_aliases, grand_total):
             used_mats,
             resource_budget,
             mat_aliases,
+            target_stats=target_stats,
+            score_fns=score_fns,
         )
         if best_action is None:
             break
@@ -763,7 +771,14 @@ def _compute_all(web_data=None, target_stats=None):
         resource_budget,
         mat_aliases,
     )
-    step_plan = _build_step_plan(slot_pareto, resource_budget, mat_aliases, grand_total)
+    step_plan = _build_step_plan(
+        slot_pareto,
+        resource_budget,
+        mat_aliases,
+        grand_total,
+        target_stats=target_stats,
+        score_fns=score_fns,
+    )
     resources = _serialize_resources(resource_budget)
 
     return {
