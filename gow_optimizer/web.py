@@ -642,17 +642,27 @@ def _compute_all(web_data=None, target_stats=None):
     from gow_optimizer.config import PIECE_KEYS
 
     all_pieces_csv = extract_all_pieces()
-    # Map (slot_key, name) to owned status: True if craft=False, False if craft=True
-    owned_names = {
-        (slot_key, piece.get("name")): not piece.get("craft", True)
-        for slot_key in PIECE_KEYS
-        for piece in web_data.get(slot_key, [])
-    }
+    # Map (slot_key, name) to piece data: owned status, locked status
+    piece_data_map = {}
+    for slot_key in PIECE_KEYS:
+        for piece in web_data.get(slot_key, []):
+            piece_name = piece.get("name")
+            is_locked = piece.get("locked", False)
+            is_craft = piece.get("craft", True)
+            is_owned = not is_craft and not is_locked
+            piece_data_map[(slot_key, piece_name)] = {
+                "owned": is_owned,
+                "locked": is_locked
+            }
 
     all_pieces_display = {}
     for slot_key in PIECE_KEYS:
         all_pieces_display[slot_key] = [
-            {"name": name, "min_level": level, "owned": owned_names.get((slot_key, name), False)}
+            {
+                "name": name,
+                "min_level": level,
+                **piece_data_map.get((slot_key, name), {"owned": False, "locked": False})
+            }
             for name, level in sorted(
                 all_pieces_csv.get(slot_key, []), key=lambda x: x[0]
             )
@@ -1009,14 +1019,18 @@ def create_app(test_config=None) -> Flask:
                 "slot": "chest_pieces",  # or wrist_pieces, axe_attachments, etc.
                 "name": "Piece Name",
                 "action": "add" | "remove",
-                "craft": true | false  # Only used when action=="add"
+                "craft": true | false,     # Only used when action=="add" and locked=false
+                "level": 1-9,              # Only used when action=="add" and locked=false (optional, defaults to min_level)
+                "locked": true | false     # Only used when action=="add" (optional, defaults to false)
             }
         """
         payload = request.get_json(force=True)
         slot = payload.get("slot", "")
         name = payload.get("name", "")
         action = payload.get("action", "").lower()
-        craft = payload.get("craft", True)  # Default to True if not specified
+        craft = payload.get("craft", True)
+        level = payload.get("level")
+        locked = payload.get("locked", False)
 
         if not slot or not name or not action:
             return jsonify({"error": "Missing slot, name, or action"}), 400
@@ -1052,10 +1066,21 @@ def create_app(test_config=None) -> Flask:
                         400,
                     )
 
+                # Determine the level to save
+                if locked:
+                    # Locked pieces don't have a meaningful level yet
+                    save_level = min_level
+                else:
+                    # Use provided level or default to min_level
+                    save_level = level if level is not None else min_level
+
                 # Add the piece
-                current_pieces.append(
-                    {"name": piece_name, "level": min_level, "craft": bool(craft)}
-                )
+                current_pieces.append({
+                    "name": piece_name,
+                    "level": save_level,
+                    "craft": bool(craft) if not locked else False,
+                    "locked": bool(locked)
+                })
                 web_data[slot] = current_pieces
 
             elif action == "remove":

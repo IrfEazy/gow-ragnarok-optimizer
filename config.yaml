@@ -12,392 +12,518 @@ mat_aliases:
   s Broken Belt: Lunda's Broken Belt
 chest_pieces:
 - craft: false
-  level: 5
-  name: Spiritual Shoulder Straps
-- craft: false
   level: 4
   name: Sol's Spaulders of Courage
+  locked: false
 - craft: true
   level: 3
   name: Spaulders of Enlightenment
+  locked: false
 - craft: true
   level: 3
   name: Fortified Husk Cuirass
+  locked: false
 - craft: true
   level: 2
   name: Nidavellir's Finest Plackart
+  locked: false
 - craft: false
   level: 2
   name: Cloak of the Black Bear
+  locked: false
 - craft: true
   level: 1
   name: Vidar's Pauldron of Might
+  locked: false
 - craft: false
   level: 1
   name: Shoulder Guard of Survival
+  locked: false
 - craft: false
   level: 5
   name: Giptumadr's Breastplate
+  locked: false
 - craft: false
   level: 5
   name: Breastplate of Guiding Light
+  locked: false
 - name: Cuirass of Ares
   level: 7.0
   craft: true
+  locked: false
 - name: Cuirass of Raven Tears
   level: 3.0
   craft: true
+  locked: false
 - name: Cuirass of Zeus
   level: 10.0
   craft: true
+  locked: false
 - name: Darkdale Plackart
   level: 1.0
   craft: true
+  locked: false
 - name: Dragon Scaled Breastplate
   level: 6.0
   craft: true
+  locked: false
 - name: Fate Breaker Shoulder Guard
   level: 6.0
   craft: true
+  locked: false
 - name: Glory of Sparta
   level: 9.1
   craft: true
+  locked: false
 - name: Hunter's Pauldron
   level: 6.0
   craft: true
+  locked: false
 - name: Mani's Pauldron of Wisdom
   level: 5.0
   craft: true
+  locked: false
 - name: Plackart of Fallen Stars
   level: 6.0
   craft: true
+  locked: false
 - name: Risen Snow Breastplate
   level: 1.0
   craft: true
+  locked: false
 - name: Shoulder Guard of Undying Pyres
   level: 6.0
   craft: true
+  locked: false
 - name: Shoulder Straps of Radiance
   level: 4.0
   craft: true
+  locked: false
 - name: Steinbjorn Plackart
   level: 6.0
   craft: true
+  locked: false
 - name: Surtr's Scorched Cuirass
   level: 7.0
   craft: true
+  locked: false
 - name: Lunda's Lost Cuirass
   level: 5.0
   craft: false
+  locked: false
+- name: Spiritual Shoulder Straps
+  level: 4.0
+  craft: false
+  locked: false
 - name: Berserker Cuirass
   level: 5.0
-  craft: false
+  craft: true
 wrist_pieces:
 - craft: true
   level: 4
   name: Sol's Wraps of Courage
+  locked: false
 - craft: false
   level: 4
   name: Gauntlets of Radiance
+  locked: false
 - craft: false
   level: 6
   name: Spiritual Wraps
+  locked: false
 - craft: true
   level: 3
   name: Bracers of Enlightenment
+  locked: false
 - craft: false
   level: 3
   name: Wraps of the Black Bear
+  locked: false
 - craft: true
   level: 2
   name: Nidavellir's Finest Arm Guards
+  locked: false
 - craft: true
   level: 1
   name: Vidar's Bracers of Might
+  locked: false
 - craft: true
   level: 1
   name: Fortified Husk Arm Guards
+  locked: false
 - craft: false
   level: 1
   name: Wraps of Survival
+  locked: false
 - craft: false
   level: 5
   name: Gauntlets of Guiding Light
+  locked: false
 - name: Berserker Gauntlets
   level: 5.0
   craft: true
+  locked: false
 - name: Bracers of Fallen Stars
   level: 6.0
   craft: true
+  locked: false
 - name: Bracers of Raven Tears
   level: 3.0
   craft: true
+  locked: false
 - name: Bracers of Undying Pyres
   level: 6.0
   craft: true
+  locked: false
 - name: Darkdale Arm Guards
   level: 1.0
   craft: true
+  locked: false
 - name: Dragon Scaled Bracers
   level: 6.0
   craft: true
+  locked: false
 - name: Fate Breaker Wraps
   level: 6.0
   craft: true
+  locked: false
 - name: Gauntlets of Ares
   level: 7.0
   craft: true
+  locked: false
 - name: Gauntlets of Zeus
   level: 10.0
   craft: true
+  locked: false
 - name: Giptumadr's Gauntlets
   level: 5.0
   craft: true
+  locked: false
 - name: Hunter's Gauntlets
   level: 6.0
   craft: true
+  locked: false
 - name: Lunda's Lost Bracers
   level: 5.0
   craft: true
+  locked: false
 - name: Mani's Bracers of Wisdom
   level: 5.0
   craft: true
+  locked: false
 - name: Pride of Sparta
   level: 9.1
   craft: true
+  locked: false
 - name: Risen Snow Gauntlets
   level: 1.0
   craft: true
+  locked: false
 - name: Steinbjorn Gauntlets
   level: 6.0
   craft: true
+  locked: false
 - name: Surtr's Scorched Arm
   level: 7.0
   craft: true
+  locked: false
 waist_pieces:
 - craft: false
   level: 6
   name: Lunda's Lost Belt
+  locked: false
 - craft: true
   level: 4
   name: Sol's Belt of Courage
+  locked: false
 - craft: false
   level: 4
   name: Belt of Radiance
+  locked: false
 - craft: false
   level: 5
   name: Spiritual Belt
+  locked: false
 - craft: true
   level: 3
   name: Belt of Enlightenment
+  locked: false
 - craft: false
   level: 3
   name: Belt of the Black Bear
+  locked: false
 - craft: true
   level: 2
   name: Nidavellir's Finest Waist Guard
+  locked: false
 - craft: true
   level: 1
   name: Vidar's Belt of Might
+  locked: false
 - craft: true
   level: 1
   name: Fortified Husk Girdle
+  locked: false
 - craft: false
   level: 1
   name: Belt of Survival
+  locked: false
 - craft: false
   level: 5
   name: Waist Guard of Guiding Light
+  locked: false
 - craft: false
   level: 3
   name: Girdle of Raven Tears
+  locked: false
 - name: Berserker Waist Guard
   level: 5.0
   craft: true
+  locked: false
 - name: Darkdale Waist Guard
   level: 1.0
   craft: true
+  locked: false
 - name: Dragon Scaled Girdle
   level: 6.0
   craft: true
+  locked: false
 - name: Fate Breaker Belt
   level: 6.0
   craft: true
+  locked: false
 - name: Giptumadr's Waist Guard
   level: 5.0
   craft: true
+  locked: false
 - name: Girdle of Undying Pyres
   level: 6.0
   craft: true
+  locked: false
 - name: Hunter's Belt
   level: 6.0
   craft: true
+  locked: false
 - name: Mani's Belt of Wisdom
   level: 5.0
   craft: true
+  locked: false
 - name: Mark of Sparta
   level: 9.1
   craft: true
+  locked: false
 - name: Risen Snow Girdle
   level: 1.0
   craft: true
+  locked: false
 - name: Steinbjorn Waist Guard
   level: 6.0
   craft: true
+  locked: false
 - name: Surtr's Scorched Girdle
   level: 7.0
   craft: true
+  locked: false
 - name: Waist Guard of Fallen Stars
   level: 6.0
   craft: true
+  locked: false
 - name: War Belt of Ares
   level: 7.0
   craft: true
+  locked: false
 - name: War Belt of Zeus
   level: 10.0
   craft: true
+  locked: false
 axe_attachments:
 - craft: false
   level: 5
   name: Grip of the Fallen Alchemist
+  locked: false
 - craft: true
   level: 4
   name: Grip of Weighted Recovery
+  locked: false
 - craft: false
   level: 4
   name: Stonecutter's Knob
+  locked: false
 - craft: false
   level: 3
   name: Haur's Lucky Knob
+  locked: false
 - craft: false
   level: 3
   name: Wooden Knob
+  locked: false
 - craft: true
   level: 2
   name: The Furious Maul
+  locked: false
 - name: Banahogg Knob
   level: 6.0
   craft: true
+  locked: false
 - name: Fortified Frost Knob
   level: 2.0
   craft: true
+  locked: false
 - name: Grip of Darkdale
   level: 1.0
   craft: true
+  locked: false
 - name: Grip of Healing Harmony
   level: 5.0
   craft: true
+  locked: false
 - name: Grip of Radiant Reflection
   level: 6.0
   craft: true
+  locked: false
 - name: Runic Hailstone Knob
   level: 6.0
   craft: true
+  locked: false
 blades_attachments:
 - craft: false
   level: 6
   name: Hardened War Handles
+  locked: false
 - craft: true
   level: 4
   name: Pommels of Brutal Might
+  locked: false
 - craft: false
   level: 4
   name: Pommels of Agile Deceit
+  locked: false
 - craft: false
   level: 4
   name: Steel Handles
+  locked: false
 - craft: false
   level: 3
   name: Radiant Warden Handles
+  locked: false
 - craft: false
   level: 2
   name: Cursed Empress Handles
+  locked: false
 - name: Darkdale Handles
   level: 1.0
   craft: true
+  locked: false
 - name: Deadly Obsidian Handles
   level: 1.0
   craft: true
+  locked: false
 - name: Luminous Recovery Handles
   level: 6.0
   craft: true
+  locked: false
 - name: Pommels of Burning Unity
   level: 6.0
   craft: true
+  locked: false
 - name: Pommels of the True Flame
   level: 6.0
   craft: true
+  locked: false
 - name: Pommels of the Undying Spark
   level: 2.0
   craft: true
+  locked: false
 spear_attachments:
 - name: Battle-Scarred Sauroter
   level: 6.0
   craft: true
+  locked: false
 - name: Charging Assault Sauroter
   level: 5.0
   craft: true
+  locked: false
 - name: Hind of Attuned Elements
   level: 5.0
   craft: true
+  locked: false
 - name: Hind of Volatile Might
   level: 6.0
   craft: true
+  locked: false
 - name: Hind of Weightless Recovery
   level: 6.0
   craft: true
+  locked: false
 - name: Hind of the Four Winds
   level: 5.0
   craft: true
+  locked: false
 - name: Lion's Roar Sauroter
   level: 5.0
   craft: true
+  locked: false
 - name: Mighty Olympic Sauroter
   level: 5.0
   craft: true
+  locked: false
 - name: Soldier's Sauroter
   level: 4.0
   craft: true
+  locked: false
 - name: Warrior's Echo Sauroter
   level: 6.0
   craft: true
+  locked: false
 shield_attachments:
 - craft: false
   level: 6
   name: Rond of Affliction
+  locked: false
 - craft: false
   level: 3
   name: Rond of Expedition
+  locked: false
 - craft: false
   level: 1
   name: Rond of Volition
+  locked: false
 - craft: false
   level: 2
   name: Rond of Aggravation
+  locked: false
 - craft: false
   level: 5
   name: Rond of Purification
+  locked: false
 - name: Rond of Absorption
   level: 6.0
   craft: true
+  locked: false
 - name: Rond of Deflection
   level: 5.0
   craft: true
+  locked: false
 - name: Rond of Disruption
   level: 7.0
   craft: true
+  locked: false
 - name: Rond of Fortification
   level: 6.0
   craft: true
+  locked: false
 - name: Rond of Obliteration
   level: 8.0
   craft: true
+  locked: false
 - name: Rond of Restoration
   level: 4.0
   craft: true
+  locked: false
 - name: Rond of the Nine Realms
   level: 6.0
   craft: true
+  locked: false
 resource_budget:
   Asgardian Ingot: 0
   Blazing Embers: 0

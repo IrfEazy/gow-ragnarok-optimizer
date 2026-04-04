@@ -182,7 +182,7 @@ def generate_initial_inventory() -> dict[str, list[dict[str, Any]]]:
         Dict with all PIECE_KEYS, each mapping to list of piece dicts.
         Example: {
             "chest_pieces": [
-                {"name": "Piece 1", "level": 1.0, "craft": true},
+                {"name": "Piece 1", "level": 1.0, "craft": true, "locked": false},
                 ...
             ],
             ...
@@ -196,7 +196,7 @@ def generate_initial_inventory() -> dict[str, list[dict[str, Any]]]:
     for slot_key in PIECE_KEYS:
         pieces_list = all_pieces.get(slot_key, [])
         result[slot_key] = [
-            {"name": name, "level": level, "craft": True}
+            {"name": name, "level": level, "craft": True, "locked": False}
             for name, level in pieces_list
         ]
 

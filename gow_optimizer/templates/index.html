@@ -454,6 +454,17 @@
             border-color: var(--accent-dim);
             transform: translateY(-2px);
         }
+        .piece-card.locked {
+            opacity: 0.25;
+            border-color: var(--text3);
+            background: var(--surface2);
+            cursor: not-allowed;
+        }
+        .piece-card.locked:hover {
+            opacity: 0.25;
+            border-color: var(--text3);
+            transform: none;
+        }
         .piece-name {
             font-weight: 500;
             color: var(--text);
@@ -800,10 +811,11 @@
                 <h3>{{ display_name }}</h3>
                 <div class="pieces-list">
                     {% for piece in pieces_in_slot %}
-                    <div class="piece-card {% if piece.owned %}owned{% else %}not-owned{% endif %}"
+                    <div class="piece-card {% if piece.locked %}locked{% elif piece.owned %}owned{% else %}not-owned{% endif %}"
                          data-slot="{{ slot_key }}"
                          data-name="{{ piece.name }}"
-                         onclick="togglePiece(this)">
+                         data-locked="{{ piece.locked|lower }}"
+                         {% if not piece.locked %}onclick="togglePiece(this)"{% endif %}>
                         <div class="piece-name">{{ piece.name }}</div>
                         <div class="piece-level">LVL {{ "%.1f"|format(piece.min_level) }}</div>
                     </div>
@@ -1941,13 +1953,20 @@ function showCraftConfirmation(element, slot, name) {
         modal.innerHTML = `
             <div class="modal-content">
                 <h3>Aggiungi pezzo: <strong></strong></h3>
-                <p>Possiedi già questo pezzo?</p>
+                <div id="level-select-section" style="margin-bottom: 12px;">
+                    <label for="piece-level-input" style="display: block; margin-bottom: 6px; font-size: 0.9em; color: var(--text2);">A che livello lo hai?</label>
+                    <input type="number" id="piece-level-input" min="1" max="9" value="1" style="width: 100%; padding: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-size: 0.9em;">
+                </div>
+                <p style="margin-bottom: 12px; font-size: 0.9em; color: var(--text2);">Qual è il tuo stato con questo pezzo?</p>
                 <div class="modal-buttons">
-                    <button class="btn btn-secondary" onclick="confirmAddPiece(false)">
+                    <button class="btn btn-secondary" onclick="confirmAddPiece('craft')">
                         Devo craftarlo
                     </button>
-                    <button class="btn btn-primary" onclick="confirmAddPiece(true)">
+                    <button class="btn btn-primary" onclick="confirmAddPiece('owned')">
                         Lo possiedo già
+                    </button>
+                    <button class="btn btn-secondary" onclick="confirmAddPiece('locked')">
+                        Non sbloccato
                     </button>
                 </div>
             </div>
@@ -1957,16 +1976,32 @@ function showCraftConfirmation(element, slot, name) {
 
     modal.querySelector('.modal-content h3 strong').textContent = name;
     modal.classList.add('show');
+    document.getElementById('piece-level-input').focus();
 }
 
-function confirmAddPiece(alreadyOwned) {
+function confirmAddPiece(status) {
     if (!_pendingPieceAction) return;
 
     const { element, slot, name } = _pendingPieceAction;
-    const craft = !alreadyOwned;  // If they own it, craft=false; if they need to craft, craft=true
+    const levelInput = document.getElementById('piece-level-input');
+    const level = parseInt(levelInput.value, 10) || 1;
+
+    let craft = false;
+    let locked = false;
+
+    if (status === 'craft') {
+        craft = true;
+        locked = false;
+    } else if (status === 'owned') {
+        craft = false;
+        locked = false;
+    } else if (status === 'locked') {
+        craft = false;
+        locked = true;
+    }
 
     closeCraftConfirmationModal();
-    addPiece(slot, name, craft);
+    addPiece(slot, name, craft, level, locked);
 }
 
 function closeCraftConfirmationModal() {
@@ -1977,12 +2012,14 @@ function closeCraftConfirmationModal() {
     _pendingPieceAction = null;
 }
 
-function addPiece(slot, name, craft) {
+function addPiece(slot, name, craft, level, locked) {
     const payload = {
         slot: slot,
         name: name,
         action: 'add',
-        craft: craft
+        craft: craft,
+        level: level,
+        locked: locked
     };
 
     fetch('/api/toggle-piece', {
