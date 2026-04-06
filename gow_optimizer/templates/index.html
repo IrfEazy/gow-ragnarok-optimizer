@@ -2080,11 +2080,13 @@ function updateInventoryManager(d) {
             <div class="pieces-list">`;
 
         pieces.forEach(piece => {
-            const ownedClass = piece.owned ? 'owned' : 'not-owned';
-            html += `<div class="piece-card ${ownedClass}"
+            const cardClass = piece.locked ? 'locked' : (piece.owned ? 'owned' : 'not-owned');
+            const clickAttr = piece.locked ? '' : 'onclick="togglePiece(this)"';
+            html += `<div class="piece-card ${cardClass}"
                          data-slot="${escAttr(slotKey)}"
                          data-name="${escAttr(piece.name)}"
-                         onclick="togglePiece(this)">
+                         data-locked="${piece.locked}"
+                         ${clickAttr}>
                     <div class="piece-name">${escAttr(piece.name)}</div>
                     <div class="piece-level">LVL ${piece.min_level.toFixed(1)}</div>
                 </div>`;
