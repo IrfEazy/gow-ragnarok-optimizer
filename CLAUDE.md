@@ -35,23 +35,21 @@ python -m gow_optimizer
 
 2. **Optimizer** (`optimizer.py`): Core computation engine
    - **Pareto frontier**: Identifies non-dominated upgrade options per armor/weapon slot
-   - **Greedy solver**: Given a Hacksilver budget and materials, finds the best affordable upgrade path
-   - **Step-by-step planner**: Recommends sequential upgrades by efficiency (stat gain per Hacksilver)
+   - **Crafting support**: Items marked `craft: true` have crafting costs included (materials required at that level)
+   - **Multi-objective scoring**: Geometric mean scoring allows users to optimize for multiple stats simultaneously
    - Pure functions, no I/O or Flask dependencies
 
 3. **Web layer** (`web.py`): Flask endpoints + JSON API
    - **Static data cache**: Loads CSVs once, reuses for all requests
    - **Multi-objective optimization**: Geometric mean scoring allows users to prioritize multiple stats simultaneously
-   - **4 required reports** (all computed in `_compute_all()`):
+   - **3 required reports** (all computed in `_compute_all()`):
      1. **Current optimal build**: Best item for each armor/weapon slot within current inventory (respects multi-objective preferences)
-     2. **Optimal plan**: One-shot Pareto optimization with resource constraints (applies multi-objective scoring)
-     3. **Step-by-step plan**: Sequential greedy upgrade recommendations (respects multi-objective preferences)
-     4. **Blocked items**: Armor/weapons locked by missing materials, plus ranking by total stats
+     2. **Optimal plan**: One-shot Pareto optimization with resource constraints (includes crafting costs, applies multi-objective scoring)
+     3. **Blocked items**: Armor/weapons locked by missing materials, plus ranking by total stats
    - **Endpoints**:
      - `GET /` — renders `index.html` with full computed data
      - `POST /api/recalc` — recalculate with modified resource budget (temporary)
      - `POST /api/save-inventory` — persist resources + armor/weapon choices to config.yaml
-     - `POST /api/apply-upgrade` — apply a step-by-step upgrade (deduct resources, level up item)
      - `POST /api/stat-preferences` — set/clear optimization stat selection (persisted to config.yaml)
      - `POST /api/stat-presets` — multi-action endpoint (list/save/load/delete named stat presets)
 
@@ -75,9 +73,8 @@ web._compute_all(web_data)
     ├─ CSV data (cached): all_pieces_df, all_weapons_df
     ├─ optimizer.build_available_df() → filter inventory to current levels
     ├─ optimizer.collect_current_build() → best item per slot (read-only)
-    ├─ optimizer.build_all_pareto() → frontier per slot with mats+costs
-    ├─ optimizer.solve_with_resources() → best 1-shot path
-    ├─ web._build_step_plan() → greedy sequential path
+    ├─ optimizer.build_all_pareto() → frontier per slot with crafting costs + mats
+    ├─ optimizer.solve_with_resources() → best 1-shot Pareto path
     └─ web._collect_blocked_items() → items locked by missing materials
     ↓
 render_template("index.html", **data)
@@ -87,15 +84,24 @@ render_template("index.html", **data)
 
 ### Configuration Inventory
 
-The YAML inventory (e.g., `chest_pieces`) is a list of pieces the player owns:
+The YAML inventory (e.g., `chest_pieces`) is a list of pieces the player owns or plans to craft:
 ```yaml
 chest_pieces:
-  - { name: "Piece Name", level: 5, craft: true }
+  - { name: "Piece Name", level: 5, craft: false }  # already owned
+  - { name: "Piece to Craft", level: 3, craft: true }  # needs crafting
 ```
+
+Fields:
+- `name`: Item name (must match CSV)
+- `level`: Current or target level
+- `craft`: Whether the item needs to be crafted (true) or already owned (false)
+
+**Crafting costs**: When an item is marked `craft: true` at level L, the optimizer includes the crafting cost in the Pareto frontier. The crafting cost is the cumulative materials required to reach level L from the CSV. After crafting, the flag changes to `craft: false` and subsequent upgrades follow normal Pareto logic.
 
 The web UI allows users to:
 1. Edit which pieces they own and their current level (persisted to YAML via `save_web_inventory`)
-2. Modify resource budget (Hacksilver + materials)
+2. Mark pieces as crafted or not
+3. Modify resource budget (Hacksilver + materials)
 
 The optimizer then computes upgrade recommendations based on *this* inventory.
 

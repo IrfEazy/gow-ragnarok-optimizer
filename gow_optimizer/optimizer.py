@@ -56,11 +56,16 @@ def get_available(mat_name, resource_budget, mat_aliases):
 
 
 def parse_inventory_from_config(cfg):
-    """Converte le liste YAML in tuple (name, level, slot_type, needs_craft)."""
+    """Converte le liste YAML in tuple (name, level, slot_type, needs_craft).
+
+    Esclude pezzi con locked=true (non ancora sbloccati nel gioco).
+    """
 
     def _parse(pieces, slot_type):
         return [
-            (p["name"], p["level"], slot_type, p.get("craft", False)) for p in pieces
+            (p["name"], p["level"], slot_type, p.get("craft", False))
+            for p in pieces
+            if not p.get("locked", False)
         ]
 
     inventory = (
