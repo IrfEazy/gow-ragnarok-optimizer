@@ -1,9 +1,0 @@
-{
-	"sonarlint.analysisExcludesStandalone": "**/.venv/**, **/.mypy_cache/**, **/__pycache__/**, **/data/**, **/web_inventory.yaml",
-	"chat.tools.terminal.autoApprove": {
-		"/^python -c \"import yaml\ncfg=yaml\\.safe_load\\(open\\('config\\.yaml', encoding='utf-8'\\)\\)\nrows=\\[x for x in cfg\\.get\\('wrist_pieces',\\[\\]\\) if x\\.get\\('name'\\)=='Gauntlets of Radiance'\\]\nprint\\(rows\\)\n\"$/": {
-			"approve": true,
-			"matchCommandLine": true
-		}
-	}
-}
