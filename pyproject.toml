@@ -16,6 +16,7 @@ dependencies = [
   "pytest-cov>=7.1.0",
   "pyyaml>=6.0.2",
   "requests>=2.32.3",
+  "scipy>=1.17.1",
   "types-requests>=2.32.4.20260107",
 ]
 
@@ -23,7 +24,11 @@ dependencies = [
 gow-web = "gow_optimizer.web:main"
 
 [dependency-groups]
-dev = ["pytest>=8.3.5", "types-PyYAML>=6.0.12.20250915"]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-playwright>=0.7.2",
+    "types-PyYAML>=6.0.12.20250915",
+]
 
 [tool.uv]
 package = true

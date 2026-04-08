@@ -13,6 +13,7 @@ python -m gow_optimizer.scraper
 ```
 
 This will create:
+
 - `all_pieces.csv` — armor pieces (chest, wrist, waist) with stats and upgrade costs
 - `all_weapons.csv` — weapon attachments (axes, blades, spears, shields) with stats and upgrade costs
 

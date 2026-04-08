@@ -10,7 +10,6 @@ from gow_optimizer.config import (
     load_stat_presets,
     save_current_as_preset,
     save_stat_preferences,
-    save_stat_presets,
 )
 from gow_optimizer.paths import PROJECT_ROOT
 
@@ -64,11 +63,10 @@ def test_coerce_resource_budget_handles_empty_dict():
     assert result == {}
 
 
-def test_load_web_inventory_reads_from_config_yaml(tmp_path, monkeypatch):
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text(
+def test_load_web_inventory_reads_from_web_inventory_yaml(tmp_path, monkeypatch):
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text(
         """
-force_scrape: false
 resource_budget:
     Hacksilver: 999
 chest_pieces:
@@ -78,7 +76,7 @@ chest_pieces:
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     data = config_module.load_web_inventory()
 
@@ -87,12 +85,10 @@ chest_pieces:
     assert data["chest_pieces"][0]["craft"] is False
 
 
-def test_save_web_inventory_writes_runtime_sections_into_config(tmp_path, monkeypatch):
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text(
+def test_save_web_inventory_writes_to_web_inventory_yaml(tmp_path, monkeypatch):
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text(
         """
-force_scrape: false
-armor_csv: data/all_pieces.csv
 resource_budget:
     Hacksilver: 10
 chest_pieces: []
@@ -107,7 +103,7 @@ shield_attachments: []
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     config_module.save_web_inventory(
         {
@@ -128,19 +124,20 @@ shield_attachments: []
         }
     )
 
-    saved = config_module.load_config()
-    assert saved["force_scrape"] is False
-    assert saved["armor_csv"] == "data/all_pieces.csv"
+    import yaml
+
+    saved = yaml.safe_load(web_inv_path.read_text(encoding="utf-8"))
     assert saved["resource_budget"]["Hacksilver"] == 123
     assert saved["chest_pieces"][0]["level"] == 5
 
 
 def test_load_stat_preferences_returns_none_when_not_set(tmp_path, monkeypatch):
     """Should return None when optimization_stats not in config."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     result = load_stat_preferences()
 
@@ -149,8 +146,8 @@ def test_load_stat_preferences_returns_none_when_not_set(tmp_path, monkeypatch):
 
 def test_load_stat_preferences_returns_list_when_set(tmp_path, monkeypatch):
     """Should return list when optimization_stats is set."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text(
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text(
         """
 resource_budget:
   Hacksilver: 100
@@ -162,8 +159,7 @@ optimization_stats:
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
-
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
     result = load_stat_preferences()
 
     assert result == ["Strength", "Defense"]
@@ -171,8 +167,8 @@ optimization_stats:
 
 def test_load_stat_preferences_handles_non_list_value(tmp_path, monkeypatch):
     """Should return None when optimization_stats is not a list."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text(
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text(
         """
 resource_budget:
   Hacksilver: 100
@@ -182,7 +178,7 @@ optimization_stats: invalid_string
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     result = load_stat_preferences()
 
@@ -191,10 +187,10 @@ optimization_stats: invalid_string
 
 def test_save_stat_preferences_with_list(tmp_path, monkeypatch):
     """Should save list of stat preferences."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     save_stat_preferences(["Strength", "Defense"])
 
@@ -204,8 +200,8 @@ def test_save_stat_preferences_with_list(tmp_path, monkeypatch):
 
 def test_save_stat_preferences_with_none(tmp_path, monkeypatch):
     """Should remove optimization_stats when saving None."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text(
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text(
         """
 resource_budget:
   Hacksilver: 100
@@ -216,7 +212,7 @@ optimization_stats:
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     save_stat_preferences(None)
 
@@ -226,10 +222,10 @@ optimization_stats:
 
 def test_load_stat_presets_returns_empty_dict_when_not_set(tmp_path, monkeypatch):
     """Should return empty dict when stat_presets not in config."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     result = load_stat_presets()
 
@@ -238,8 +234,8 @@ def test_load_stat_presets_returns_empty_dict_when_not_set(tmp_path, monkeypatch
 
 def test_load_stat_presets_returns_presets_when_set(tmp_path, monkeypatch):
     """Should return presets dict when stat_presets is set."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text(
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text(
         """
 resource_budget:
   Hacksilver: 100
@@ -255,7 +251,7 @@ stat_presets:
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     result = load_stat_presets()
 
@@ -267,13 +263,13 @@ stat_presets:
 
 def test_load_stat_presets_handles_invalid_format(tmp_path, monkeypatch):
     """Should return empty dict when stat_presets is not a dict."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text(
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text(
         "resource_budget:\n  Hacksilver: 100\nstat_presets: invalid_string\n",
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     result = load_stat_presets()
 
@@ -282,10 +278,10 @@ def test_load_stat_presets_handles_invalid_format(tmp_path, monkeypatch):
 
 def test_save_current_as_preset_creates_preset(tmp_path, monkeypatch):
     """Should create new preset with given name and stats."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     save_current_as_preset("TestPreset", ["Strength", "Defense"])
 
@@ -295,10 +291,10 @@ def test_save_current_as_preset_creates_preset(tmp_path, monkeypatch):
 
 def test_save_current_as_preset_rejects_empty_name(tmp_path, monkeypatch):
     """Should raise ValueError when preset_name is empty."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     with pytest.raises(ValueError):
         save_current_as_preset("", ["Strength"])
@@ -312,8 +308,8 @@ def test_save_current_as_preset_rejects_empty_name(tmp_path, monkeypatch):
 
 def test_save_current_as_preset_overwrites_existing(tmp_path, monkeypatch):
     """Should overwrite existing preset with same name."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text(
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text(
         """
 resource_budget:
   Hacksilver: 100
@@ -325,7 +321,7 @@ stat_presets:
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     save_current_as_preset("MyPreset", ["Strength", "Runic"])
 
@@ -335,8 +331,8 @@ stat_presets:
 
 def test_delete_preset_removes_preset(tmp_path, monkeypatch):
     """Should delete preset by name."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text(
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text(
         """
 resource_budget:
   Hacksilver: 100
@@ -351,7 +347,7 @@ stat_presets:
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     delete_preset("Defensive")
 
@@ -362,10 +358,10 @@ stat_presets:
 
 def test_delete_preset_raises_keyerror_when_not_found(tmp_path, monkeypatch):
     """Should raise KeyError when preset does not exist."""
-    config_path = tmp_path / "config.yaml"
-    config_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    web_inv_path.write_text("resource_budget:\n  Hacksilver: 100\n", encoding="utf-8")
 
-    monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     with pytest.raises(KeyError):
         delete_preset("NonExistent")
