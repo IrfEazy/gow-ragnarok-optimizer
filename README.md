@@ -38,7 +38,7 @@ python -m gow_optimizer.scraper
 python -m gow_optimizer
 ```
 
-The web UI will open at **http://localhost:5000**.
+The web UI will open at **<http://localhost:5000>**.
 
 ## 📖 Usage
 
@@ -69,16 +69,16 @@ The web UI will use the updated data on the next page load.
 
 ### Core Components
 
-| Component | Purpose |
-|-----------|---------|
-| **Scraper** | Parses IGN wiki → generates CSV files |
-| **Optimizer** | Pareto frontier + greedy solver → upgrade paths |
-| **Web Layer** | Flask app + JSON API → interactive UI |
-| **Config** | YAML state management → persistent inventory/resources |
+| Component     | Purpose                                                |
+| ------------- | ------------------------------------------------------ |
+| **Scraper**   | Parses IGN wiki → generates CSV files                  |
+| **Optimizer** | Pareto frontier + greedy solver → upgrade paths        |
+| **Web Layer** | Flask app + JSON API → interactive UI                  |
+| **Config**    | YAML state management → persistent inventory/resources |
 
 ### Data Flow
 
-```
+```text
 config.yaml (persistent state)
     ↓
 Load inventory & resources
@@ -109,6 +109,7 @@ pytest -k "armor"
 ```
 
 **Test Coverage:**
+
 - Configuration loading and YAML serialization
 - Inventory parsing and data validation
 - Pareto frontier computation
@@ -149,11 +150,13 @@ See `config.yaml` in the repo for a complete example.
 ## 🎮 Game Context
 
 The optimizer is designed for **New Game+ (NG+)** and **Muspelheim** challenges where:
+
 - You own multiple armor pieces and weapon attachments
 - Upgrading items requires both **Hacksilver** (primary currency) and **crafting materials**
 - Your goal is to reach the best-stat build or maximize stat gains within a resource budget
 
 The **Pareto frontier** for each slot shows all non-dominated upgrade options:
+
 - Dominated = higher cost but same/lower stats → pruned out
 - Non-dominated = best bang for buck → included
 
@@ -161,7 +164,7 @@ The **solver** then picks frontier options per slot that fit your total budget w
 
 ## 📂 Project Structure
 
-```
+```text
 gow_optimizer/
   ├── web.py              # Flask app, API routes, report computation
   ├── optimizer.py        # Pareto frontiers, greedy solver, inventory parsing
@@ -189,17 +192,20 @@ CLAUDE.md                 # Developer guide for Claude Code
 ### Common Tasks
 
 **Add a new report:**
+
 1. Write computation logic in `web.py` (e.g., `_build_new_report()`)
 2. Add result to dict returned by `_compute_all()`
 3. Update `tests/test_web.py` to include it in `EMPTY_COMPUTE_RESULT`
 4. Render in `templates/index.html`
 
 **Debug the optimizer:**
+
 - Add print statements to `optimizer.py` functions
 - Call `_compute_all()` from a test with known data
 - Check `pareto_data` in response to verify frontier choices
 
 **Test an API endpoint:**
+
 ```bash
 curl -X POST http://localhost:5000/api/recalc \
   -H "Content-Type: application/json" \
@@ -216,21 +222,25 @@ curl -X POST http://localhost:5000/api/recalc \
 
 ## 🐛 Troubleshooting
 
-**"FileNotFoundError: data/all_pieces.csv not found"**
+### "FileNotFoundError: data/all_pieces.csv not found"
+
 ```bash
 python -m gow_optimizer.scraper
 ```
 
-**CSV data is outdated after game patch**
+### CSV data is outdated after game patch
+
 ```bash
 python -m gow_optimizer.scraper
 ```
 
-**Web UI shows stale data**
+### Web UI shows stale data
+
 - Hard refresh the browser: `Ctrl+Shift+R` (or `Cmd+Shift+R` on Mac)
 - Clear browser cache if using the same URL
 
-**Tests fail with network errors**
+### Tests fail with network errors
+
 - Tests use mocked CSV data; no network access required
 - If failure persists, check that `pytest` is installed: `uv sync --dev`
 
