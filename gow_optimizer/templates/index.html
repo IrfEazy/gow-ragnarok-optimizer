@@ -1,2120 +1,3036 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>God of War Ragnarök — Build Optimizer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --bg: #0b0d13;
-            --surface: #12151f;
-            --surface2: #1a1e2e;
-            --surface3: #222840;
-            --border: #2a3050;
-            --border-glow: #c8a44e33;
-            --text: #e8eaf0;
-            --text2: #8890a8;
-            --text3: #5a6080;
-            --accent: #c8a44e;
-            --accent2: #e8c85e;
-            --accent-dim: #c8a44e22;
-            --red: #e05555;
-            --red-dim: #e0555522;
-            --green: #50c878;
-            --green-dim: #50c87822;
-            --blue: #5b9bd5;
-            --blue-dim: #5b9bd522;
-            --orange: #e8915a;
-            --orange-dim: #e8915a22;
-            --radius: 12px;
-            --radius-sm: 8px;
-            --shadow: 0 4px 24px rgba(0,0,0,.4);
-            --shadow-glow: 0 0 30px rgba(200,164,78,.08);
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-        .container { max-width: 1280px; margin: 0 auto; padding: 24px; }
-
-        /* ── Header ── */
-        header {
-            text-align: center;
-            padding: 40px 0 28px;
-            margin-bottom: 32px;
-            position: relative;
-        }
-        header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-        }
-        header h1 {
-            font-family: 'Cinzel', serif;
-            font-size: 2.4em;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--accent2), var(--accent), #a8884e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 2px;
-            text-shadow: 0 0 40px rgba(200,164,78,.3);
-        }
-        header p {
-            color: var(--text2);
-            margin-top: 8px;
-            font-size: .95em;
-            letter-spacing: .5px;
-        }
-
-        /* ── Summary bar ── */
-        .summary-bar {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-        .summary-card {
-            background: linear-gradient(135deg, var(--surface), var(--surface2));
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            text-align: center;
-            box-shadow: var(--shadow);
-            transition: transform .2s, border-color .2s;
-        }
-        .summary-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent-dim);
-        }
-        .summary-card .label {
-            font-size: .7em;
-            color: var(--text2);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 600;
-        }
-        .summary-card .value {
-            font-family: 'Cinzel', serif;
-            font-size: 2em;
-            font-weight: 700;
-            color: var(--accent2);
-            margin-top: 4px;
-        }
-        .summary-card .value.green { color: var(--green); }
-
-        /* ── Section cards ── */
-        .section {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: 24px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-        .section-header {
-            background: linear-gradient(135deg, var(--surface2), var(--surface3));
-            padding: 16px 24px;
-            font-family: 'Cinzel', serif;
-            font-size: 1.05em;
-            font-weight: 700;
-            color: var(--accent2);
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background .15s;
-        }
-        .section-header:hover { background: var(--surface3); }
-        .section-header .toggle {
-            font-size: .7em;
-            color: var(--text2);
-            transition: transform .2s;
-        }
-        .section.collapsed .section-header .toggle { transform: rotate(-90deg); }
-        .section-body { padding: 24px; }
-        .section.collapsed .section-body { display: none; }
-
-        /* ── Slot cards (build) ── */
-        .slot-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 16px;
-        }
-        .slot-card {
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 18px;
-            transition: border-color .2s;
-        }
-        .slot-card:hover { border-color: var(--accent-dim); }
-        .slot-card h3 {
-            font-size: .8em;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text2);
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-        .item-best {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .item-best .name { font-weight: 600; font-size: 1.05em; }
-        .item-best .level {
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            color: #000;
-            padding: 3px 12px;
-            border-radius: 20px;
-            font-size: .75em;
-            font-weight: 700;
-            letter-spacing: .5px;
-        }
-        .stat-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-        .stat-pill {
-            font-size: .72em;
-            padding: 3px 10px;
-            border-radius: 20px;
-            background: var(--accent-dim);
-            color: var(--accent2);
-            font-weight: 600;
-            letter-spacing: .3px;
-        }
-        .total-badge {
-            font-family: 'Cinzel', serif;
-            font-size: 1.4em;
-            font-weight: 700;
-            color: var(--accent2);
-        }
-        .owned-badge {
-            font-size: .65em;
-            padding: 2px 8px;
-            border-radius: 12px;
-            background: var(--green-dim);
-            color: var(--green);
-            font-weight: 700;
-            letter-spacing: .3px;
-            text-transform: uppercase;
-            margin-left: 4px;
-        }
-        .craft-badge {
-            font-size: .65em;
-            padding: 2px 8px;
-            border-radius: 12px;
-            background: var(--orange-dim);
-            color: var(--orange);
-            font-weight: 700;
-            letter-spacing: .3px;
-            text-transform: uppercase;
-            margin-left: 4px;
-        }
-
-        /* ── Rankings ── */
-        .ranking-list { list-style: none; }
-        .ranking-list li {
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 4px;
-            transition: background .15s;
-        }
-        .ranking-list li:hover { background: rgba(255,255,255,.03); }
-        .ranking-list li:first-child { background: var(--accent-dim); }
-        .ranking-list li .rank { width: 28px; color: var(--text3); font-size: .85em; font-weight: 600; }
-        .ranking-list li .rank-name { flex: 1; font-size: .9em; }
-        .ranking-list li .rank-total { font-weight: 700; color: var(--accent2); font-variant-numeric: tabular-nums; }
-        .ranking-list li:first-child .rank { color: var(--accent2); }
-        .star { color: var(--accent2); margin-left: 4px; }
-
-        /* ── Craft list ── */
-        .craft-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 8px;
-        }
-        .craft-item {
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 10px 14px;
-            font-size: .9em;
-            display: flex;
-            justify-content: space-between;
-        }
-        .craft-item .ci-slot { color: var(--text2); font-size: .8em; }
-
-        /* ── Tables ── */
-        table { width: 100%; border-collapse: collapse; font-size: .88em; }
-        th {
-            text-align: left;
-            padding: 12px 14px;
-            background: var(--surface2);
-            color: var(--text2);
-            text-transform: uppercase;
-            font-size: .72em;
-            letter-spacing: .8px;
-            font-weight: 600;
-            border-bottom: 2px solid var(--border);
-        }
-        td {
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border);
-        }
-        tr:hover td { background: rgba(255,255,255,.015); }
-        .num { text-align: right; font-variant-numeric: tabular-nums; }
-
-        /* ── Resources ── */
-        .resources-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 10px;
-        }
-        .res-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 14px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: .88em;
-            transition: border-color .15s;
-        }
-        .res-item:hover { border-color: var(--accent-dim); }
-        .res-name { color: var(--text2); font-weight: 500; }
-        .res-qty { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
-        .res-qty.zero { color: var(--text3); }
-
-        /* ── Resource edit mode ── */
-        .res-editor { display: none; align-items: center; gap: 6px; }
-        .editing .res-qty-display { display: none; }
-        .editing .res-editor { display: flex; }
-        .res-editor input {
-            width: 72px;
-            background: var(--bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 5px 8px;
-            font-size: .9em;
-            font-weight: 600;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-        }
-        .res-editor input:focus { outline: none; border-color: var(--accent); }
-        .res-btn-pm {
-            width: 28px;
-            height: 28px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: var(--surface3);
-            color: var(--text);
-            font-size: 1em;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background .1s, border-color .1s;
-            line-height: 1;
-        }
-        .res-btn-pm:hover { background: var(--accent-dim); border-color: var(--accent); }
-
-        /* ── Action buttons ── */
-        .btn {
-            border: none;
-            border-radius: var(--radius-sm);
-            padding: 10px 24px;
-            font-size: .9em;
-            font-weight: 700;
-            cursor: pointer;
-            letter-spacing: .5px;
-            transition: all .15s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            color: #000;
-        }
-        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        .btn-primary:disabled { opacity: .4; cursor: wait; transform: none; }
-        .btn-secondary {
-            background: var(--surface3);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-        .btn-secondary:hover { border-color: var(--accent); background: var(--accent-dim); }
-        .btn-success {
-            background: var(--green-dim);
-            color: var(--green);
-            border: 1px solid rgba(80,200,120,.3);
-            padding: 6px 14px;
-            font-size: .8em;
-        }
-        .btn-success:hover { background: rgba(80,200,120,.2); border-color: var(--green); }
-        .btn-success:disabled { opacity: .3; cursor: default; }
-
-        .toolbar {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-        .toolbar .status {
-            font-size: .85em;
-            color: var(--text2);
-            margin-left: 8px;
-        }
-
-        /* ── Blocked ── */
-        .blocked-item {
-            background: var(--red-dim);
-            border: 1px solid rgba(224,85,85,.25);
-            border-radius: var(--radius-sm);
-            padding: 14px 18px;
-            margin-bottom: 10px;
-        }
-        .blocked-item .bl-name { font-weight: 600; }
-
-        /* ── Inventory Manager: Piece Cards ── */
-        .pieces-grid {
-            display: grid;
-            gap: 16px;
-        }
-        .pieces-slot {
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 14px 16px;
-            background: var(--surface2);
-        }
-        .pieces-slot h3 {
-            margin: 0 0 12px 0;
-            font-size: 0.95em;
-            font-weight: 600;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .pieces-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 8px;
-        }
-        .piece-card {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            padding: 10px 12px;
-            background: var(--surface3);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
-        }
-        .piece-card.owned {
-            border-color: var(--accent-dim);
-            background: var(--surface3);
-            opacity: 1;
-        }
-        .piece-card.owned:hover {
-            border-color: var(--accent);
-            background: rgba(255, 193, 7, 0.05);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        .piece-card.not-owned {
-            opacity: 0.45;
-            border-color: var(--border);
-        }
-        .piece-card.not-owned:hover {
-            opacity: 0.65;
-            border-color: var(--accent-dim);
-            transform: translateY(-2px);
-        }
-        .piece-card.locked {
-            opacity: 0.25;
-            border-color: var(--text3);
-            background: var(--surface2);
-            cursor: not-allowed;
-        }
-        .piece-card.locked:hover {
-            opacity: 0.25;
-            border-color: var(--text3);
-            transform: none;
-        }
-        .piece-name {
-            font-weight: 500;
-            color: var(--text);
-            font-size: 0.9em;
-            line-height: 1.3;
-            word-break: break-word;
-        }
-        .piece-level {
-            font-size: 0.8em;
-            color: var(--text2);
-            font-weight: 500;
-        }
-        .piece-card.owned .piece-level {
-            color: var(--accent);
-        }
-        .blocked-item .bl-action { color: var(--text2); font-size: .85em; margin-left: 8px; }
-        .blocked-item .bl-missing { margin-top: 6px; font-size: .85em; color: var(--red); }
-
-        /* ── Final box ── */
-        .final-box {
-            background: linear-gradient(135deg, var(--accent-dim), rgba(200,164,78,.02));
-            border: 1px solid var(--accent);
-            border-radius: var(--radius);
-            padding: 24px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            text-align: center;
-            box-shadow: var(--shadow-glow);
-        }
-        .final-box .fb-label {
-            font-size: .7em;
-            color: var(--text2);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 600;
-        }
-        .final-box .fb-value {
-            font-family: 'Cinzel', serif;
-            font-size: 1.5em;
-            font-weight: 700;
-            color: var(--accent2);
-        }
-
-        .empty-state { text-align: center; padding: 30px; color: var(--text3); font-style: italic; }
-
-        /* ── Loading overlay ── */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(11,13,19,.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .loading-overlay.active { display: flex; }
-        .spinner {
-            width: 48px; height: 48px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin .8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ── Title Glow Animation ── */
-        @keyframes titleGlow {
-            0%, 100% { text-shadow: 0 0 40px rgba(200,164,78,.3); }
-            50% { text-shadow: 0 0 60px rgba(200,164,78,.5); }
-        }
-        .title-animate {
-            animation: titleGlow 3s ease-in-out infinite;
-        }
-
-        /* ── Hero Background ── */
-        .hero-background {
-            position: relative;
-            background: radial-gradient(ellipse at 50% 0%, rgba(200,164,78,.08), transparent 70%);
-        }
-        .hero-runes {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            font-size: 4em;
-            opacity: .08;
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            font-family: 'Cinzel', serif;
-            user-select: none;
-            pointer-events: none;
-        }
-
-        /* ── Border Glow on Hover ── */
-        .section {
-            transition: border-color .3s, box-shadow .3s;
-        }
-        .section:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 30px rgba(200,164,78,.15);
-        }
-
-        /* ── Toast ── */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 14px 22px;
-            font-size: .9em;
-            color: var(--text);
-            box-shadow: var(--shadow);
-            z-index: 1001;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all .3s;
-            pointer-events: none;
-        }
-        .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        .toast.success { border-color: var(--green); color: var(--green); }
-        .toast.error { border-color: var(--red); color: var(--red); }
-
-        /* ── Responsive ── */
-        @media (max-width: 700px) {
-            .container { padding: 12px; }
-            header h1 { font-size: 1.6em; }
-            .summary-card .value { font-size: 1.4em; }
-            .slot-grid { grid-template-columns: 1fr; }
-        }
-    </style>
-</head>
-<body>
-<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
-<div class="toast" id="toast"></div>
-
-<div class="container">
-
-<header class="hero-background py-16">
-    <div class="hero-runes">⚔ ⚡ 🛡</div>
-    <h1 class="title-animate">GOD OF WAR RAGNARÖK</h1>
-    <p>Build Optimizer — Analisi inventario e piano di upgrade ottimo</p>
-    <p style="font-size: 0.85em; color: var(--text3); margin-top: 8px;">
-        ⚔ Armour · Weapon · Stats ⚔
-    </p>
-</header>
-
-<!-- ═══ Summary ═══ -->
-<div class="summary-bar" id="summary-bar">
-    <div class="summary-card">
-        <div class="label">Armatura</div>
-        <div class="value">{{ armor_total }}</div>
-    </div>
-    <div class="summary-card">
-        <div class="label">Armi</div>
-        <div class="value">{{ weapon_total }}</div>
-    </div>
-    <div class="summary-card">
-        <div class="label">Grand Total</div>
-        <div class="value">{{ grand_total }}</div>
-    </div>
-    <div class="summary-card">
-        <div class="label">Hacksilver</div>
-        <div class="value">{{ "{:,}".format(hacksilver) }}</div>
-    </div>
-    {% if opt_gain > 0 %}
-    <div class="summary-card">
-        <div class="label">Upgrade possibile</div>
-        <div class="value green">+{{ opt_gain }}</div>
-    </div>
-    {% endif %}
-</div>
-
-<!-- ═══ Build Ottimale ═══ -->
-<div class="section">
-    <div class="section-header" onclick="toggle(this)">
-        <span>🛡 Build Ottimale</span>
-        <span class="toggle">▼</span>
-    </div>
-    <div class="section-body" id="best-build-body">
-        <div class="info-box" style="background: var(--surface2); border-left: 4px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--text2);">
-            <strong>💡 Algoritmo globale:</strong> Questo piano calcola la miglior combinazione di upgrade possibile date le tue risorse attuali, scegliendo il percorso di ottimizzazione assoluta. Se il piano step-by-step differisce, significa che non puoi raggiungerlo passo dopo passo.
-        </div>
-        <div class="slot-grid">
-            {% for pt in ["Chest", "Wrist", "Waist"] %}
-            <div class="slot-card">
-                <h3>🛡 Armatura — {{ pt }}</h3>
-                {% if pt in best_armor %}
-                {% set b = best_armor[pt] %}
-                <div class="item-best">
-                    <div style="display: flex; align-items: center; flex: 1;">
-                        <span class="name">{{ b.name }}</span>
-                        {% if b.craft %}
-                        <span class="craft-badge">⚒ Da craftare</span>
-                        {% else %}
-                        <span class="owned-badge">✓ Posseduto</span>
-                        {% endif %}
-                    </div>
-                    <span class="level">LVL {{ b.level }}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div class="stat-bar">
-                        {% for s, v in b.stats.items() %}
-                        <span class="stat-pill">{{ s[:3]|upper }} {{ v }}</span>
-                        {% endfor %}
-                    </div>
-                    <span class="total-badge">{{ b.total }}</span>
-                </div>
-                {% else %}
-                <div class="empty-state">Nessun pezzo</div>
-                {% endif %}
-            </div>
-            {% endfor %}
-
-            {% for cat in ["Leviathan Axe", "Blades of Chaos", "Draupnir Spear", "Shield"] %}
-            <div class="slot-card">
-                <h3>⚔ {{ cat }}</h3>
-                {% if cat in best_weapons %}
-                {% set b = best_weapons[cat] %}
-                <div class="item-best">
-                    <div style="display: flex; align-items: center; flex: 1;">
-                        <span class="name">{{ b.name }}</span>
-                        {% if b.craft %}
-                        <span class="craft-badge">⚒ Da craftare</span>
-                        {% else %}
-                        <span class="owned-badge">✓ Posseduto</span>
-                        {% endif %}
-                    </div>
-                    <span class="level">LVL {{ b.level }}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div class="stat-bar">
-                        {% for s, v in b.stats.items() %}
-                        <span class="stat-pill">{{ s[:3]|upper }} {{ v }}</span>
-                        {% endfor %}
-                    </div>
-                    <span class="total-badge">{{ b.total }}</span>
-                </div>
-                {% else %}
-                <div class="empty-state">Non sbloccata</div>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<!-- ═══ Classifica per Slot ═══ -->
-<div class="section collapsed">
-    <div class="section-header" onclick="toggle(this)">
-        <span>📊 Classifica per Slot</span>
-        <span class="toggle">▼</span>
-    </div>
-    <div class="section-body" id="rankings-body">
-        <div class="slot-grid">
-            {% for pt in ["Chest", "Wrist", "Waist"] %}
-            {% if rankings_armor[pt] %}
-            <div class="slot-card">
-                <h3>🛡 {{ pt }}</h3>
-                <ul class="ranking-list">
-                    {% for r in rankings_armor[pt] %}
-                    <li>
-                        <span class="rank">{{ loop.index }}</span>
-                        <span class="rank-name">{{ r.name }} <small style="color:var(--text3)">(LVL {{ r.level }})</small>
-                            {% if loop.first %}<span class="star">★</span>{% endif %}
-                        </span>
-                        <span class="rank-total">{{ r.total }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-            {% endfor %}
-            {% for cat in ["Leviathan Axe", "Blades of Chaos", "Draupnir Spear", "Shield"] %}
-            {% if rankings_weapons[cat] %}
-            <div class="slot-card">
-                <h3>⚔ {{ cat }}</h3>
-                <ul class="ranking-list">
-                    {% for r in rankings_weapons[cat] %}
-                    <li>
-                        <span class="rank">{{ loop.index }}</span>
-                        <span class="rank-name">{{ r.name }} <small style="color:var(--text3)">(LVL {{ r.level }})</small>
-                            {% if loop.first %}<span class="star">★</span>{% endif %}
-                        </span>
-                        <span class="rank-total">{{ r.total }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<!-- ═══ Pezzi da Craftare ═══ -->
-<div class="section collapsed" id="craft-section" {% if not (craft_armor or craft_weapons) %}style="display:none"{% endif %}>
-    <div class="section-header" onclick="toggle(this)">
-        <span id="craft-header-text">⚠ Pezzi da Craftare ({{ craft_armor|length + craft_weapons|length }})</span>
-        <span class="toggle">▼</span>
-    </div>
-    <div class="section-body" id="craft-body">
-        <div class="craft-list">
-            {% for n, l, pt in craft_armor %}
-            <div class="craft-item">
-                <span>{{ n }} — LVL {{ l }}</span>
-                <span class="ci-slot">{{ pt }}</span>
-            </div>
-            {% endfor %}
-            {% for n, l, cat in craft_weapons %}
-            <div class="craft-item">
-                <span>{{ n }} — LVL {{ l }}</span>
-                <span class="ci-slot">{{ cat }}</span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<!-- ═══ Inventory Manager ═══ -->
-<div class="section collapsed" id="inventory-manager-section">
-    <div class="section-header" onclick="toggle(this)">
-        <span>📦 Gestione Inventario — Aggiungi/rimuovi pezzi dalla tua collezione</span>
-        <span class="toggle">▼</span>
-    </div>
-    <div class="section-body" id="inventory-body">
-        <div class="pieces-grid" id="pieces-grid">
-            {% set SLOT_DISPLAY_NAMES = {
-                'chest_pieces': 'Armatura — Petto',
-                'wrist_pieces': 'Armatura — Polsi',
-                'waist_pieces': 'Armatura — Cintura',
-                'axe_attachments': 'Arma — Ascia Leviathan',
-                'blades_attachments': 'Arma — Lame del Caos',
-                'spear_attachments': 'Arma — Lancia Draupnir',
-                'shield_attachments': 'Arma — Scudo'
-            } %}
-            {% for slot_key, display_name in SLOT_DISPLAY_NAMES.items() %}
-            {% set pieces_in_slot = all_pieces.get(slot_key, []) %}
-            {% if pieces_in_slot %}
-            <div class="pieces-slot">
-                <h3>{{ display_name }}</h3>
-                <div class="pieces-list">
-                    {% for piece in pieces_in_slot %}
-                    <div class="piece-card {% if piece.locked %}locked{% elif piece.owned %}owned{% else %}not-owned{% endif %}"
-                         data-slot="{{ slot_key }}"
-                         data-name="{{ piece.name }}"
-                         data-locked="{{ piece.locked|lower }}"
-                         {% if not piece.locked %}onclick="togglePiece(this)"{% endif %}>
-                        <div class="piece-name">{{ piece.name }}</div>
-                        <div class="piece-level">LVL {{ "%.1f"|format(piece.min_level) }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<!-- ═══ Build Actions Toolbar ═══ -->
-<div class="section">
-    <div class="section-header" style="cursor: default;">
-        <span>🛠 Azioni Build</span>
-    </div>
-    <div class="section-body">
-        <div class="toolbar">
-            <button class="btn btn-secondary" id="btn-export" onclick="exportBuild()">
-                📥 Esporta Build
-            </button>
-            <button class="btn btn-secondary" id="btn-import" onclick="importBuild()">
-                📤 Importa Build
-            </button>
-            <button class="btn btn-secondary" id="btn-share" onclick="shareBuild()">
-                🔗 Condividi Build
-            </button>
-            <button class="btn btn-secondary" id="btn-save-slot" onclick="saveBuildSlot()">
-                💾 Salva Build
-            </button>
-            <button class="btn btn-secondary" id="btn-load-slot" onclick="loadBuildSlot()">
-                📂 I Miei Build
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ═══ Ottimizzazione Multi-Obiettivo ═══ -->
-<div class="section" id="stat-selector-section">
-    <div class="section-header" onclick="toggleStatPreferences()" style="cursor: pointer;">
-        <span>🎯 Seleziona Obiettivi di Ottimizzazione</span>
-        <span class="toggle" id="stat-section-toggle">▶</span>
-    </div>
-    <div class="section-body" id="stat-section-body" style="display: none;">
-        <div class="info-box" style="background: var(--surface2); border-left: 4px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--text2);">
-            <strong>💡 Multi-Obiettivo:</strong> Seleziona le statistiche che desideri massimizzare. Il sistema utilizzerà la media geometrica per bilanciare i miglioramenti tra i valori selezionati. Se deselezioni tutto, verrà usato il totale statistiche (comportamento classico).
-        </div>
-        <div id="stat-selector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
-                <input type="checkbox" name="stat" value="Strength" style="width: 18px; height: 18px; cursor: pointer;">
-                <span style="flex: 1;">⚔️ Forza</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
-                <input type="checkbox" name="stat" value="Defense" style="width: 18px; height: 18px; cursor: pointer;">
-                <span style="flex: 1;">🛡️ Difesa</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
-                <input type="checkbox" name="stat" value="Runic" style="width: 18px; height: 18px; cursor: pointer;">
-                <span style="flex: 1;">✨ Runico</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
-                <input type="checkbox" name="stat" value="Vitality" style="width: 18px; height: 18px; cursor: pointer;">
-                <span style="flex: 1;">❤️ Vitalità</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
-                <input type="checkbox" name="stat" value="Cooldown" style="width: 18px; height: 18px; cursor: pointer;">
-                <span style="flex: 1;">⏱️ Ricarica</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s;">
-                <input type="checkbox" name="stat" value="Luck" style="width: 18px; height: 18px; cursor: pointer;">
-                <span style="flex: 1;">🍀 Fortuna</span>
-            </label>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
-            <button class="btn btn-primary" id="btn-apply-stats" onclick="applyStatPreferences()">
-                ✓ Salva Preferenze
-            </button>
-            <button class="btn btn-secondary" id="btn-reset-stats" onclick="resetStatPreferences()">
-                ↻ Ripristina Predefiniti
-            </button>
-        </div>
-        <!-- Preset Management Section -->
-        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(200, 200, 200, 0.1); border-radius: 0.5rem;">
-            <div style="margin-bottom: 1rem;">
-                <label for="stat-preset-dropdown" style="font-weight: bold; margin-right: 0.5rem;">📋 Preset:</label>
-                <select id="stat-preset-dropdown" style="padding: 0.25rem 0.5rem; font-size: 0.9rem;">
-                    <option value="">-- Carica un preset --</option>
-                </select>
-                <button onclick="loadSelectedPreset()" style="margin-left: 0.5rem; padding: 0.25rem 0.75rem;">📂 Carica</button>
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <input type="text" id="preset-name-input" placeholder="Nome nuovo preset..." style="flex: 1; padding: 0.25rem 0.5rem; font-size: 0.9rem;" />
-                <button onclick="saveAsPreset()" style="padding: 0.25rem 0.75rem;">💾 Salva come Preset</button>
-                <button onclick="deleteSelectedPreset()" id="delete-preset-btn" style="padding: 0.25rem 0.75rem;" disabled>🗑️ Elimina</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ═══ Risorse Disponibili ═══ -->
-<div class="section" id="resources-section">
-    <div class="section-header" onclick="toggle(this)">
-        <span>💰 Risorse Disponibili</span>
-        <span class="toggle">▼</span>
-    </div>
-    <div class="section-body">
-        <div class="toolbar">
-            <button class="btn btn-secondary" id="btn-edit-toggle" onclick="toggleEditMode()">
-                ✏️ Modifica Inventario
-            </button>
-            <button class="btn btn-primary" id="btn-save" style="display:none" onclick="saveInventory()">
-                💾 Salva e Ricalcola
-            </button>
-            <button class="btn btn-secondary" id="btn-cancel" style="display:none" onclick="cancelEdit()">
-                ✕ Annulla
-            </button>
-            <span class="status" id="edit-status"></span>
-        </div>
-        <div class="resources-grid" id="resources-grid">
-            {% for r in resources %}
-            <div class="res-item" data-mat="{{ r.name }}">
-                <span class="res-name">{{ r.name }}</span>
-                <span class="res-qty-display res-qty {% if r.qty == 0 %}zero{% endif %}">{{ "{:,}".format(r.qty) }}</span>
-                <div class="res-editor">
-                    <button class="res-btn-pm" onclick="stepRes(this,-1)" tabindex="-1">−</button>
-                    <input type="number" value="{{ r.qty }}" min="0" data-mat="{{ r.name }}">
-                    <button class="res-btn-pm" onclick="stepRes(this,1)" tabindex="-1">+</button>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<!-- ═══ Frontiere di Pareto ═══ -->
-<div class="section collapsed">
-    <div class="section-header" onclick="toggle(this)">
-        <span>📈 Frontiere di Pareto</span>
-        <span class="toggle">▼</span>
-    </div>
-    <div class="section-body" id="pareto-body">
-        {% for slot, opts in pareto_data.items() %}
-        <h4 style="color: var(--accent2); margin: 16px 0 8px 0;">{{ slot }} — {{ opts|length }} upgrade</h4>
-        {% if opts %}
-        <table>
-            <thead><tr><th>Azione</th><th class="num">Hacksilver</th><th class="num">Stats</th><th>Materiali</th></tr></thead>
-            <tbody>
-            {% for o in opts %}
-            <tr>
-                <td>{{ o.label }}</td>
-                <td class="num">{{ "{:,}".format(o.hack) }}</td>
-                <td class="num">{{ o.stats }}</td>
-                <td>{% if o.mats %}{% for m, v in o.mats.items() %}{{ m }}: {{ v }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}—{% endif %}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p style="color: var(--text3); font-style: italic; padding: 8px 0;">Nessun upgrade fattibile</p>
-        {% endif %}
-        {% endfor %}
-    </div>
-</div>
-
-<!-- ═══ Piano Ottimo ═══ -->
-<div class="section">
-    <div class="section-header" onclick="toggle(this)">
-        <span>🎯 Piano Ottimo</span>
-        <span class="toggle">▼</span>
-    </div>
-    <div class="section-body" id="piano-body">
-        {% if opt_gain > 0 %}
-        <div class="final-box" style="margin-bottom: 20px;">
-            <div><div class="fb-label">Grand Total</div><div class="fb-value">{{ opt_total }} <small style="color:var(--green);">(+{{ opt_gain }})</small></div></div>
-            <div><div class="fb-label">Hacksilver Spesi</div><div class="fb-value">{{ "{:,}".format(opt_hack) }}</div></div>
-            <div><div class="fb-label">Hacksilver Restanti</div><div class="fb-value">{{ "{:,}".format(opt_hack_remaining) }}</div></div>
-        </div>
-        {% if opt_mats %}
-        <h4 style="color: var(--text2); margin-bottom: 8px;">Materiali usati</h4>
-        <div class="resources-grid" style="margin-bottom: 16px;">
-            {% for m in opt_mats %}
-            <div class="res-item">
-                <span class="res-name">{{ m.name }}</span>
-                <span class="res-qty">{{ m.used }} / {{ m.available }}</span>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        <table>
-            <thead><tr><th>Azione</th><th>Slot</th><th class="num">Hacksilver</th><th class="num">Stats</th><th>Materiali</th><th></th></tr></thead>
-            <tbody>
-            {% for a in opt_actions %}
-            <tr>
-                <td>{{ a.label }}</td>
-                <td>{{ a.slot }}</td>
-                <td class="num">{{ "{:,}".format(a.hack) }}</td>
-                <td class="num">{{ a.stats }}</td>
-                <td>{% if a.mats %}{% for m, v in a.mats.items() %}{{ m }}: {{ v }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}solo Hacksilver{% endif %}</td>
-                <td><button class="btn btn-success" style="padding:4px 10px;font-size:0.82rem" onclick="applyUpgrade(this, {{ a.hack }}, {{ a.mats|tojson|e }}, {{ a.label|tojson }}, {{ a.slot|tojson }})">✓ Fatto</button></td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="empty-state">Nessun upgrade possibile con le risorse attuali.</div>
-        {% endif %}
-    </div>
-</div>
-
-<!-- ═══ Slot Bloccati ═══ -->
-<div class="section collapsed" id="blocked-section" {% if not blocked %}style="display:none"{% endif %}>
-    <div class="section-header" onclick="toggle(this)">
-        <span id="blocked-header-text">🔒 Slot Bloccati ({{ blocked|length }})</span>
-        <span class="toggle">▼</span>
-    </div>
-    <div class="section-body" id="blocked-body">
-        {% for b in blocked %}
-        <div class="blocked-item">
-            <span class="bl-name">{{ b.name }}</span>
-            <span class="bl-action">{{ b.action }}</span>
-            <div class="bl-missing">
-                {% for m in b.missing %}
-                {{ m.mat }}: {{ m.need }} richiesti, {{ m.have }} disponibili{% if not loop.last %} · {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-</div><!-- /.container -->
-
-<script>
-/* ═══════════════════════════════════════════════════════════
-   Core helpers
-   ═══════════════════════════════════════════════════════════ */
-
-function fmt(n) { return Number(n).toLocaleString('it-IT'); }
-
-function matsHtml(mats) {
-    if (!mats || Object.keys(mats).length === 0) return '—';
-    return Object.entries(mats).map(([k,v]) => `${k}: ${v}`).join(', ');
-}
-
-function escAttr(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function toggle(header) {
-    header.parentElement.classList.toggle('collapsed');
-}
-
-function showLoading(on) {
-    document.getElementById('loading').classList.toggle('active', on);
-}
-
-function toast(msg, type) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast show ' + (type || '');
-    clearTimeout(t._tm);
-    t._tm = setTimeout(() => { t.className = 'toast'; }, 2500);
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   Multi-objective stat selection
-   ═══════════════════════════════════════════════════════════ */
-function toggleStatPreferences() {
-    const body = document.getElementById('stat-section-body');
-    const toggle = document.getElementById('stat-section-toggle');
-    if (body.style.display === 'none') {
-        body.style.display = 'block';
-        toggle.textContent = '▼';
-    } else {
-        body.style.display = 'none';
-        toggle.textContent = '▶';
-    }
-}
-
-async function applyStatPreferences() {
-    const selected = Array.from(
-        document.querySelectorAll('#stat-selector input[name="stat"]:checked')
-    ).map(cb => cb.value);
-
-    showLoading(true);
-    try {
-        const resp = await fetch('/api/stat-preferences', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                target_stats: selected.length > 0 ? selected : null,
-            })
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const d = await resp.json();
-        updateAllSections(d);
-        toggleStatPreferences();
-        updatePresetDropdownAfterPreferenceChange();
-        toast(selected.length > 0
-            ? `Preferenze salvate: ${selected.join(', ')}`
-            : 'Preferenze salvate: Total Stats', 'success');
-    } catch(e) {
-        toast('Errore nel salvare preferenze: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
-}
-
-function loadStatPreferences(preferences) {
-    // Load and restore stat preferences from server data.
-    if (!Array.isArray(preferences)) return;
-
-    // Uncheck all first
-    document.querySelectorAll('#stat-selector input[name="stat"]').forEach(cb => {
-        cb.checked = false;
-    });
-
-    // Check only the saved ones
-    preferences.forEach(stat => {
-        const cb = document.querySelector(`#stat-selector input[name="stat"][value="${stat}"]`);
-        if (cb) cb.checked = true;
-    });
-}
-
-async function resetStatPreferences() {
-    // Reset stat preferences to null (all stats) and save to server.
-    showLoading(true);
-    try {
-        const resp = await fetch('/api/stat-preferences', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                target_stats: null,
-            })
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const d = await resp.json();
-        updateAllSections(d);
-
-        // Reset checkboxes to show all unchecked
-        document.querySelectorAll('#stat-selector input[name="stat"]').forEach(cb => {
-            cb.checked = false;
-        });
-
-        toast('Preferenze ripristinate: Total Stats', 'success');
-    } catch(e) {
-        toast('Errore nel ripristinare preferenze: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
-
-    toast('Ripristinati i valori predefiniti (Forza + Difesa)', 'success');
-}
-
-/* ═══════════════════════════════════════════════════════════
-   Stat Presets Management
-   ═══════════════════════════════════════════════════════════ */
-
-function populatePresetDropdown(presets) {
-    const dropdown = document.getElementById("stat-preset-dropdown");
-    if (!dropdown) return;
-
-    // Clear existing options except the placeholder
-    dropdown.innerHTML = '<option value="">-- Carica un preset --</option>';
-
-    // Add each preset as an option
-    if (presets && typeof presets === 'object') {
-        Object.keys(presets).forEach(presetName => {
-            const option = document.createElement("option");
-            option.value = presetName;
-            option.textContent = presetName;
-            dropdown.appendChild(option);
-        });
-    }
-
-    // Enable/disable delete button based on selection
-    updateDeleteButtonState();
-}
-
-function updateDeleteButtonState() {
-    const dropdown = document.getElementById("stat-preset-dropdown");
-    const deleteBtn = document.getElementById("delete-preset-btn");
-    if (dropdown && deleteBtn) {
-        deleteBtn.disabled = !dropdown.value;
-    }
-}
-
-async function loadSelectedPreset() {
-    const dropdown = document.getElementById("stat-preset-dropdown");
-    if (!dropdown.value) {
-        toast("⚠️ Seleziona un preset");
-        return;
-    }
-
-    const presetName = dropdown.value;
-    const payload = {
-        action: "load",
-        preset_name: presetName
-    };
-
-    showLoading(true);
-    try {
-        const resp = await fetch("/api/stat-presets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-        const d = await resp.json();
-        if (d.error) {
-            toast(`❌ Errore: ${d.error}`);
-            return;
-        }
-        toast(`✅ Preset "${presetName}" caricato`);
-        loadStatPreferences(d.stat_preferences || []);
-        updateAllSections(d);
-        updatePresetDropdownAfterPreferenceChange();
-    } catch(e) {
-        toast(`❌ Errore: ${e.message}`);
-    } finally {
-        showLoading(false);
-    }
-}
-
-async function saveAsPreset() {
-    const input = document.getElementById("preset-name-input");
-    if (!input.value.trim()) {
-        toast("⚠️ Inserisci nome del preset");
-        return;
-    }
-
-    const presetName = input.value.trim();
-    const currentStats = getSelectedStats();
-
-    const payload = {
-        action: "save",
-        preset_name: presetName,
-        current_stats: currentStats
-    };
-
-    showLoading(true);
-    try {
-        const resp = await fetch("/api/stat-presets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-        const d = await resp.json();
-        if (d.error) {
-            toast(`❌ Errore: ${d.error}`);
-            return;
-        }
-        toast(`✅ Preset "${presetName}" salvato`);
-        input.value = "";
-        populatePresetDropdown(d.stat_presets);
-        updateAllSections(d);
-    } catch(e) {
-        toast(`❌ Errore: ${e.message}`);
-    } finally {
-        showLoading(false);
-    }
-}
-
-async function deleteSelectedPreset() {
-    const dropdown = document.getElementById("stat-preset-dropdown");
-    if (!dropdown.value) {
-        toast("⚠️ Seleziona un preset da eliminare");
-        return;
-    }
-
-    const presetName = dropdown.value;
-    if (!confirm(`Sei sicuro di voler eliminare il preset "${presetName}"?`)) {
-        return;
-    }
-
-    const payload = {
-        action: "delete",
-        preset_name: presetName
-    };
-
-    showLoading(true);
-    try {
-        const resp = await fetch("/api/stat-presets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-        const d = await resp.json();
-        if (d.error) {
-            toast(`❌ Errore: ${d.error}`);
-            return;
-        }
-        toast(`✅ Preset eliminato`);
-        populatePresetDropdown(d.stat_presets);
-        updateAllSections(d);
-    } catch(e) {
-        toast(`❌ Errore: ${e.message}`);
-    } finally {
-        showLoading(false);
-    }
-}
-
-function getSelectedStats() {
-    const stats = [];
-    const statNames = ["Strength", "Defense", "Runic", "Vitality", "Cooldown", "Luck"];
-    statNames.forEach(stat => {
-        const checkbox = document.getElementById(`stat-selector`).querySelector(`input[value="${stat}"]:checked`);
-        if (checkbox) {
-            stats.push(stat);
-        }
-    });
-    return stats;
-}
-
-function updatePresetDropdownAfterPreferenceChange() {
-    const dropdown = document.getElementById("stat-preset-dropdown");
-    if (dropdown) {
-        dropdown.value = ""; // Clear selection
-        updateDeleteButtonState();
-    }
-}
-
-// Hook: Update dropdown state on input change
-document.addEventListener("DOMContentLoaded", function() {
-    const dropdown = document.getElementById("stat-preset-dropdown");
-    if (dropdown) {
-        dropdown.addEventListener("change", updateDeleteButtonState);
-    }
-});
-
-
-/* ═══════════════════════════════════════════════════════════
-   Edit‑mode for resources
-   ═══════════════════════════════════════════════════════════ */
-let _editMode = false;
-let _savedValues = {};  // snapshot before editing
-
-function toggleEditMode() {
-    _editMode = true;
-    // Save current values so we can cancel
-    _savedValues = {};
-    document.querySelectorAll('#resources-grid .res-editor input').forEach(inp => {
-        _savedValues[inp.dataset.mat] = inp.value;
-    });
-    document.getElementById('resources-grid').classList.add('editing');
-    document.getElementById('btn-edit-toggle').style.display = 'none';
-    document.getElementById('btn-save').style.display = '';
-    document.getElementById('btn-cancel').style.display = '';
-}
-
-function cancelEdit() {
-    // Restore saved values
-    document.querySelectorAll('#resources-grid .res-editor input').forEach(inp => {
-        if (inp.dataset.mat in _savedValues) inp.value = _savedValues[inp.dataset.mat];
-    });
-    exitEditMode();
-}
-
-function exitEditMode() {
-    _editMode = false;
-    document.getElementById('resources-grid').classList.remove('editing');
-    document.getElementById('btn-edit-toggle').style.display = '';
-    document.getElementById('btn-save').style.display = 'none';
-    document.getElementById('btn-cancel').style.display = 'none';
-}
-
-function stepRes(btn, delta) {
-    const inp = btn.parentElement.querySelector('input');
-    inp.value = Math.max(0, (parseInt(inp.value,10)||0) + delta);
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   API calls
-   ═══════════════════════════════════════════════════════════ */
-
-async function saveInventory() {
-    const budget = {};
-    document.querySelectorAll('#resources-grid .res-editor input').forEach(inp => {
-        budget[inp.dataset.mat] = parseInt(inp.value, 10) || 0;
-    });
-    showLoading(true);
-    try {
-        const resp = await fetch('/api/save-inventory', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ resource_budget: budget })
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const d = await resp.json();
-        exitEditMode();
-        updateAllSections(d);
-        toast('Inventario salvato e build ricalcolata', 'success');
-    } catch(e) {
-        toast('Errore: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   Export / Import / Share / Build Slots
-   ═══════════════════════════════════════════════════════════ */
-
-async function exportBuild() {
-    showLoading(true);
-    try {
-        const resp = await fetch('/api/export-build', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({})
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const data = await resp.json();
-
-        // Create download link
-        const json = JSON.stringify(data, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `gow-build-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        toast('Build esportato con successo', 'success');
-    } catch(e) {
-        toast('Errore durante export: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
-}
-
-async function importBuild() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json';
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
-            showLoading(true);
-            try {
-                const imported = JSON.parse(ev.target.result);
-                const resp = await fetch('/api/import-build', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(imported)
-                });
-                if (!resp.ok) throw new Error('HTTP ' + resp.status);
-                const d = await resp.json();
-                updateAllSections(d);
-                toast('Build importato e applicato', 'success');
-            } catch(e) {
-                toast('Errore durante import: ' + e.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
-}
-
-async function shareBuild() {
-    showLoading(true);
-    try {
-        const resp = await fetch('/api/share-build', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({})
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const data = await resp.json();
-
-        // Create modal to display shareable URL
-        const modal = document.createElement('div');
-        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:2000;';
-
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'btn btn-primary';
-        copyBtn.style.cssText = 'width:100%;margin-bottom:8px;';
-        copyBtn.textContent = '📋 Copia Link';
-        copyBtn.dataset.url = data.url;
-        copyBtn.onclick = function() {
-            navigator.clipboard.writeText(this.dataset.url);
-            this.textContent = '✓ Copiato!';
-            setTimeout(() => { this.textContent = '📋 Copia Link'; }, 2000);
-        };
-
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'btn btn-secondary';
-        closeBtn.style.width = '100%';
-        closeBtn.textContent = '✕ Chiudi';
-        closeBtn.onclick = function() { modal.remove(); };
-
-        const content = document.createElement('div');
-        content.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:500px;color:var(--text);';
-
-        const title = document.createElement('h3');
-        title.style.cssText = 'color:var(--accent2);margin-bottom:16px;font-family:Cinzel;';
-        title.textContent = '🔗 Condividi Build';
-
-        const desc = document.createElement('p');
-        desc.style.cssText = 'color:var(--text2);margin-bottom:16px;font-size:0.9em;';
-        desc.textContent = 'Usa questo link per condividere il tuo build:';
-
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.readOnly = true;
-        input.value = data.url;
-        input.style.cssText = 'width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.85em;margin-bottom:16px;font-family:monospace;';
-
-        content.appendChild(title);
-        content.appendChild(desc);
-        content.appendChild(input);
-        content.appendChild(copyBtn);
-        content.appendChild(closeBtn);
-
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-
-        toast('Link di condivisione generato', 'success');
-    } catch(e) {
-        toast('Errore durante share: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
-}
-
-async function saveBuildSlot() {
-    const name = prompt('Nome del build:');
-    if (!name || !name.trim()) return;
-
-    showLoading(true);
-    try {
-        const resp = await fetch('/api/build-slots', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ action: 'create', name: name.trim() })
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        toast(`Build "${name}" salvato con successo`, 'success');
-    } catch(e) {
-        toast('Errore durante salvataggio: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
-}
-
-async function loadBuildSlot() {
-    showLoading(true);
-    try {
-        const resp = await fetch('/api/build-slots', {
-            method: 'GET',
-            headers: {'Content-Type': 'application/json'}
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const data = await resp.json();
-
-        if (!data.slots || data.slots.length === 0) {
-            toast('Nessun build salvato', 'error');
-            showLoading(false);
-            return;
-        }
-
-        // Create modal with slot list
-        const modal = document.createElement('div');
-        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:2000;';
-
-        let slotHtml = `
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:400px;color:var(--text);max-height:70vh;overflow-y:auto;">
-                <h3 style="color:var(--accent2);margin-bottom:16px;font-family:Cinzel;">📂 I Miei Build</h3>
-        `;
-
-        data.slots.forEach(slot => {
-            slotHtml += `
-                <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-                    <span>${escAttr(slot.name)}</span>
-                    <div style="display:flex;gap:6px;">
-                        <button class="btn btn-success slot-load-btn" style="padding:4px 10px;font-size:0.8em;" data-slot-name="${escAttr(slot.name)}" data-modal="true">Carica</button>
-                        <button class="btn btn-secondary slot-delete-btn" style="padding:4px 10px;font-size:0.8em;background:var(--red-dim);color:var(--red);border-color:var(--red);" data-slot-name="${escAttr(slot.name)}" data-modal="true">Elimina</button>
-                    </div>
-                </div>
-            `;
-        });
-
-        // Attach event listeners to slot buttons
-        setTimeout(() => {
-            document.querySelectorAll('.slot-load-btn').forEach(btn => {
-                btn.onclick = function() { loadSlot(this.dataset.slotName); };
-            });
-            document.querySelectorAll('.slot-delete-btn').forEach(btn => {
-                btn.onclick = function() { deleteSlot(this.dataset.slotName); };
-            });
-        }, 0);
-
-        slotHtml += `
-                <button class="btn btn-secondary" style="width:100%;margin-top:16px;" onclick="this.closest('[data-modal-wrapper]').remove()">✕ Chiudi</button>
-            </div>
-        `;
-
-        modal.innerHTML = slotHtml;
-        modal.setAttribute('data-modal-wrapper', 'true');
-        document.body.appendChild(modal);
-        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-
-    } catch(e) {
-        toast('Errore durante caricamento slot: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
-}
-
-async function loadSlot(name) {
-    showLoading(true);
-    try {
-        const resp = await fetch('/api/build-slots', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ action: 'load', name })
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const d = await resp.json();
-        updateAllSections(d);
-        document.querySelector('[data-modal-wrapper]')?.remove();
-        toast(`Build "${name}" caricato`, 'success');
-    } catch(e) {
-        toast('Errore durante caricamento: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
-}
-
-async function deleteSlot(name) {
-    if (!confirm(`Eliminare il build "${name}"?`)) return;
-
-    showLoading(true);
-    try {
-        const resp = await fetch('/api/build-slots', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ action: 'delete', name })
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
-        // Reload slot list
-        document.querySelector('[data-modal-wrapper]')?.remove();
-        toast(`Build "${name}" eliminato`, 'success');
-        loadBuildSlot();
-    } catch(e) {
-        toast('Errore durante eliminazione: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   Update all dynamic UI sections from API response
-   ═══════════════════════════════════════════════════════════ */
-
-function updateAllSections(d) {
-    // ── Summary bar ──
-    const bar = document.getElementById('summary-bar');
-    let h = `
-        <div class="summary-card"><div class="label">Armatura</div><div class="value">${d.armor_total}</div></div>
-        <div class="summary-card"><div class="label">Armi</div><div class="value">${d.weapon_total}</div></div>
-        <div class="summary-card"><div class="label">Grand Total</div><div class="value">${d.grand_total}</div></div>
-        <div class="summary-card"><div class="label">Hacksilver</div><div class="value">${fmt(d.hacksilver)}</div></div>`;
-    if (d.opt_gain > 0) h += `<div class="summary-card"><div class="label">Upgrade possibile</div><div class="value green">+${d.opt_gain}</div></div>`;
-    bar.innerHTML = h;
-
-    // ── Build Ottimale ──
-    const bestBuild = document.getElementById('best-build-body');
-    if (bestBuild) {
-        const armorTypes = ['Chest', 'Wrist', 'Waist'];
-        const weaponCats = ['Leviathan Axe', 'Blades of Chaos', 'Draupnir Spear', 'Shield'];
-        let bh = `<div class="info-box" style="background: var(--surface2); border-left: 4px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--text2);"><strong>💡 Algoritmo globale:</strong> Questo piano calcola la miglior combinazione di upgrade possibile date le tue risorse attuali, scegliendo il percorso di ottimizzazione assoluta. Se il piano step-by-step differisce, significa che non puoi raggiungerlo passo dopo passo.</div>`;
-        bh += '<div class="slot-grid">';
-
-        armorTypes.forEach(pt => {
-            const b = d.best_armor?.[pt];
-            bh += `<div class="slot-card"><h3>🛡 Armatura — ${escAttr(pt)}</h3>`;
-            if (b) {
-                const stats = Object.entries(b.stats || {}).map(([s, v]) => `<span class="stat-pill">${escAttr(String(s).slice(0,3).toUpperCase())} ${v}</span>`).join('');
-                const badge = b.craft ? '<span class="craft-badge">⚒ Da craftare</span>' : '<span class="owned-badge">✓ Posseduto</span>';
-                bh += `<div class="item-best"><div style="display:flex; align-items:center; flex:1;"><span class="name">${escAttr(b.name)}</span>${badge}</div><span class="level">LVL ${b.level}</span></div><div style="display:flex; justify-content:space-between; align-items:center;"><div class="stat-bar">${stats}</div><span class="total-badge">${b.total}</span></div>`;
-            } else {
-                bh += '<div class="empty-state">Nessun pezzo</div>';
-            }
-            bh += '</div>';
-        });
-
-        weaponCats.forEach(cat => {
-            const b = d.best_weapons?.[cat];
-            bh += `<div class="slot-card"><h3>⚔ ${escAttr(cat)}</h3>`;
-            if (b) {
-                const stats = Object.entries(b.stats || {}).map(([s, v]) => `<span class="stat-pill">${escAttr(String(s).slice(0,3).toUpperCase())} ${v}</span>`).join('');
-                const badge = b.craft ? '<span class="craft-badge">⚒ Da craftare</span>' : '<span class="owned-badge">✓ Posseduto</span>';
-                bh += `<div class="item-best"><div style="display:flex; align-items:center; flex:1;"><span class="name">${escAttr(b.name)}</span>${badge}</div><span class="level">LVL ${b.level}</span></div><div style="display:flex; justify-content:space-between; align-items:center;"><div class="stat-bar">${stats}</div><span class="total-badge">${b.total}</span></div>`;
-            } else {
-                bh += '<div class="empty-state">Non sbloccata</div>';
-            }
-            bh += '</div>';
-        });
-
-        bh += '</div>';
-        bestBuild.innerHTML = bh;
-    }
-
-    // ── Classifiche per slot ──
-    const rankingsBody = document.getElementById('rankings-body');
-    if (rankingsBody) {
-        const armorTypes = ['Chest', 'Wrist', 'Waist'];
-        const weaponCats = ['Leviathan Axe', 'Blades of Chaos', 'Draupnir Spear', 'Shield'];
-        let rh = '<div class="slot-grid">';
-
-        armorTypes.forEach(pt => {
-            const rows = d.rankings_armor?.[pt] || [];
-            if (!rows.length) return;
-            rh += `<div class="slot-card"><h3>🛡 ${escAttr(pt)}</h3><ul class="ranking-list">`;
-            rows.forEach((r, i) => {
-                rh += `<li><span class="rank">${i + 1}</span><span class="rank-name">${escAttr(r.name)} <small style="color:var(--text3)">(LVL ${r.level})</small>${i === 0 ? '<span class="star">★</span>' : ''}</span><span class="rank-total">${r.total}</span></li>`;
-            });
-            rh += '</ul></div>';
-        });
-
-        weaponCats.forEach(cat => {
-            const rows = d.rankings_weapons?.[cat] || [];
-            if (!rows.length) return;
-            rh += `<div class="slot-card"><h3>⚔ ${escAttr(cat)}</h3><ul class="ranking-list">`;
-            rows.forEach((r, i) => {
-                rh += `<li><span class="rank">${i + 1}</span><span class="rank-name">${escAttr(r.name)} <small style="color:var(--text3)">(LVL ${r.level})</small>${i === 0 ? '<span class="star">★</span>' : ''}</span><span class="rank-total">${r.total}</span></li>`;
-            });
-            rh += '</ul></div>';
-        });
-
-        rh += '</div>';
-        rankingsBody.innerHTML = rh;
-    }
-
-    // ── Pezzi da craftare ──
-    const craftSection = document.getElementById('craft-section');
-    const craftBody = document.getElementById('craft-body');
-    const craftHeaderText = document.getElementById('craft-header-text');
-    if (craftSection && craftBody && craftHeaderText) {
-        const craftArmor = d.craft_armor || [];
-        const craftWeapons = d.craft_weapons || [];
-        const totalCraft = craftArmor.length + craftWeapons.length;
-
-        if (totalCraft > 0) {
-            craftSection.style.display = '';
-            craftHeaderText.textContent = `⚠ Pezzi da Craftare (${totalCraft})`;
-            let ch = '<div class="craft-list">';
-            craftArmor.forEach(([n, l, pt]) => {
-                ch += `<div class="craft-item"><span>${escAttr(n)} — LVL ${l}</span><span class="ci-slot">${escAttr(pt)}</span></div>`;
-            });
-            craftWeapons.forEach(([n, l, cat]) => {
-                ch += `<div class="craft-item"><span>${escAttr(n)} — LVL ${l}</span><span class="ci-slot">${escAttr(cat)}</span></div>`;
-            });
-            ch += '</div>';
-            craftBody.innerHTML = ch;
-        } else {
-            craftSection.style.display = 'none';
-        }
-    }
-
-    // ── Resources (update displays + inputs) ──
-    d.resources.forEach(r => {
-        const item = document.querySelector(`.res-item[data-mat="${CSS.escape(r.name)}"]`);
-        if (!item) return;
-        const disp = item.querySelector('.res-qty-display');
-        if (disp) {
-            disp.textContent = fmt(r.qty);
-            disp.classList.toggle('zero', r.qty === 0);
-        }
-        const inp = item.querySelector('.res-editor input');
-        if (inp) inp.value = r.qty;
-    });
-
-    // ── Pareto ──
-    const pareto = document.getElementById('pareto-body');
-    let ph = '';
-    for (const [slot, opts] of Object.entries(d.pareto_data)) {
-        ph += `<h4 style="color:var(--accent2);margin:16px 0 8px">${escAttr(slot)} — ${opts.length} upgrade</h4>`;
-        if (opts.length) {
-            ph += '<table><thead><tr><th>Azione</th><th class="num">Hacksilver</th><th class="num">Stats</th><th>Materiali</th></tr></thead><tbody>';
-            opts.forEach(o => { ph += `<tr><td>${escAttr(o.label)}</td><td class="num">${fmt(o.hack)}</td><td class="num">${o.stats}</td><td>${matsHtml(o.mats)}</td></tr>`; });
-            ph += '</tbody></table>';
-        } else {
-            ph += '<p style="color:var(--text3);font-style:italic;padding:8px 0">Nessun upgrade fattibile</p>';
-        }
-    }
-    pareto.innerHTML = ph;
-
-    // ── Piano Ottimo ──
-    const piano = document.getElementById('piano-body');
-    if (d.opt_gain > 0) {
-        let pp = `<div class="final-box" style="margin-bottom:20px">
-            <div><div class="fb-label">Grand Total</div><div class="fb-value">${d.opt_total} <small style="color:var(--green)">(+${d.opt_gain})</small></div></div>
-            <div><div class="fb-label">Hacksilver Spesi</div><div class="fb-value">${fmt(d.opt_hack)}</div></div>
-            <div><div class="fb-label">Hacksilver Restanti</div><div class="fb-value">${fmt(d.opt_hack_remaining)}</div></div>
-        </div>`;
-        if (d.opt_mats?.length) {
-            pp += '<h4 style="color:var(--text2);margin-bottom:8px">Materiali usati</h4><div class="resources-grid" style="margin-bottom:16px">';
-            d.opt_mats.forEach(m => { pp += `<div class="res-item"><span class="res-name">${escAttr(m.name)}</span><span class="res-qty">${m.used} / ${m.available}</span></div>`; });
-            pp += '</div>';
-        }
-        pp += '<table><thead><tr><th>Azione</th><th>Slot</th><th class="num">Hacksilver</th><th class="num">Stats</th><th>Materiali</th><th></th></tr></thead><tbody>';
-        d.opt_actions.forEach(a => {
-            const aMatsJson = escAttr(JSON.stringify(a.mats));
-            pp += `<tr><td>${escAttr(a.label)}</td><td>${escAttr(a.slot)}</td><td class="num">${fmt(a.hack)}</td><td class="num">${a.stats}</td><td>${Object.keys(a.mats).length ? matsHtml(a.mats) : 'solo Hacksilver'}</td><td><button class="btn btn-success" style="padding:4px 10px;font-size:0.82rem" onclick="applyUpgrade(this, ${a.hack}, JSON.parse(this.dataset.mats), this.dataset.label, this.dataset.slot)" data-mats="${aMatsJson}" data-label="${escAttr(a.label)}" data-slot="${escAttr(a.slot)}">✓ Fatto</button></td></tr>`;
-        });
-        pp += '</tbody></table>';
-        piano.innerHTML = pp;
-    } else {
-        piano.innerHTML = '<div class="empty-state">Nessun upgrade possibile con le risorse attuali.</div>';
-    }
-
-    // ── Blocked ──
-    const bs = document.getElementById('blocked-section');
-    const bb = document.getElementById('blocked-body');
-    const bht = document.getElementById('blocked-header-text');
-    if (d.blocked?.length) {
-        bs.style.display = '';
-        bht.textContent = `🔒 Slot Bloccati (${d.blocked.length})`;
-        let bh = '';
-        d.blocked.forEach(b => {
-            bh += `<div class="blocked-item"><span class="bl-name">${escAttr(b.name)}</span> <span class="bl-action">${escAttr(b.action)}</span><div class="bl-missing">`;
-            bh += b.missing.map(m => `${escAttr(m.mat)}: ${m.need} richiesti, ${m.have} disponibili`).join(' · ');
-            bh += '</div></div>';
-        });
-        bb.innerHTML = bh;
-    } else {
-        bs.style.display = 'none';
-    }
-
-    // ── Inventory Manager ──
-    updateInventoryManager(d);
-
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   Inventory Manager: Piece Toggle & Craft Confirmation Modal
-   ═══════════════════════════════════════════════════════════ */
-
-let _pendingPieceAction = null;  // Store pending piece action (element, slot, name)
-
-// Modal styles
-const modalStyles = `
-    #craft-confirmation-modal {
+      :root {
+        --bg: #0b0d13;
+        --surface: #12151f;
+        --surface2: #1a1e2e;
+        --surface3: #222840;
+        --border: #2a3050;
+        --border-glow: #c8a44e33;
+        --text: #e8eaf0;
+        --text2: #8890a8;
+        --text3: #5a6080;
+        --accent: #c8a44e;
+        --accent2: #e8c85e;
+        --accent-dim: #c8a44e22;
+        --red: #e05555;
+        --red-dim: #e0555522;
+        --green: #50c878;
+        --green-dim: #50c87822;
+        --blue: #5b9bd5;
+        --blue-dim: #5b9bd522;
+        --orange: #e8915a;
+        --orange-dim: #e8915a22;
+        --radius: 12px;
+        --radius-sm: 8px;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        --shadow-glow: 0 0 30px rgba(200, 164, 78, 0.08);
+      }
+      [data-theme="light"] {
+        --bg: #f0f0f4;
+        --surface: #ffffff;
+        --surface2: #f5f5f8;
+        --surface3: #e8e8ee;
+        --border: #d0d0d8;
+        --border-glow: #c8a44e33;
+        --text: #1a1a2e;
+        --text2: #555566;
+        --text3: #888899;
+        --accent: #a07830;
+        --accent2: #c8a44e;
+        --accent-dim: #c8a44e18;
+        --red: #cc3333;
+        --red-dim: #cc333318;
+        --green: #2a8a4a;
+        --green-dim: #2a8a4a18;
+        --blue: #3070b0;
+        --blue-dim: #3070b018;
+        --orange: #c06030;
+        --orange-dim: #c0603018;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        --shadow-glow: 0 0 30px rgba(200, 164, 78, 0.04);
+      }
+      [data-theme="light"] {
+        --bg: #f0f0f4;
+        --surface: #ffffff;
+        --surface2: #f5f5f8;
+        --surface3: #e8e8ee;
+        --border: #d0d0d8;
+        --border-glow: #c8a44e33;
+        --text: #1a1a2e;
+        --text2: #555566;
+        --text3: #888899;
+        --accent: #a07830;
+        --accent2: #c8a44e;
+        --accent-dim: #c8a44e18;
+        --red: #cc3333;
+        --red-dim: #cc333318;
+        --green: #2a8a4a;
+        --green-dim: #2a8a4a18;
+        --blue: #3070b0;
+        --blue-dim: #3070b018;
+        --orange: #c06030;
+        --orange-dim: #c0603018;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        --shadow-glow: 0 0 30px rgba(200, 164, 78, 0.04);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      /* ── Header ── */
+      header {
+        text-align: center;
+        padding: 40px 0 28px;
+        margin-bottom: 32px;
+        position: relative;
+      }
+      header::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 200px;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--accent),
+          transparent
+        );
+      }
+      header h1 {
+        font-family: "Cinzel", serif;
+        font-size: 2.4em;
+        font-weight: 900;
+        background: linear-gradient(
+          135deg,
+          var(--accent2),
+          var(--accent),
+          #a8884e
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: 2px;
+        text-shadow: 0 0 40px rgba(200, 164, 78, 0.3);
+      }
+      header p {
+        color: var(--text2);
+        margin-top: 8px;
+        font-size: 0.95em;
+        letter-spacing: 0.5px;
+      }
+
+      /* ── Summary bar ── */
+      .summary-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+      .summary-card {
+        background: linear-gradient(135deg, var(--surface), var(--surface2));
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition:
+          transform 0.2s,
+          border-color 0.2s;
+      }
+      .summary-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--accent-dim);
+      }
+      .summary-card .label {
+        font-size: 0.7em;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+      }
+      .summary-card .value {
+        font-family: "Cinzel", serif;
+        font-size: 2em;
+        font-weight: 700;
+        color: var(--accent2);
+        margin-top: 4px;
+      }
+      .summary-card .value.green {
+        color: var(--green);
+      }
+
+      /* ── Section cards ── */
+      .section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 24px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .section-header {
+        background: linear-gradient(135deg, var(--surface2), var(--surface3));
+        padding: 16px 24px;
+        font-family: "Cinzel", serif;
+        font-size: 1.05em;
+        font-weight: 700;
+        color: var(--accent2);
+        border: none;
+        width: 100%;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.15s;
+      }
+      .section-header:hover {
+        background: var(--surface3);
+      }
+      .section-header .toggle {
+        font-size: 0.7em;
+        color: var(--text2);
+        transition: transform 0.2s;
+      }
+      .section.collapsed .section-header .toggle {
+        transform: rotate(-90deg);
+      }
+      .section-body {
+        padding: 24px;
+      }
+      .section.collapsed .section-body {
+        display: none;
+      }
+
+      /* ── Slot cards (build) ── */
+      .slot-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+      }
+      .slot-card {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 18px;
+        transition: border-color 0.2s;
+      }
+      .slot-card:hover {
+        border-color: var(--accent-dim);
+      }
+      .slot-card h3 {
+        font-size: 0.8em;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text2);
+        margin-bottom: 12px;
+        font-weight: 600;
+      }
+      .item-best {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .item-best .name {
+        font-weight: 600;
+        font-size: 1.05em;
+      }
+      .item-best .level {
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #000;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.75em;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+      .stat-bar {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .stat-pill {
+        font-size: 0.72em;
+        padding: 3px 10px;
+        border-radius: 20px;
+        background: var(--accent-dim);
+        color: var(--accent2);
+        font-weight: 600;
+        letter-spacing: 0.3px;
+      }
+      .total-badge {
+        font-family: "Cinzel", serif;
+        font-size: 1.4em;
+        font-weight: 700;
+        color: var(--accent2);
+      }
+      .owned-badge {
+        font-size: 0.65em;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: var(--green-dim);
+        color: var(--green);
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        margin-left: 4px;
+      }
+      .craft-badge {
+        font-size: 0.65em;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: var(--orange-dim);
+        color: var(--orange);
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        margin-left: 4px;
+      }
+
+      /* ── Rankings ── */
+      .ranking-list {
+        list-style: none;
+      }
+      .ranking-list li {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        border-radius: var(--radius-sm);
+        margin-bottom: 4px;
+        transition: background 0.15s;
+      }
+      .ranking-list li:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .ranking-list li:first-child {
+        background: var(--accent-dim);
+      }
+      .ranking-list li .rank {
+        width: 28px;
+        color: var(--text3);
+        font-size: 0.85em;
+        font-weight: 600;
+      }
+      .ranking-list li .rank-name {
+        flex: 1;
+        font-size: 0.9em;
+      }
+      .ranking-list li .rank-total {
+        font-weight: 700;
+        color: var(--accent2);
+        font-variant-numeric: tabular-nums;
+      }
+      .ranking-list li:first-child .rank {
+        color: var(--accent2);
+      }
+      .star {
+        color: var(--accent2);
+        margin-left: 4px;
+      }
+
+      /* ── Craft list ── */
+      .craft-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 8px;
+      }
+      .craft-item {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        font-size: 0.9em;
+        display: flex;
+        justify-content: space-between;
+      }
+      .craft-item .ci-slot {
+        color: var(--text2);
+        font-size: 0.8em;
+      }
+
+      /* ── Tables ── */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88em;
+      }
+      th {
+        text-align: left;
+        padding: 12px 14px;
+        background: var(--surface2);
+        color: var(--text2);
+        text-transform: uppercase;
+        font-size: 0.72em;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+        border-bottom: 2px solid var(--border);
+      }
+      td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      tr:hover td {
+        background: rgba(255, 255, 255, 0.015);
+      }
+      .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ── Resources ── */
+      .resources-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 10px;
+      }
+      .res-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.88em;
+        transition: border-color 0.15s;
+      }
+      .res-item:hover {
+        border-color: var(--accent-dim);
+      }
+      .res-name {
+        color: var(--text2);
+        font-weight: 500;
+      }
+      .res-qty {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+      }
+      .res-qty.zero {
+        color: var(--text3);
+      }
+
+      /* ── Resource edit mode ── */
+      .res-editor {
+        display: none;
+        align-items: center;
+        gap: 6px;
+      }
+      .editing .res-qty-display {
+        display: none;
+      }
+      .editing .res-editor {
+        display: flex;
+      }
+      .res-editor input {
+        width: 72px;
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 5px 8px;
+        font-size: 0.9em;
+        font-weight: 600;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+      .res-editor input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .res-btn-pm {
+        width: 28px;
+        height: 28px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--surface3);
+        color: var(--text);
+        font-size: 1em;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background 0.1s,
+          border-color 0.1s;
+        line-height: 1;
+      }
+      .res-btn-pm:hover {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+      }
+
+      /* ── Action buttons ── */
+      .btn {
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: 10px 24px;
+        font-size: 0.9em;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.5px;
+        transition: all 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #000;
+      }
+      .btn-primary:hover {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+      }
+      .btn-primary:disabled {
+        opacity: 0.4;
+        cursor: wait;
+        transform: none;
+      }
+      .btn-secondary {
+        background: var(--surface3);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .btn-secondary:hover {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+      }
+      .btn-success {
+        background: var(--green-dim);
+        color: var(--green);
+        border: 1px solid rgba(80, 200, 120, 0.3);
+        padding: 6px 14px;
+        font-size: 0.8em;
+      }
+      .btn-success:hover {
+        background: rgba(80, 200, 120, 0.2);
+        border-color: var(--green);
+      }
+      .btn-success:disabled {
+        opacity: 0.3;
+        cursor: default;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .toolbar .status {
+        font-size: 0.85em;
+        color: var(--text2);
+        margin-left: 8px;
+      }
+
+      /* ── Blocked ── */
+      .blocked-item {
+        background: var(--red-dim);
+        border: 1px solid rgba(224, 85, 85, 0.25);
+        border-radius: var(--radius-sm);
+        padding: 14px 18px;
+        margin-bottom: 10px;
+      }
+      .blocked-item .bl-name {
+        font-weight: 600;
+      }
+
+      /* ── Inventory Manager: Piece Cards ── */
+      .pieces-grid {
+        display: grid;
+        gap: 16px;
+      }
+      .pieces-slot {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 14px 16px;
+        background: var(--surface2);
+      }
+      .pieces-slot h3 {
+        margin: 0 0 12px 0;
+        font-size: 0.95em;
+        font-weight: 600;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .pieces-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 8px;
+      }
+      .piece-card {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px 12px;
+        background: var(--surface3);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+      }
+      .piece-card.owned {
+        border-color: var(--accent-dim);
+        background: var(--surface3);
+        opacity: 1;
+      }
+      .piece-card.owned:hover {
+        border-color: var(--accent);
+        background: rgba(255, 193, 7, 0.05);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      .piece-card.not-owned {
+        opacity: 0.45;
+        border-color: var(--border);
+      }
+      .piece-card.not-owned:hover {
+        opacity: 0.65;
+        border-color: var(--accent-dim);
+        transform: translateY(-2px);
+      }
+      .piece-card.locked {
+        opacity: 0.35;
+        border-color: var(--text3);
+        background: var(--surface2);
+        cursor: pointer;
+      }
+      .piece-card.locked:hover {
+        opacity: 0.5;
+        border-color: var(--accent-dim);
+        transform: translateY(-2px);
+      }
+      .piece-name {
+        font-weight: 500;
+        color: var(--text);
+        font-size: 0.9em;
+        line-height: 1.3;
+        word-break: break-word;
+      }
+      .piece-level {
+        font-size: 0.8em;
+        color: var(--text2);
+        font-weight: 500;
+      }
+      .piece-card.owned .piece-level {
+        color: var(--accent);
+      }
+      .blocked-item .bl-action {
+        color: var(--text2);
+        font-size: 0.85em;
+        margin-left: 8px;
+      }
+      .blocked-item .bl-missing {
+        margin-top: 6px;
+        font-size: 0.85em;
+        color: var(--red);
+      }
+
+      /* ── Final box ── */
+      .final-box {
+        background: linear-gradient(
+          135deg,
+          var(--accent-dim),
+          rgba(200, 164, 78, 0.02)
+        );
+        border: 1px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 24px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        text-align: center;
+        box-shadow: var(--shadow-glow);
+      }
+      .final-box .fb-label {
+        font-size: 0.7em;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+      }
+      .final-box .fb-value {
+        font-family: "Cinzel", serif;
+        font-size: 1.5em;
+        font-weight: 700;
+        color: var(--accent2);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 30px;
+        color: var(--text3);
+        font-style: italic;
+      }
+
+      /* ── Loading overlay ── */
+      .loading-overlay {
         display: none;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
+        background: rgba(11, 13, 19, 0.7);
         z-index: 1000;
         align-items: center;
         justify-content: center;
-    }
-    #craft-confirmation-modal.show {
+      }
+      .loading-overlay.active {
         display: flex;
-    }
-    .modal-content {
-        background: var(--surface);
+      }
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 3px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ── Title Glow Animation ── */
+      @keyframes titleGlow {
+        0%,
+        100% {
+          text-shadow: 0 0 40px rgba(200, 164, 78, 0.3);
+        }
+        50% {
+          text-shadow: 0 0 60px rgba(200, 164, 78, 0.5);
+        }
+      }
+      .title-animate {
+        animation: titleGlow 3s ease-in-out infinite;
+      }
+
+      /* ── Hero Background ── */
+      .hero-background {
+        position: relative;
+        background: radial-gradient(
+          ellipse at 50% 0%,
+          rgba(200, 164, 78, 0.08),
+          transparent 70%
+        );
+      }
+      .hero-runes {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        font-size: 4em;
+        opacity: 0.08;
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        font-family: "Cinzel", serif;
+        user-select: none;
+        pointer-events: none;
+      }
+
+      /* ── Border Glow on Hover ── */
+      .section {
+        transition:
+          border-color 0.3s,
+          box-shadow 0.3s;
+      }
+      .section:hover {
+        border-color: var(--accent);
+        box-shadow: 0 0 30px rgba(200, 164, 78, 0.15);
+      }
+
+      /* ── Toast ── */
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: var(--surface2);
         border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 24px;
-        max-width: 400px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    }
-    .modal-content h3 {
-        margin: 0 0 12px 0;
-        font-size: 1.1em;
-        color: var(--text);
-    }
-    .modal-content p {
-        margin: 0 0 20px 0;
-        color: var(--text2);
-        font-size: 0.95em;
-    }
-    .modal-buttons {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-    .modal-buttons .btn {
-        flex: 1;
-        min-width: 140px;
-        padding: 10px 16px;
+        border-radius: var(--radius-sm);
+        padding: 14px 22px;
         font-size: 0.9em;
-    }
-`;
+        color: var(--text);
+        box-shadow: var(--shadow);
+        z-index: 1001;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s;
+        pointer-events: none;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+      .toast.success {
+        border-color: var(--green);
+        color: var(--green);
+      }
+      .toast.error {
+        border-color: var(--red);
+        color: var(--red);
+      }
 
-// Inject modal styles
-if (!document.querySelector('style[data-modal-styles]')) {
-    const styleEl = document.createElement('style');
-    styleEl.setAttribute('data-modal-styles', '');
-    styleEl.textContent = modalStyles;
-    document.head.appendChild(styleEl);
-}
+      /* ── Responsive ── */
+      @media (max-width: 700px) {
+        .container {
+          padding: 12px;
+        }
+        header h1 {
+          font-size: 1.6em;
+        }
+        .summary-card .value {
+          font-size: 1.4em;
+        }
+        .slot-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+    <div class="toast" id="toast"></div>
 
-function togglePiece(element) {
-    const slot = element.dataset.slot;
-    const name = element.dataset.name;
-    const isOwned = element.classList.contains('owned');
+    <div class="container">
+      <header class="hero-background py-16" style="position: relative">
+        <button
+          id="theme-toggle"
+          onclick="toggleTheme()"
+          style="
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: var(--radius-sm);
+            padding: 6px 14px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+          "
+          title="Cambia tema"
+        >
+          &#x1f319; Scuro
+        </button>
+        <div class="hero-runes">⚔ ⚡ 🛡</div>
+        <h1 class="title-animate">GOD OF WAR RAGNARÖK</h1>
+        <p>Build Optimizer — Analisi inventario e piano di upgrade ottimo</p>
+        <p style="font-size: 0.85em; color: var(--text3); margin-top: 8px">
+          ⚔ Armour · Weapon · Stats ⚔
+        </p>
+      </header>
 
-    if (isOwned) {
-        // Toggle OFF (remove piece)
-        removePiece(slot, name);
-    } else {
-        // Toggle ON (add piece) - show confirmation modal
-        showCraftConfirmation(element, slot, name);
-    }
-}
+      <!-- ═══ Summary ═══ -->
+      <div class="summary-bar" id="summary-bar">
+        <div class="summary-card">
+          <div class="label">Armatura</div>
+          <div class="value">{{ armor_total }}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Armi</div>
+          <div class="value">{{ weapon_total }}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Grand Total</div>
+          <div class="value">{{ grand_total }}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Hacksilver</div>
+          <div class="value">{{ "{:,}".format(hacksilver) }}</div>
+        </div>
+        {% if opt_gain > 0 %}
+        <div class="summary-card">
+          <div class="label">Upgrade possibile</div>
+          <div class="value green">+{{ opt_gain }}</div>
+        </div>
+        {% endif %}
+      </div>
 
-function showCraftConfirmation(element, slot, name) {
-    _pendingPieceAction = { element, slot, name };
-
-    let modal = document.getElementById('craft-confirmation-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'craft-confirmation-modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h3>Aggiungi pezzo: <strong></strong></h3>
-                <div id="level-select-section" style="margin-bottom: 12px;">
-                    <label for="piece-level-input" style="display: block; margin-bottom: 6px; font-size: 0.9em; color: var(--text2);">A che livello lo hai?</label>
-                    <input type="number" id="piece-level-input" min="1" max="9" value="1" style="width: 100%; padding: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-size: 0.9em;">
+      <!-- ═══ Build Ottimale ═══ -->
+      <div class="section">
+        <button type="button" class="section-header" onclick="toggle(this)">
+          <span>🛡 Build Ottimale</span>
+          <span class="toggle">▼</span>
+        </button>
+        <div class="section-body" id="best-build-body">
+          <div
+            class="info-box"
+            style="
+              background: var(--surface2);
+              border-left: 4px solid var(--accent);
+              padding: 12px 16px;
+              margin-bottom: 16px;
+              border-radius: 4px;
+              font-size: 14px;
+              line-height: 1.5;
+              color: var(--text2);
+            "
+          >
+            <strong>💡 Algoritmo globale:</strong> Questo piano calcola la
+            miglior combinazione di upgrade possibile date le tue risorse
+            attuali, scegliendo il percorso di ottimizzazione assoluta. Se il
+            piano step-by-step differisce, significa che non puoi raggiungerlo
+            passo dopo passo.
+          </div>
+          <div class="slot-grid">
+            {% for pt in ["Chest", "Wrist", "Waist"] %}
+            <div class="slot-card">
+              <h3>🛡 Armatura — {{ pt }}</h3>
+              {% if pt in best_armor %} {% set b = best_armor[pt] %}
+              <div class="item-best">
+                <div style="display: flex; align-items: center; flex: 1">
+                  <span class="name">{{ b.name }}</span>
+                  {% if b.craft %}
+                  <span class="craft-badge">⚒ Da craftare</span>
+                  {% else %}
+                  <span class="owned-badge">✓ Posseduto</span>
+                  {% endif %}
                 </div>
-                <p style="margin-bottom: 12px; font-size: 0.9em; color: var(--text2);">Qual è il tuo stato con questo pezzo?</p>
-                <div class="modal-buttons">
-                    <button class="btn btn-secondary" onclick="confirmAddPiece('craft')">
-                        Devo craftarlo
-                    </button>
-                    <button class="btn btn-primary" onclick="confirmAddPiece('owned')">
-                        Lo possiedo già
-                    </button>
-                    <button class="btn btn-secondary" onclick="confirmAddPiece('locked')">
-                        Non sbloccato
-                    </button>
+                <span class="level">LVL {{ b.level }}</span>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <div class="stat-bar">
+                  {% for s, v in b.stats.items() %}
+                  <span class="stat-pill">{{ s[:3]|upper }} {{ v }}</span>
+                  {% endfor %}
                 </div>
+                <span class="total-badge">{{ b.total }}</span>
+              </div>
+              {% else %}
+              <div class="empty-state">Nessun pezzo</div>
+              {% endif %}
             </div>
-        `;
-        document.body.appendChild(modal);
-    }
+            {% endfor %} {% for cat in ["Leviathan Axe", "Blades of Chaos",
+            "Draupnir Spear", "Shield"] %}
+            <div class="slot-card">
+              <h3>⚔ {{ cat }}</h3>
+              {% if cat in best_weapons %} {% set b = best_weapons[cat] %}
+              <div class="item-best">
+                <div style="display: flex; align-items: center; flex: 1">
+                  <span class="name">{{ b.name }}</span>
+                  {% if b.craft %}
+                  <span class="craft-badge">⚒ Da craftare</span>
+                  {% else %}
+                  <span class="owned-badge">✓ Posseduto</span>
+                  {% endif %}
+                </div>
+                <span class="level">LVL {{ b.level }}</span>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <div class="stat-bar">
+                  {% for s, v in b.stats.items() %}
+                  <span class="stat-pill">{{ s[:3]|upper }} {{ v }}</span>
+                  {% endfor %}
+                </div>
+                <span class="total-badge">{{ b.total }}</span>
+              </div>
+              {% else %}
+              <div class="empty-state">Non sbloccata</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
 
-    modal.querySelector('.modal-content h3 strong').textContent = name;
-    modal.classList.add('show');
-    document.getElementById('piece-level-input').focus();
-}
+      <!-- ═══ Classifica per Slot ═══ -->
+      <div class="section collapsed">
+        <button type="button" class="section-header" onclick="toggle(this)">
+          <span>📊 Classifica per Slot</span>
+          <span class="toggle">▼</span>
+        </button>
+        <div class="section-body" id="rankings-body">
+          <div class="slot-grid">
+            {% for pt in ["Chest", "Wrist", "Waist"] %} {% if rankings_armor[pt]
+            %}
+            <div class="slot-card">
+              <h3>🛡 {{ pt }}</h3>
+              <ul class="ranking-list">
+                {% for r in rankings_armor[pt] %}
+                <li>
+                  <span class="rank">{{ loop.index }}</span>
+                  <span class="rank-name"
+                    >{{ r.name }}
+                    <small style="color: var(--text3)"
+                      >(LVL {{ r.level }})</small
+                    >
+                    {% if loop.first %}<span class="star">★</span>{% endif %}
+                  </span>
+                  <span class="rank-total">{{ r.total }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %} {% endfor %} {% for cat in ["Leviathan Axe", "Blades of
+            Chaos", "Draupnir Spear", "Shield"] %} {% if rankings_weapons[cat]
+            %}
+            <div class="slot-card">
+              <h3>⚔ {{ cat }}</h3>
+              <ul class="ranking-list">
+                {% for r in rankings_weapons[cat] %}
+                <li>
+                  <span class="rank">{{ loop.index }}</span>
+                  <span class="rank-name"
+                    >{{ r.name }}
+                    <small style="color: var(--text3)"
+                      >(LVL {{ r.level }})</small
+                    >
+                    {% if loop.first %}<span class="star">★</span>{% endif %}
+                  </span>
+                  <span class="rank-total">{{ r.total }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %} {% endfor %}
+          </div>
+        </div>
+      </div>
 
-function confirmAddPiece(status) {
-    if (!_pendingPieceAction) return;
+      <!-- ═══ Pezzi da Craftare ═══ -->
+      <div
+        class="section collapsed"
+        id="craft-section"
+        {%
+        if
+        not
+        (craft_armor
+        or
+        craft_weapons)
+        %}style="display:none"
+        {%
+        endif
+        %}
+      >
+        <button type="button" class="section-header" onclick="toggle(this)">
+          <span id="craft-header-text"
+            >⚠ Pezzi da Craftare ({{ craft_armor|length + craft_weapons|length
+            }})</span
+          >
+          <span class="toggle">▼</span>
+        </button>
+        <div class="section-body" id="craft-body">
+          <div class="craft-list">
+            {% for n, l, pt in craft_armor %}
+            <div class="craft-item">
+              <span>{{ n }} — LVL {{ l }}</span>
+              <span class="ci-slot">{{ pt }}</span>
+            </div>
+            {% endfor %} {% for n, l, cat in craft_weapons %}
+            <div class="craft-item">
+              <span>{{ n }} — LVL {{ l }}</span>
+              <span class="ci-slot">{{ cat }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
 
-    const { element, slot, name } = _pendingPieceAction;
-    const levelInput = document.getElementById('piece-level-input');
-    const level = parseInt(levelInput.value, 10) || 1;
+      <!-- ═══ Inventory Manager ═══ -->
+      <div class="section collapsed" id="inventory-manager-section">
+        <button type="button" class="section-header" onclick="toggle(this)">
+          <span
+            >📦 Gestione Inventario — Aggiungi/rimuovi pezzi dalla tua
+            collezione</span
+          >
+          <span class="toggle">▼</span>
+        </button>
+        <div class="section-body" id="inventory-body">
+          <div style="margin-bottom: 12px">
+            <input
+              type="text"
+              id="piece-search"
+              placeholder="Cerca pezzo..."
+              style="
+                width: 100%;
+                max-width: 360px;
+                padding: 8px 12px;
+                border-radius: 8px;
+                border: 1px solid var(--border);
+                background: var(--surface2);
+                color: var(--text);
+                font-size: 0.95rem;
+              "
+              oninput="filterPieces(this.value)"
+            />
+          </div>
+          <div class="pieces-grid" id="pieces-grid">
+            {% set SLOT_DISPLAY_NAMES = { 'chest_pieces': 'Armatura — Petto',
+            'wrist_pieces': 'Armatura — Polsi', 'waist_pieces': 'Armatura —
+            Cintura', 'axe_attachments': 'Arma — Ascia Leviathan',
+            'blades_attachments': 'Arma — Lame del Caos', 'spear_attachments':
+            'Arma — Lancia Draupnir', 'shield_attachments': 'Arma — Scudo' } %}
+            {% for slot_key, display_name in SLOT_DISPLAY_NAMES.items() %} {%
+            set pieces_in_slot = all_pieces.get(slot_key, []) %} {% if
+            pieces_in_slot %}
+            <div class="pieces-slot">
+              <h3>{{ display_name }}</h3>
+              <div class="pieces-list">
+                {% for piece in pieces_in_slot %}
+                <div
+                  class="piece-card {% if piece.locked %}locked{% elif piece.owned %}owned{% else %}not-owned{% endif %}"
+                  data-slot="{{ slot_key }}"
+                  data-name="{{ piece.name }}"
+                  data-locked="{{ piece.locked|lower }}"
+                  data-min-level="{{ piece.min_level }}"
+                  data-max-level="{{ piece.max_level }}"
+                  role="button"
+                  tabindex="0"
+                  onclick="togglePiece(this)"
+                  onkeydown="
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      togglePiece(this);
+                    }
+                  "
+                >
+                  <div class="piece-name">{{ piece.name }}</div>
+                  <div class="piece-level">
+                    LVL {{ "%.1f"|format(piece.current_level if
+                    piece.current_level is not none else piece.min_level) }}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %} {% endfor %}
+          </div>
+        </div>
+      </div>
 
-    let craft = false;
-    let locked = false;
+      <!-- ═══ Build Actions Toolbar ═══ -->
+      <div class="section">
+        <div class="section-header" style="cursor: default">
+          <span>🛠 Azioni Build</span>
+        </div>
+        <div class="section-body">
+          <div class="toolbar">
+            <button
+              class="btn btn-secondary"
+              id="btn-export"
+              onclick="exportBuild()"
+            >
+              📥 Esporta Build
+            </button>
+            <button
+              class="btn btn-secondary"
+              id="btn-import"
+              onclick="importBuild()"
+            >
+              📤 Importa Build
+            </button>
+            <button
+              class="btn btn-secondary"
+              id="btn-share"
+              onclick="shareBuild()"
+            >
+              🔗 Condividi Build
+            </button>
+            <button
+              class="btn btn-secondary"
+              id="btn-save-slot"
+              onclick="saveBuildSlot()"
+            >
+              💾 Salva Build
+            </button>
+            <button
+              class="btn btn-secondary"
+              id="btn-load-slot"
+              onclick="loadBuildSlot()"
+            >
+              📂 I Miei Build
+            </button>
+          </div>
+        </div>
+      </div>
 
-    if (status === 'craft') {
-        craft = true;
-        locked = false;
-    } else if (status === 'owned') {
-        craft = false;
-        locked = false;
-    } else if (status === 'locked') {
-        craft = false;
-        locked = true;
-    }
+      <!-- ═══ Ottimizzazione Multi-Obiettivo ═══ -->
+      <div class="section" id="stat-selector-section">
+        <button
+          type="button"
+          class="section-header"
+          onclick="toggleStatPreferences()"
+          style="cursor: pointer"
+        >
+          <span>🎯 Seleziona Obiettivi di Ottimizzazione</span>
+          <span class="toggle" id="stat-section-toggle">▶</span>
+        </button>
+        <div class="section-body" id="stat-section-body" style="display: none">
+          <div
+            class="info-box"
+            style="
+              background: var(--surface2);
+              border-left: 4px solid var(--accent);
+              padding: 12px 16px;
+              margin-bottom: 16px;
+              border-radius: 4px;
+              font-size: 14px;
+              line-height: 1.5;
+              color: var(--text2);
+            "
+          >
+            <strong>💡 Multi-Obiettivo:</strong> Seleziona le statistiche che
+            desideri massimizzare. Il sistema utilizzerà la media geometrica per
+            bilanciare i miglioramenti tra i valori selezionati. Se deselezioni
+            tutto, verrà usato il totale statistiche (comportamento classico).
+          </div>
+          <div
+            id="stat-selector"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 12px;
+            "
+          >
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px;
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: border-color 0.15s;
+              "
+            >
+              <input
+                type="checkbox"
+                name="stat"
+                value="Strength"
+                style="width: 18px; height: 18px; cursor: pointer"
+              />
+              <span style="flex: 1">⚔️ Forza</span>
+            </label>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px;
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: border-color 0.15s;
+              "
+            >
+              <input
+                type="checkbox"
+                name="stat"
+                value="Defense"
+                style="width: 18px; height: 18px; cursor: pointer"
+              />
+              <span style="flex: 1">🛡️ Difesa</span>
+            </label>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px;
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: border-color 0.15s;
+              "
+            >
+              <input
+                type="checkbox"
+                name="stat"
+                value="Runic"
+                style="width: 18px; height: 18px; cursor: pointer"
+              />
+              <span style="flex: 1">✨ Runico</span>
+            </label>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px;
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: border-color 0.15s;
+              "
+            >
+              <input
+                type="checkbox"
+                name="stat"
+                value="Vitality"
+                style="width: 18px; height: 18px; cursor: pointer"
+              />
+              <span style="flex: 1">❤️ Vitalità</span>
+            </label>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px;
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: border-color 0.15s;
+              "
+            >
+              <input
+                type="checkbox"
+                name="stat"
+                value="Cooldown"
+                style="width: 18px; height: 18px; cursor: pointer"
+              />
+              <span style="flex: 1">⏱️ Ricarica</span>
+            </label>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px;
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: border-color 0.15s;
+              "
+            >
+              <input
+                type="checkbox"
+                name="stat"
+                value="Luck"
+                style="width: 18px; height: 18px; cursor: pointer"
+              />
+              <span style="flex: 1">🍀 Fortuna</span>
+            </label>
+          </div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 12px;
+              margin-top: 16px;
+            "
+          >
+            <button
+              class="btn btn-primary"
+              id="btn-apply-stats"
+              onclick="applyStatPreferences()"
+            >
+              ✓ Salva Preferenze
+            </button>
+            <button
+              class="btn btn-secondary"
+              id="btn-reset-stats"
+              onclick="resetStatPreferences()"
+            >
+              ↻ Ripristina Predefiniti
+            </button>
+          </div>
+          <!-- Preset Management Section -->
+          <div
+            style="
+              margin-top: 1.5rem;
+              padding: 1rem;
+              background: rgba(200, 200, 200, 0.1);
+              border-radius: 0.5rem;
+            "
+          >
+            <div style="margin-bottom: 1rem">
+              <label
+                for="stat-preset-dropdown"
+                style="font-weight: bold; margin-right: 0.5rem"
+                >📋 Preset:</label
+              >
+              <select
+                id="stat-preset-dropdown"
+                style="padding: 0.25rem 0.5rem; font-size: 0.9rem"
+              >
+                <option value="">-- Carica un preset --</option>
+              </select>
+              <button
+                onclick="loadSelectedPreset()"
+                style="margin-left: 0.5rem; padding: 0.25rem 0.75rem"
+              >
+                📂 Carica
+              </button>
+            </div>
+            <div style="display: flex; gap: 0.5rem">
+              <input
+                type="text"
+                id="preset-name-input"
+                placeholder="Nome nuovo preset..."
+                style="flex: 1; padding: 0.25rem 0.5rem; font-size: 0.9rem"
+              />
+              <button onclick="saveAsPreset()" style="padding: 0.25rem 0.75rem">
+                💾 Salva come Preset
+              </button>
+              <button
+                onclick="deleteSelectedPreset()"
+                id="delete-preset-btn"
+                style="padding: 0.25rem 0.75rem"
+                disabled
+              >
+                🗑️ Elimina
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    closeCraftConfirmationModal();
-    addPiece(slot, name, craft, level, locked);
-}
+      <!-- ═══ Risorse Disponibili ═══ -->
+      <div class="section" id="resources-section">
+        <button type="button" class="section-header" onclick="toggle(this)">
+          <span>💰 Risorse Disponibili</span>
+          <span class="toggle">▼</span>
+        </button>
+        <div class="section-body">
+          <div class="toolbar">
+            <button
+              class="btn btn-secondary"
+              id="btn-edit-toggle"
+              onclick="toggleEditMode()"
+            >
+              ✏️ Modifica Inventario
+            </button>
+            <button
+              class="btn btn-primary"
+              id="btn-save"
+              style="display: none"
+              onclick="saveInventory()"
+            >
+              💾 Salva e Ricalcola
+            </button>
+            <button
+              class="btn btn-secondary"
+              id="btn-cancel"
+              style="display: none"
+              onclick="cancelEdit()"
+            >
+              ✕ Annulla
+            </button>
+            <span class="status" id="edit-status"></span>
+          </div>
+          <div class="resources-grid" id="resources-grid">
+            {% for r in resources %}
+            <div class="res-item" data-mat="{{ r.name }}">
+              <span class="res-name">{{ r.name }}</span>
+              <span
+                class="res-qty-display res-qty {% if r.qty == 0 %}zero{% endif %}"
+                >{{ "{:,}".format(r.qty) }}</span
+              >
+              <div class="res-editor">
+                <button
+                  class="res-btn-pm"
+                  onclick="stepRes(this, -1)"
+                  tabindex="-1"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  value="{{ r.qty }}"
+                  min="0"
+                  data-mat="{{ r.name }}"
+                />
+                <button
+                  class="res-btn-pm"
+                  onclick="stepRes(this, 1)"
+                  tabindex="-1"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
 
-function closeCraftConfirmationModal() {
-    const modal = document.getElementById('craft-confirmation-modal');
-    if (modal) {
-        modal.classList.remove('show');
-    }
-    _pendingPieceAction = null;
-}
+      <!-- ═══ Frontiere di Pareto ═══ -->
+      <div class="section collapsed">
+        <button type="button" class="section-header" onclick="toggle(this)">
+          <span>📈 Frontiere di Pareto</span>
+          <span class="toggle">▼</span>
+        </button>
+        <div class="section-body" id="pareto-body">
+          {% for slot, opts in pareto_data.items() %}
+          <h4 style="color: var(--accent2); margin: 16px 0 8px 0">
+            {{ slot }} — {{ opts|length }} upgrade
+          </h4>
+          {% if opts %}
+          <table>
+            <thead>
+              <tr>
+                <th>Azione</th>
+                <th class="num">Hacksilver</th>
+                <th class="num">Stats</th>
+                <th>Materiali</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for o in opts %}
+              <tr>
+                <td>{{ o.label }}</td>
+                <td class="num">{{ "{:,}".format(o.hack) }}</td>
+                <td class="num">{{ o.stats }}</td>
+                <td>
+                  {% if o.mats %}{% for m, v in o.mats.items() %}{{ m }}: {{ v
+                  }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}—{%
+                  endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p style="color: var(--text3); font-style: italic; padding: 8px 0">
+            Nessun upgrade fattibile
+          </p>
+          {% endif %} {% endfor %}
+        </div>
+      </div>
 
-function addPiece(slot, name, craft, level, locked) {
-    const payload = {
-        slot: slot,
-        name: name,
-        action: 'add',
-        craft: craft,
-        level: level,
-        locked: locked
-    };
+      <!-- ═══ Piano Ottimo ═══ -->
+      <div class="section">
+        <button type="button" class="section-header" onclick="toggle(this)">
+          <span>🎯 Piano Ottimo</span>
+          <span class="toggle">▼</span>
+        </button>
+        <div
+          style="display: flex; justify-content: flex-end; padding: 4px 16px 0"
+          id="undo-container"
+        >
+          <button
+            class="btn"
+            id="undo-btn"
+            style="
+              display: none;
+              padding: 4px 12px;
+              font-size: 0.82rem;
+              background: var(--bg3);
+              color: var(--text2);
+              border: 1px solid var(--border);
+            "
+            onclick="undoUpgrade()"
+          >
+            ↩ Annulla
+          </button>
+        </div>
+        <div class="section-body" id="piano-body">
+          {% if opt_gain > 0 %}
+          <div class="final-box" style="margin-bottom: 20px">
+            <div>
+              <div class="fb-label">Grand Total</div>
+              <div class="fb-value">
+                {{ opt_total }}
+                <small style="color: var(--green)">(+{{ opt_gain }})</small>
+              </div>
+            </div>
+            <div>
+              <div class="fb-label">Hacksilver Spesi</div>
+              <div class="fb-value">{{ "{:,}".format(opt_hack) }}</div>
+            </div>
+            <div>
+              <div class="fb-label">Hacksilver Restanti</div>
+              <div class="fb-value">
+                {{ "{:,}".format(opt_hack_remaining) }}
+              </div>
+            </div>
+          </div>
+          {% if stat_deltas %}
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
+              margin-bottom: 16px;
+            "
+          >
+            {% for stat, delta in stat_deltas.items() %}
+            <span
+              style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:0.85rem;font-weight:600;
+              {% if delta > 0 %}background:rgba(34,197,94,0.15);color:var(--green){% else %}background:rgba(239,68,68,0.15);color:#ef4444{% endif %}"
+            >
+              {{ stat }}: {{ "%+d"|format(delta) }}
+            </span>
+            {% endfor %}
+          </div>
+          {% endif %} {% if opt_mats %}
+          <h4 style="color: var(--text2); margin-bottom: 8px">
+            Materiali usati
+          </h4>
+          <div class="resources-grid" style="margin-bottom: 16px">
+            {% for m in opt_mats %}
+            <div class="res-item">
+              <span class="res-name">{{ m.name }}</span>
+              <span class="res-qty">{{ m.used }} / {{ m.available }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <table>
+            <thead>
+              <tr>
+                <th>Azione</th>
+                <th>Slot</th>
+                <th class="num">Hacksilver</th>
+                <th class="num">Stats</th>
+                <th>Materiali</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in opt_actions %} {% if a.steps|length > 1 %}
+              <tr class="step-group-header">
+                <td colspan="4" style="font-weight: 600; color: var(--text)">
+                  {{ a.label }}
+                </td>
+                <td class="num" style="font-size: 0.82rem; color: var(--text3)">
+                  {{ "{:,}".format(a.hack) }} hack totali
+                </td>
+                <td></td>
+              </tr>
+              {% for s in a.steps %}
+              <tr class="step-sub-row" style="background: var(--surface2)">
+                <td
+                  style="
+                    padding-left: 28px;
+                    font-size: 0.9rem;
+                    color: var(--text2);
+                  "
+                >
+                  ↳ {{ s.label }}
+                </td>
+                <td>{{ a.slot }}</td>
+                <td class="num">{{ "{:,}".format(s.hack) }}</td>
+                <td class="num"></td>
+                <td>
+                  {% if s.mats %}{% for m, v in s.mats.items() %}{{ m }}: {{ v
+                  }}{% if not loop.last %}, {% endif %}{% endfor %}{% else
+                  %}solo Hacksilver{% endif %}
+                </td>
+                <td>
+                  <button
+                    class="btn btn-success"
+                    style="padding: 4px 10px; font-size: 0.82rem"
+                    {%
+                    if
+                    not
+                    loop.first
+                    %}disabled{%
+                    endif
+                    %}
+                    data-hack="{{ s.hack }}"
+                    data-mats="{{ s.mats|tojson|e }}"
+                    data-label="{{ s.label|e }}"
+                    data-slot="{{ a.slot|e }}"
+                    onclick="
+                      applyUpgrade(
+                        this,
+                        Number(this.dataset.hack),
+                        JSON.parse(this.dataset.mats),
+                        this.dataset.label,
+                        this.dataset.slot,
+                      )
+                    "
+                  >
+                    ✓ Fatto
+                  </button>
+                </td>
+              </tr>
+              {% endfor %} {% else %}
+              <tr>
+                <td>{{ a.label }}</td>
+                <td>{{ a.slot }}</td>
+                <td class="num">{{ "{:,}".format(a.hack) }}</td>
+                <td class="num">{{ a.stats }}</td>
+                <td>
+                  {% if a.mats %}{% for m, v in a.mats.items() %}{{ m }}: {{ v
+                  }}{% if not loop.last %}, {% endif %}{% endfor %}{% else
+                  %}solo Hacksilver{% endif %}
+                </td>
+                <td>
+                  <button
+                    class="btn btn-success"
+                    style="padding: 4px 10px; font-size: 0.82rem"
+                    data-hack="{{ a.hack }}"
+                    data-mats="{{ a.mats|tojson|e }}"
+                    data-label="{{ a.label|e }}"
+                    data-slot="{{ a.slot|e }}"
+                    onclick="
+                      applyUpgrade(
+                        this,
+                        Number(this.dataset.hack),
+                        JSON.parse(this.dataset.mats),
+                        this.dataset.label,
+                        this.dataset.slot,
+                      )
+                    "
+                  >
+                    ✓ Fatto
+                  </button>
+                </td>
+              </tr>
+              {% endif %} {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="empty-state">
+            Nessun upgrade possibile con le risorse attuali.
+          </div>
+          {% endif %}
+        </div>
+      </div>
 
-    fetch('/api/toggle-piece', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(r => r.json())
-    .then(d => {
-        updateAllSections(d);
-        showToast(`✓ Pezzo aggiunto: ${name}`, 'success');
-    })
-    .catch(e => showToast(`✗ Errore: ${e.message}`, 'error'));
-}
+      <!-- ═══ Lista della Spesa ═══ -->
+      <div class="section collapsed" id="shopping-section">
+        <button type="button" class="section-header" onclick="toggle(this)">
+          <span
+            >🛒 Lista della Spesa — Materiali per potenziare tutto al
+            massimo</span
+          >
+          <span class="toggle">▼</span>
+        </button>
+        <div class="section-body" id="shopping-body">
+          <div class="empty-state">Premi il pulsante per calcolare.</div>
+          <button
+            class="btn btn-success"
+            style="margin-top: 8px"
+            onclick="loadShoppingList()"
+          >
+            Calcola Lista
+          </button>
+        </div>
+      </div>
 
-function removePiece(slot, name) {
-    const payload = {
-        slot: slot,
-        name: name,
-        action: 'remove'
-    };
+      <!-- ═══ Slot Bloccati ═══ -->
+      <div
+        class="section collapsed"
+        id="blocked-section"
+        {%
+        if
+        not
+        blocked
+        %}style="display:none"
+        {%
+        endif
+        %}
+      >
+        <button type="button" class="section-header" onclick="toggle(this)">
+          <span id="blocked-header-text"
+            >🔒 Slot Bloccati ({{ blocked|length }})</span
+          >
+          <span class="toggle">▼</span>
+        </button>
+        <div class="section-body" id="blocked-body">
+          {% for b in blocked %}
+          <div class="blocked-item">
+            <span class="bl-name">{{ b.name }}</span>
+            <span class="bl-action">{{ b.action }}</span>
+            <div class="bl-missing">
+              {% for m in b.missing %} {{ m.mat }}: {{ m.need }} richiesti, {{
+              m.have }} disponibili{% if not loop.last %} · {% endif %} {%
+              endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <!-- /.container -->
 
-    fetch('/api/toggle-piece', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(r => r.json())
-    .then(d => {
-        updateAllSections(d);
-        showToast(`✓ Pezzo rimosso: ${name}`, 'success');
-    })
-    .catch(e => showToast(`✗ Errore: ${e.message}`, 'error'));
-}
+    <script>
+      /* ═══ THEME TOGGLE ═══ */
+      function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.getAttribute("data-theme");
+        const next = current === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", next);
+        localStorage.setItem("gow-theme", next);
+        updateThemeButton(next);
+      }
+      function updateThemeButton(theme) {
+        const btn = document.getElementById("theme-toggle");
+        if (!btn) return;
+        btn.textContent = theme === "light" ? "\u2600\ufe0f Chiaro" : "\ud83c\udf19 Scuro";
+      }
+      (function initTheme() {
+        const saved = localStorage.getItem("gow-theme") || "dark";
+        if (saved === "light") document.documentElement.setAttribute("data-theme", "light");
+        updateThemeButton(saved);
+      })();
 
-// Update inventory section after toggle
-function updateInventoryManager(d) {
-    const inventoryBody = document.getElementById('inventory-body');
-    if (!inventoryBody || !d.all_pieces) return;
+      /* ═══════════════════════════════════════════════════════════
+         Core helpers
+         ═══════════════════════════════════════════════════════════ */
 
-    const SLOT_DISPLAY_NAMES = {
-        'chest_pieces': 'Armatura — Petto',
-        'wrist_pieces': 'Armatura — Polsi',
-        'waist_pieces': 'Armatura — Cintura',
-        'axe_attachments': 'Arma — Ascia Leviathan',
-        'blades_attachments': 'Arma — Lame del Caos',
-        'spear_attachments': 'Arma — Lancia Draupnir',
-        'shield_attachments': 'Arma — Scudo'
-    };
+      function fmt(n) { return Number(n).toLocaleString('it-IT'); }
 
-    let html = '';
-    for (const [slotKey, displayName] of Object.entries(SLOT_DISPLAY_NAMES)) {
-        const pieces = d.all_pieces[slotKey] || [];
-        if (pieces.length === 0) continue;
+      function matsHtml(mats) {
+          if (!mats || Object.keys(mats).length === 0) return '—';
+          return Object.entries(mats).map(([k,v]) => `${k}: ${v}`).join(', ');
+      }
 
-        html += `<div class="pieces-slot">
-            <h3>${escAttr(displayName)}</h3>
-            <div class="pieces-list">`;
+      function escAttr(s) {
+          return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
 
-        pieces.forEach(piece => {
-            const cardClass = piece.locked ? 'locked' : (piece.owned ? 'owned' : 'not-owned');
-            const clickAttr = piece.locked ? '' : 'onclick="togglePiece(this)"';
-            html += `<div class="piece-card ${cardClass}"
-                         data-slot="${escAttr(slotKey)}"
-                         data-name="${escAttr(piece.name)}"
-                         data-locked="${piece.locked}"
-                         ${clickAttr}>
-                    <div class="piece-name">${escAttr(piece.name)}</div>
-                    <div class="piece-level">LVL ${piece.min_level.toFixed(1)}</div>
-                </div>`;
-        });
+      function toggle(header) {
+          header.parentElement.classList.toggle('collapsed');
+      }
 
-        html += '</div></div>';
-    }
+      function showLoading(on) {
+          document.getElementById('loading').classList.toggle('active', on);
+      }
 
-    inventoryBody.querySelector('.pieces-grid').innerHTML = html;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   Section toggle init
-   ═══════════════════════════════════════════════════════════ */
-document.querySelectorAll('.section-header').forEach(hdr => {
-    const sec = hdr.parentElement;
-    const tog = hdr.querySelector('.toggle');
-    if (tog) tog.textContent = sec.classList.contains('collapsed') ? '▶' : '▼';
-    new MutationObserver(() => {
-        if (tog) tog.textContent = sec.classList.contains('collapsed') ? '▶' : '▼';
-    }).observe(sec, { attributes: true, attributeFilter: ['class'] });
-});
+      function toast(msg, type) {
+          const t = document.getElementById('toast');
+          t.textContent = msg;
+          t.className = 'toast show ' + (type || '');
+          clearTimeout(t._tm);
+          t._tm = setTimeout(() => { t.className = 'toast'; }, 2500);
+      }
 
 
-// Load saved stat preferences from server data (passed by Jinja2)
-loadStatPreferences({{ stat_preferences | tojson }});
-populatePresetDropdown({{ stat_presets | tojson }});
+      /* ═══════════════════════════════════════════════════════════
+         Multi-objective stat selection
+         ═══════════════════════════════════════════════════════════ */
+      function toggleStatPreferences() {
+          const body = document.getElementById('stat-section-body');
+          const toggle = document.getElementById('stat-section-toggle');
+          if (body.style.display === 'none') {
+              body.style.display = 'block';
+              toggle.textContent = '▼';
+          } else {
+              body.style.display = 'none';
+              toggle.textContent = '▶';
+          }
+      }
 
-</script>
-</body>
+      async function applyStatPreferences() {
+          const selected = Array.from(
+              document.querySelectorAll('#stat-selector input[name="stat"]:checked')
+          ).map(cb => cb.value);
+
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/stat-preferences', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({
+                      target_stats: selected.length > 0 ? selected : null,
+                  })
+              });
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              const d = await resp.json();
+              updateAllSections(d);
+              toggleStatPreferences();
+              updatePresetDropdownAfterPreferenceChange();
+              toast(selected.length > 0
+                  ? `Preferenze salvate: ${selected.join(', ')}`
+                  : 'Preferenze salvate: Total Stats', 'success');
+          } catch(e) {
+              toast('Errore nel salvare preferenze: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      function loadStatPreferences(preferences) {
+          // Load and restore stat preferences from server data.
+          if (!Array.isArray(preferences)) return;
+
+          // Uncheck all first
+          document.querySelectorAll('#stat-selector input[name="stat"]').forEach(cb => {
+              cb.checked = false;
+          });
+
+          // Check only the saved ones
+          preferences.forEach(stat => {
+              const cb = document.querySelector(`#stat-selector input[name="stat"][value="${stat}"]`);
+              if (cb) cb.checked = true;
+          });
+      }
+
+      async function resetStatPreferences() {
+          // Reset stat preferences to null (all stats) and save to server.
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/stat-preferences', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({
+                      target_stats: null,
+                  })
+              });
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              const d = await resp.json();
+              updateAllSections(d);
+
+              // Reset checkboxes to show all unchecked
+              document.querySelectorAll('#stat-selector input[name="stat"]').forEach(cb => {
+                  cb.checked = false;
+              });
+
+              toast('Preferenze ripristinate: Total Stats', 'success');
+          } catch(e) {
+              toast('Errore nel ripristinare preferenze: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+
+          toast('Ripristinati i valori predefiniti (Forza + Difesa)', 'success');
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+         Stat Presets Management
+         ═══════════════════════════════════════════════════════════ */
+
+      function populatePresetDropdown(presets) {
+          const dropdown = document.getElementById("stat-preset-dropdown");
+          if (!dropdown) return;
+
+          // Clear existing options except the placeholder
+          dropdown.innerHTML = '<option value="">-- Carica un preset --</option>';
+
+          // Add each preset as an option
+          if (presets && typeof presets === 'object') {
+              Object.keys(presets).forEach(presetName => {
+                  const option = document.createElement("option");
+                  option.value = presetName;
+                  option.textContent = presetName;
+                  dropdown.appendChild(option);
+              });
+          }
+
+          // Enable/disable delete button based on selection
+          updateDeleteButtonState();
+      }
+
+      function updateDeleteButtonState() {
+          const dropdown = document.getElementById("stat-preset-dropdown");
+          const deleteBtn = document.getElementById("delete-preset-btn");
+          if (dropdown && deleteBtn) {
+              deleteBtn.disabled = !dropdown.value;
+          }
+      }
+
+      async function loadSelectedPreset() {
+          const dropdown = document.getElementById("stat-preset-dropdown");
+          if (!dropdown.value) {
+              toast("⚠️ Seleziona un preset");
+              return;
+          }
+
+          const presetName = dropdown.value;
+          const payload = {
+              action: "load",
+              preset_name: presetName
+          };
+
+          showLoading(true);
+          try {
+              const resp = await fetch("/api/stat-presets", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload)
+              });
+              const d = await resp.json();
+              if (d.error) {
+                  toast(`❌ Errore: ${d.error}`);
+                  return;
+              }
+              toast(`✅ Preset "${presetName}" caricato`);
+              loadStatPreferences(d.stat_preferences || []);
+              updateAllSections(d);
+              updatePresetDropdownAfterPreferenceChange();
+          } catch(e) {
+              toast(`❌ Errore: ${e.message}`);
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      async function saveAsPreset() {
+          const input = document.getElementById("preset-name-input");
+          if (!input.value.trim()) {
+              toast("⚠️ Inserisci nome del preset");
+              return;
+          }
+
+          const presetName = input.value.trim();
+          const currentStats = getSelectedStats();
+
+          const payload = {
+              action: "save",
+              preset_name: presetName,
+              current_stats: currentStats
+          };
+
+          showLoading(true);
+          try {
+              const resp = await fetch("/api/stat-presets", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload)
+              });
+              const d = await resp.json();
+              if (d.error) {
+                  toast(`❌ Errore: ${d.error}`);
+                  return;
+              }
+              toast(`✅ Preset "${presetName}" salvato`);
+              input.value = "";
+              populatePresetDropdown(d.stat_presets);
+              updateAllSections(d);
+          } catch(e) {
+              toast(`❌ Errore: ${e.message}`);
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      async function deleteSelectedPreset() {
+          const dropdown = document.getElementById("stat-preset-dropdown");
+          if (!dropdown.value) {
+              toast("⚠️ Seleziona un preset da eliminare");
+              return;
+          }
+
+          const presetName = dropdown.value;
+          if (!confirm(`Sei sicuro di voler eliminare il preset "${presetName}"?`)) {
+              return;
+          }
+
+          const payload = {
+              action: "delete",
+              preset_name: presetName
+          };
+
+          showLoading(true);
+          try {
+              const resp = await fetch("/api/stat-presets", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload)
+              });
+              const d = await resp.json();
+              if (d.error) {
+                  toast(`❌ Errore: ${d.error}`);
+                  return;
+              }
+              toast(`✅ Preset eliminato`);
+              populatePresetDropdown(d.stat_presets);
+              updateAllSections(d);
+          } catch(e) {
+              toast(`❌ Errore: ${e.message}`);
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      function getSelectedStats() {
+          const stats = [];
+          const statNames = ["Strength", "Defense", "Runic", "Vitality", "Cooldown", "Luck"];
+          statNames.forEach(stat => {
+              const checkbox = document.getElementById(`stat-selector`).querySelector(`input[value="${stat}"]:checked`);
+              if (checkbox) {
+                  stats.push(stat);
+              }
+          });
+          return stats;
+      }
+
+      function updatePresetDropdownAfterPreferenceChange() {
+          const dropdown = document.getElementById("stat-preset-dropdown");
+          if (dropdown) {
+              dropdown.value = ""; // Clear selection
+              updateDeleteButtonState();
+          }
+      }
+
+      // Hook: Update dropdown state on input change
+      document.addEventListener("DOMContentLoaded", function() {
+          const dropdown = document.getElementById("stat-preset-dropdown");
+          if (dropdown) {
+              dropdown.addEventListener("change", updateDeleteButtonState);
+          }
+      });
+
+
+      /* ═══════════════════════════════════════════════════════════
+         Edit‑mode for resources
+         ═══════════════════════════════════════════════════════════ */
+      let _editMode = false;
+      let _savedValues = {};  // snapshot before editing
+
+      function toggleEditMode() {
+          _editMode = true;
+          // Save current values so we can cancel
+          _savedValues = {};
+          document.querySelectorAll('#resources-grid .res-editor input').forEach(inp => {
+              _savedValues[inp.dataset.mat] = inp.value;
+          });
+          document.getElementById('resources-grid').classList.add('editing');
+          document.getElementById('btn-edit-toggle').style.display = 'none';
+          document.getElementById('btn-save').style.display = '';
+          document.getElementById('btn-cancel').style.display = '';
+      }
+
+      function cancelEdit() {
+          // Restore saved values
+          document.querySelectorAll('#resources-grid .res-editor input').forEach(inp => {
+              if (inp.dataset.mat in _savedValues) inp.value = _savedValues[inp.dataset.mat];
+          });
+          exitEditMode();
+      }
+
+      function exitEditMode() {
+          _editMode = false;
+          document.getElementById('resources-grid').classList.remove('editing');
+          document.getElementById('btn-edit-toggle').style.display = '';
+          document.getElementById('btn-save').style.display = 'none';
+          document.getElementById('btn-cancel').style.display = 'none';
+      }
+
+      function stepRes(btn, delta) {
+          const inp = btn.parentElement.querySelector('input');
+          inp.value = Math.max(0, (parseInt(inp.value,10)||0) + delta);
+      }
+
+
+      /* ═══════════════════════════════════════════════════════════
+         API calls
+         ═══════════════════════════════════════════════════════════ */
+
+      async function saveInventory() {
+          const budget = {};
+          document.querySelectorAll('#resources-grid .res-editor input').forEach(inp => {
+              budget[inp.dataset.mat] = parseInt(inp.value, 10) || 0;
+          });
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/save-inventory', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({ resource_budget: budget })
+              });
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              const d = await resp.json();
+              exitEditMode();
+              updateAllSections(d);
+              toast('Inventario salvato e build ricalcolata', 'success');
+          } catch(e) {
+              toast('Errore: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      async function applyUpgrade(btn, hack, mats, label, slot) {
+          btn.disabled = true;
+          btn.textContent = '⏳';
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/apply-upgrade', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({ label, slot, hack, mats })
+              });
+              const d = await resp.json();
+              if (!resp.ok) throw new Error(d.error || 'HTTP ' + resp.status);
+              updateAllSections(d);
+              toast('Upgrade applicato: ' + label, 'success');
+          } catch(e) {
+              btn.disabled = false;
+              btn.textContent = '✓ Fatto';
+              toast('Errore: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+
+      function updateUndoButton(data) {
+          const btn = document.getElementById('undo-btn');
+          if (btn) btn.style.display = data.undo_available ? '' : 'none';
+      }
+
+      async function loadShoppingList() {
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/shopping-list');
+              const d = await resp.json();
+              if (!resp.ok) throw new Error(d.error || 'HTTP ' + resp.status);
+              const body = document.getElementById('shopping-body');
+              let h = '<div class="final-box" style="margin-bottom:16px"><div><div class="fb-label">Hacksilver Totali</div><div class="fb-value">' + fmt(d.total_hack) + '</div></div><div><div class="fb-label">Disponibili</div><div class="fb-value">' + fmt(d.hack_available) + '</div></div>';
+              if (d.hack_deficit > 0) h += '<div><div class="fb-label">Deficit</div><div class="fb-value" style="color:#ef4444">' + fmt(d.hack_deficit) + '</div></div>';
+              h += '</div>';
+              if (d.materials.length) {
+                  h += '<div class="resources-grid">';
+                  d.materials.forEach(m => {
+                      const color = m.deficit > 0 ? 'color:#ef4444' : 'color:var(--green)';
+                      h += '<div class="res-item"><span class="res-name">' + escAttr(m.name) + '</span><span class="res-qty" style="' + color + '">' + m.needed + ' / ' + m.available + (m.deficit > 0 ? ' (-' + m.deficit + ')' : '') + '</span></div>';
+                  });
+                  h += '</div>';
+              }
+              body.innerHTML = h;
+          } catch(e) {
+              toast('Errore: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      async function undoUpgrade() {
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/undo-upgrade', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'}
+              });
+              const d = await resp.json();
+              if (!resp.ok) throw new Error(d.error || 'HTTP ' + resp.status);
+              updateAllSections(d);
+              toast('Upgrade annullato', 'success');
+          } catch(e) {
+              toast('Errore: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+         Export / Import / Share / Build Slots
+         ═══════════════════════════════════════════════════════════ */
+
+      async function exportBuild() {
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/export-build', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({})
+              });
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              const data = await resp.json();
+
+              // Create download link
+              const json = JSON.stringify(data, null, 2);
+              const blob = new Blob([json], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `gow-build-${new Date().toISOString().split('T')[0]}.json`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+
+              toast('Build esportato con successo', 'success');
+          } catch(e) {
+              toast('Errore durante export: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      async function importBuild() {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'application/json';
+          input.onchange = async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+
+              const reader = new FileReader();
+              reader.onload = async (ev) => {
+                  showLoading(true);
+                  try {
+                      const imported = JSON.parse(ev.target.result);
+                      const resp = await fetch('/api/import-build', {
+                          method: 'POST',
+                          headers: {'Content-Type': 'application/json'},
+                          body: JSON.stringify(imported)
+                      });
+                      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                      const d = await resp.json();
+                      updateAllSections(d);
+                      toast('Build importato e applicato', 'success');
+                  } catch(e) {
+                      toast('Errore durante import: ' + e.message, 'error');
+                  } finally {
+                      showLoading(false);
+                  }
+              };
+              reader.readAsText(file);
+          };
+          input.click();
+      }
+
+      async function shareBuild() {
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/share-build', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({})
+              });
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              const data = await resp.json();
+
+              // Create modal to display shareable URL
+              const modal = document.createElement('div');
+              modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:2000;';
+
+              const copyBtn = document.createElement('button');
+              copyBtn.className = 'btn btn-primary';
+              copyBtn.style.cssText = 'width:100%;margin-bottom:8px;';
+              copyBtn.textContent = '📋 Copia Link';
+              copyBtn.dataset.url = data.url;
+              copyBtn.onclick = function() {
+                  navigator.clipboard.writeText(this.dataset.url);
+                  this.textContent = '✓ Copiato!';
+                  setTimeout(() => { this.textContent = '📋 Copia Link'; }, 2000);
+              };
+
+              const closeBtn = document.createElement('button');
+              closeBtn.className = 'btn btn-secondary';
+              closeBtn.style.width = '100%';
+              closeBtn.textContent = '✕ Chiudi';
+              closeBtn.onclick = function() { modal.remove(); };
+
+              const content = document.createElement('div');
+              content.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:500px;color:var(--text);';
+
+              const title = document.createElement('h3');
+              title.style.cssText = 'color:var(--accent2);margin-bottom:16px;font-family:Cinzel;';
+              title.textContent = '🔗 Condividi Build';
+
+              const desc = document.createElement('p');
+              desc.style.cssText = 'color:var(--text2);margin-bottom:16px;font-size:0.9em;';
+              desc.textContent = 'Usa questo link per condividere il tuo build:';
+
+              const input = document.createElement('input');
+              input.type = 'text';
+              input.readOnly = true;
+              input.value = data.url;
+              input.style.cssText = 'width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.85em;margin-bottom:16px;font-family:monospace;';
+
+              content.appendChild(title);
+              content.appendChild(desc);
+              content.appendChild(input);
+              content.appendChild(copyBtn);
+              content.appendChild(closeBtn);
+
+              modal.appendChild(content);
+              document.body.appendChild(modal);
+              modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+              toast('Link di condivisione generato', 'success');
+          } catch(e) {
+              toast('Errore durante share: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      async function saveBuildSlot() {
+          const name = prompt('Nome del build:');
+          if (!name || !name.trim()) return;
+
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/build-slots', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({ action: 'create', name: name.trim() })
+              });
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              toast(`Build "${name}" salvato con successo`, 'success');
+          } catch(e) {
+              toast('Errore durante salvataggio: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      async function loadBuildSlot() {
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/build-slots', {
+                  method: 'GET',
+                  headers: {'Content-Type': 'application/json'}
+              });
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              const data = await resp.json();
+
+              if (!data.slots || data.slots.length === 0) {
+                  toast('Nessun build salvato', 'error');
+                  showLoading(false);
+                  return;
+              }
+
+              // Create modal with slot list
+              const modal = document.createElement('div');
+              modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:2000;';
+
+              let slotHtml = `
+                  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:400px;color:var(--text);max-height:70vh;overflow-y:auto;">
+                      <h3 style="color:var(--accent2);margin-bottom:16px;font-family:Cinzel;">📂 I Miei Build</h3>
+              `;
+
+              data.slots.forEach(slot => {
+                  slotHtml += `
+                      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+                          <span>${escAttr(slot.name)}</span>
+                          <div style="display:flex;gap:6px;">
+                              <button class="btn btn-success slot-load-btn" style="padding:4px 10px;font-size:0.8em;" data-slot-name="${escAttr(slot.name)}" data-modal="true">Carica</button>
+                              <button class="btn btn-secondary slot-delete-btn" style="padding:4px 10px;font-size:0.8em;background:var(--red-dim);color:var(--red);border-color:var(--red);" data-slot-name="${escAttr(slot.name)}" data-modal="true">Elimina</button>
+                          </div>
+                      </div>
+                  `;
+              });
+
+              // Attach event listeners to slot buttons
+              setTimeout(() => {
+                  document.querySelectorAll('.slot-load-btn').forEach(btn => {
+                      btn.onclick = function() { loadSlot(this.dataset.slotName); };
+                  });
+                  document.querySelectorAll('.slot-delete-btn').forEach(btn => {
+                      btn.onclick = function() { deleteSlot(this.dataset.slotName); };
+                  });
+              }, 0);
+
+              slotHtml += `
+                      <button class="btn btn-secondary" style="width:100%;margin-top:16px;" onclick="this.closest('[data-modal-wrapper]').remove()">✕ Chiudi</button>
+                  </div>
+              `;
+
+              modal.innerHTML = slotHtml;
+              modal.setAttribute('data-modal-wrapper', 'true');
+              document.body.appendChild(modal);
+              modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+          } catch(e) {
+              toast('Errore durante caricamento slot: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      async function loadSlot(name) {
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/build-slots', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({ action: 'load', name })
+              });
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              const d = await resp.json();
+              updateAllSections(d);
+              document.querySelector('[data-modal-wrapper]')?.remove();
+              toast(`Build "${name}" caricato`, 'success');
+          } catch(e) {
+              toast('Errore durante caricamento: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+      async function deleteSlot(name) {
+          if (!confirm(`Eliminare il build "${name}"?`)) return;
+
+          showLoading(true);
+          try {
+              const resp = await fetch('/api/build-slots', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({ action: 'delete', name })
+              });
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+              // Reload slot list
+              document.querySelector('[data-modal-wrapper]')?.remove();
+              toast(`Build "${name}" eliminato`, 'success');
+              loadBuildSlot();
+          } catch(e) {
+              toast('Errore durante eliminazione: ' + e.message, 'error');
+          } finally {
+              showLoading(false);
+          }
+      }
+
+
+      /* ═══════════════════════════════════════════════════════════
+         Update all dynamic UI sections from API response
+         ═══════════════════════════════════════════════════════════ */
+
+      function updateAllSections(d) {
+          // ── Summary bar ──
+          const bar = document.getElementById('summary-bar');
+          let h = `
+              <div class="summary-card"><div class="label">Armatura</div><div class="value">${d.armor_total}</div></div>
+              <div class="summary-card"><div class="label">Armi</div><div class="value">${d.weapon_total}</div></div>
+              <div class="summary-card"><div class="label">Grand Total</div><div class="value">${d.grand_total}</div></div>
+              <div class="summary-card"><div class="label">Hacksilver</div><div class="value">${fmt(d.hacksilver)}</div></div>`;
+          if (d.opt_gain > 0) h += `<div class="summary-card"><div class="label">Upgrade possibile</div><div class="value green">+${d.opt_gain}</div></div>`;
+          bar.innerHTML = h;
+
+          // ── Build Ottimale ──
+          const bestBuild = document.getElementById('best-build-body');
+          if (bestBuild) {
+              const armorTypes = ['Chest', 'Wrist', 'Waist'];
+              const weaponCats = ['Leviathan Axe', 'Blades of Chaos', 'Draupnir Spear', 'Shield'];
+              let bh = `<div class="info-box" style="background: var(--surface2); border-left: 4px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--text2);"><strong>💡 Algoritmo globale:</strong> Questo piano calcola la miglior combinazione di upgrade possibile date le tue risorse attuali, scegliendo il percorso di ottimizzazione assoluta. Se il piano step-by-step differisce, significa che non puoi raggiungerlo passo dopo passo.</div>`;
+              bh += '<div class="slot-grid">';
+
+              armorTypes.forEach(pt => {
+                  const b = d.best_armor?.[pt];
+                  bh += `<div class="slot-card"><h3>🛡 Armatura — ${escAttr(pt)}</h3>`;
+                  if (b) {
+                      const stats = Object.entries(b.stats || {}).map(([s, v]) => `<span class="stat-pill">${escAttr(String(s).slice(0,3).toUpperCase())} ${v}</span>`).join('');
+                      const badge = b.craft ? '<span class="craft-badge">⚒ Da craftare</span>' : '<span class="owned-badge">✓ Posseduto</span>';
+                      bh += `<div class="item-best"><div style="display:flex; align-items:center; flex:1;"><span class="name">${escAttr(b.name)}</span>${badge}</div><span class="level">LVL ${b.level}</span></div><div style="display:flex; justify-content:space-between; align-items:center;"><div class="stat-bar">${stats}</div><span class="total-badge">${b.total}</span></div>`;
+                  } else {
+                      bh += '<div class="empty-state">Nessun pezzo</div>';
+                  }
+                  bh += '</div>';
+              });
+
+              weaponCats.forEach(cat => {
+                  const b = d.best_weapons?.[cat];
+                  bh += `<div class="slot-card"><h3>⚔ ${escAttr(cat)}</h3>`;
+                  if (b) {
+                      const stats = Object.entries(b.stats || {}).map(([s, v]) => `<span class="stat-pill">${escAttr(String(s).slice(0,3).toUpperCase())} ${v}</span>`).join('');
+                      const badge = b.craft ? '<span class="craft-badge">⚒ Da craftare</span>' : '<span class="owned-badge">✓ Posseduto</span>';
+                      bh += `<div class="item-best"><div style="display:flex; align-items:center; flex:1;"><span class="name">${escAttr(b.name)}</span>${badge}</div><span class="level">LVL ${b.level}</span></div><div style="display:flex; justify-content:space-between; align-items:center;"><div class="stat-bar">${stats}</div><span class="total-badge">${b.total}</span></div>`;
+                  } else {
+                      bh += '<div class="empty-state">Non sbloccata</div>';
+                  }
+                  bh += '</div>';
+              });
+
+              bh += '</div>';
+              bestBuild.innerHTML = bh;
+          }
+
+          // ── Classifiche per slot ──
+          const rankingsBody = document.getElementById('rankings-body');
+          if (rankingsBody) {
+              const armorTypes = ['Chest', 'Wrist', 'Waist'];
+              const weaponCats = ['Leviathan Axe', 'Blades of Chaos', 'Draupnir Spear', 'Shield'];
+              let rh = '<div class="slot-grid">';
+
+              armorTypes.forEach(pt => {
+                  const rows = d.rankings_armor?.[pt] || [];
+                  if (!rows.length) return;
+                  rh += `<div class="slot-card"><h3>🛡 ${escAttr(pt)}</h3><ul class="ranking-list">`;
+                  rows.forEach((r, i) => {
+                      rh += `<li><span class="rank">${i + 1}</span><span class="rank-name">${escAttr(r.name)} <small style="color:var(--text3)">(LVL ${r.level})</small>${i === 0 ? '<span class="star">★</span>' : ''}</span><span class="rank-total">${r.total}</span></li>`;
+                  });
+                  rh += '</ul></div>';
+              });
+
+              weaponCats.forEach(cat => {
+                  const rows = d.rankings_weapons?.[cat] || [];
+                  if (!rows.length) return;
+                  rh += `<div class="slot-card"><h3>⚔ ${escAttr(cat)}</h3><ul class="ranking-list">`;
+                  rows.forEach((r, i) => {
+                      rh += `<li><span class="rank">${i + 1}</span><span class="rank-name">${escAttr(r.name)} <small style="color:var(--text3)">(LVL ${r.level})</small>${i === 0 ? '<span class="star">★</span>' : ''}</span><span class="rank-total">${r.total}</span></li>`;
+                  });
+                  rh += '</ul></div>';
+              });
+
+              rh += '</div>';
+              rankingsBody.innerHTML = rh;
+          }
+
+          // ── Pezzi da craftare ──
+          const craftSection = document.getElementById('craft-section');
+          const craftBody = document.getElementById('craft-body');
+          const craftHeaderText = document.getElementById('craft-header-text');
+          if (craftSection && craftBody && craftHeaderText) {
+              const craftArmor = d.craft_armor || [];
+              const craftWeapons = d.craft_weapons || [];
+              const totalCraft = craftArmor.length + craftWeapons.length;
+
+              if (totalCraft > 0) {
+                  craftSection.style.display = '';
+                  craftHeaderText.textContent = `⚠ Pezzi da Craftare (${totalCraft})`;
+                  let ch = '<div class="craft-list">';
+                  craftArmor.forEach(([n, l, pt]) => {
+                      ch += `<div class="craft-item"><span>${escAttr(n)} — LVL ${l}</span><span class="ci-slot">${escAttr(pt)}</span></div>`;
+                  });
+                  craftWeapons.forEach(([n, l, cat]) => {
+                      ch += `<div class="craft-item"><span>${escAttr(n)} — LVL ${l}</span><span class="ci-slot">${escAttr(cat)}</span></div>`;
+                  });
+                  ch += '</div>';
+                  craftBody.innerHTML = ch;
+              } else {
+                  craftSection.style.display = 'none';
+              }
+          }
+
+          // ── Resources (update displays + inputs) ──
+          (d.resources || []).forEach(r => {
+              const item = document.querySelector(`.res-item[data-mat="${CSS.escape(r.name)}"]`);
+              if (!item) return;
+              const disp = item.querySelector('.res-qty-display');
+              if (disp) {
+                  disp.textContent = fmt(r.qty);
+                  disp.classList.toggle('zero', r.qty === 0);
+              }
+              const inp = item.querySelector('.res-editor input');
+              if (inp) inp.value = r.qty;
+          });
+
+          // ── Pareto ──
+          const pareto = document.getElementById('pareto-body');
+          let ph = '';
+          for (const [slot, opts] of Object.entries(d.pareto_data || {})) {
+              ph += `<h4 style="color:var(--accent2);margin:16px 0 8px">${escAttr(slot)} — ${opts.length} upgrade</h4>`;
+              if (opts.length) {
+                  ph += '<table><thead><tr><th>Azione</th><th class="num">Hacksilver</th><th class="num">Stats</th><th>Materiali</th></tr></thead><tbody>';
+                  opts.forEach(o => { ph += `<tr><td>${escAttr(o.label)}</td><td class="num">${fmt(o.hack)}</td><td class="num">${o.stats}</td><td>${matsHtml(o.mats)}</td></tr>`; });
+                  ph += '</tbody></table>';
+              } else {
+                  ph += '<p style="color:var(--text3);font-style:italic;padding:8px 0">Nessun upgrade fattibile</p>';
+              }
+          }
+          pareto.innerHTML = ph;
+
+          // ── Piano Ottimo ──
+          const piano = document.getElementById('piano-body');
+          if (d.opt_gain > 0) {
+              let pp = `<div class="final-box" style="margin-bottom:20px">
+                  <div><div class="fb-label">Grand Total</div><div class="fb-value">${d.opt_total} <small style="color:var(--green)">(+${d.opt_gain})</small></div></div>
+                  <div><div class="fb-label">Hacksilver Spesi</div><div class="fb-value">${fmt(d.opt_hack)}</div></div>
+                  <div><div class="fb-label">Hacksilver Restanti</div><div class="fb-value">${fmt(d.opt_hack_remaining)}</div></div>
+              </div>`;
+              if (d.stat_deltas && Object.keys(d.stat_deltas).length) {
+                  pp += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">';
+                  for (const [stat, delta] of Object.entries(d.stat_deltas)) {
+                      const color = delta > 0 ? 'background:rgba(34,197,94,0.15);color:var(--green)' : 'background:rgba(239,68,68,0.15);color:#ef4444';
+                      const sign = delta > 0 ? '+' : '';
+                      pp += `<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:0.85rem;font-weight:600;${color}">${escAttr(stat)}: ${sign}${delta}</span>`;
+                  }
+                  pp += '</div>';
+              }
+              if (d.opt_mats?.length) {
+                  pp += '<h4 style="color:var(--text2);margin-bottom:8px">Materiali usati</h4><div class="resources-grid" style="margin-bottom:16px">';
+                  d.opt_mats.forEach(m => { pp += `<div class="res-item"><span class="res-name">${escAttr(m.name)}</span><span class="res-qty">${m.used} / ${m.available}</span></div>`; });
+                  pp += '</div>';
+              }
+              pp += '<table><thead><tr><th>Azione</th><th>Slot</th><th class="num">Hacksilver</th><th class="num">Stats</th><th>Materiali</th><th></th></tr></thead><tbody>';
+              (d.opt_actions || []).forEach(a => {
+                  if (a.steps && a.steps.length > 1) {
+                      pp += `<tr class="step-group-header"><td colspan="4" style="font-weight:600;color:var(--text)">${escAttr(a.label)}</td><td class="num" style="font-size:0.82rem;color:var(--text3)">${fmt(a.hack)} hack totali</td><td></td></tr>`;
+                      a.steps.forEach((s, idx) => {
+                          const sMatsJson = escAttr(JSON.stringify(s.mats));
+                          const disabledAttr = idx > 0 ? ' disabled' : '';
+                          pp += `<tr class="step-sub-row" style="background:var(--surface2)"><td style="padding-left:28px;font-size:0.9rem;color:var(--text2)">↳ ${escAttr(s.label)}</td><td>${escAttr(a.slot)}</td><td class="num">${fmt(s.hack)}</td><td class="num"></td><td>${Object.keys(s.mats).length ? matsHtml(s.mats) : 'solo Hacksilver'}</td><td><button class="btn btn-success" style="padding:4px 10px;font-size:0.82rem"${disabledAttr} onclick="applyUpgrade(this, ${s.hack}, JSON.parse(this.dataset.mats), this.dataset.label, this.dataset.slot)" data-mats="${sMatsJson}" data-label="${escAttr(s.label)}" data-slot="${escAttr(a.slot)}">✓ Fatto</button></td></tr>`;
+                      });
+                  } else {
+                      const aMatsJson = escAttr(JSON.stringify(a.mats));
+                      pp += `<tr><td>${escAttr(a.label)}</td><td>${escAttr(a.slot)}</td><td class="num">${fmt(a.hack)}</td><td class="num">${a.stats}</td><td>${Object.keys(a.mats).length ? matsHtml(a.mats) : 'solo Hacksilver'}</td><td><button class="btn btn-success" style="padding:4px 10px;font-size:0.82rem" onclick="applyUpgrade(this, ${a.hack}, JSON.parse(this.dataset.mats), this.dataset.label, this.dataset.slot)" data-mats="${aMatsJson}" data-label="${escAttr(a.label)}" data-slot="${escAttr(a.slot)}">✓ Fatto</button></td></tr>`;
+                  }
+              });
+              pp += '</tbody></table>';
+              piano.innerHTML = pp;
+          } else {
+              piano.innerHTML = '<div class="empty-state">Nessun upgrade possibile con le risorse attuali.</div>';
+          }
+
+          // ── Blocked ──
+          const bs = document.getElementById('blocked-section');
+          const bb = document.getElementById('blocked-body');
+          const bht = document.getElementById('blocked-header-text');
+          if (d.blocked?.length) {
+              bs.style.display = '';
+              bht.textContent = `🔒 Slot Bloccati (${d.blocked.length})`;
+              let bh = '';
+              d.blocked.forEach(b => {
+                  bh += `<div class="blocked-item"><span class="bl-name">${escAttr(b.name)}</span> <span class="bl-action">${escAttr(b.action)}</span><div class="bl-missing">`;
+                  bh += b.missing.map(m => `${escAttr(m.mat)}: ${m.need} richiesti, ${m.have} disponibili`).join(' · ');
+                  bh += '</div></div>';
+              });
+              bb.innerHTML = bh;
+          } else {
+              bs.style.display = 'none';
+          }
+
+          // ── Inventory Manager ──
+          updateInventoryManager(d);
+          updateUndoButton(d);
+
+      }
+
+
+      /* ═══════════════════════════════════════════════════════════
+         Inventory Manager: Piece Toggle & Craft Confirmation Modal
+         ═══════════════════════════════════════════════════════════ */
+
+      let _pendingPieceAction = null;  // Store pending piece action (element, slot, name)
+
+      // Modal styles
+      const modalStyles = `
+          #craft-confirmation-modal {
+              display: none;
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: rgba(0, 0, 0, 0.7);
+              z-index: 1000;
+              align-items: center;
+              justify-content: center;
+          }
+          #craft-confirmation-modal.show {
+              display: flex;
+          }
+          .modal-content {
+              background: var(--surface);
+              border: 1px solid var(--border);
+              border-radius: var(--radius);
+              padding: 24px;
+              max-width: 400px;
+              box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+              position: relative;
+          }
+          .modal-content h3 {
+              margin: 0 0 12px 0;
+              font-size: 1.1em;
+              color: var(--text);
+          }
+          .modal-content p {
+              margin: 0 0 20px 0;
+              color: var(--text2);
+              font-size: 0.95em;
+          }
+          .modal-buttons {
+              display: flex;
+              gap: 10px;
+              flex-wrap: wrap;
+          }
+          .modal-buttons .btn {
+              flex: 1;
+              min-width: 140px;
+              padding: 10px 16px;
+              font-size: 0.9em;
+          }
+      `;
+
+      // Inject modal styles
+      if (!document.querySelector('style[data-modal-styles]')) {
+          const styleEl = document.createElement('style');
+          styleEl.setAttribute('data-modal-styles', '');
+          styleEl.textContent = modalStyles;
+          document.head.appendChild(styleEl);
+      }
+
+      function togglePiece(element) {
+          const slot = element.dataset.slot;
+          const name = element.dataset.name;
+          const isOwned = element.classList.contains('owned');
+          const isLocked = element.classList.contains('locked');
+
+          if (isOwned) {
+              // Toggle OFF (remove piece)
+              removePiece(slot, name);
+          } else if (isLocked) {
+              // Locked piece: remove it first, then show modal to re-add with new status
+              removePiece(slot, name, () => showCraftConfirmation(element, slot, name));
+          } else {
+              // Toggle ON (add piece) - show confirmation modal
+              showCraftConfirmation(element, slot, name);
+          }
+      }
+
+      function showCraftConfirmation(element, slot, name) {
+          _pendingPieceAction = { element, slot, name };
+
+          let modal = document.getElementById('craft-confirmation-modal');
+          if (!modal) {
+              modal = document.createElement('div');
+              modal.id = 'craft-confirmation-modal';
+              modal.innerHTML = `
+                  <div class="modal-content">
+                      <button class="modal-close" onclick="closeCraftConfirmationModal()" style="position:absolute;top:10px;right:14px;background:none;border:none;color:var(--text2);font-size:1.4em;cursor:pointer;padding:4px 8px;line-height:1" aria-label="close">&times;</button>
+                      <h3>Aggiungi pezzo: <strong></strong></h3>
+                      <div id="level-select-section" style="margin-bottom: 12px;">
+                          <label for="piece-level-input" style="display: block; margin-bottom: 6px; font-size: 0.9em; color: var(--text2);">A che livello lo hai?</label>
+                          <input type="number" id="piece-level-input" min="1" max="9" value="1" style="width: 100%; padding: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-size: 0.9em;">
+                      </div>
+                      <p style="margin-bottom: 12px; font-size: 0.9em; color: var(--text2);">Qual è il tuo stato con questo pezzo?</p>
+                      <div class="modal-buttons">
+                          <button class="btn btn-secondary" onclick="confirmAddPiece('craft')">
+                              Devo craftarlo
+                          </button>
+                          <button class="btn btn-primary" onclick="confirmAddPiece('owned')">
+                              Lo possiedo già
+                          </button>
+                          <button class="btn btn-secondary" onclick="confirmAddPiece('locked')">
+                              Non sbloccato
+                          </button>
+                      </div>
+                      <button class="btn" onclick="closeCraftConfirmationModal()" style="margin-top:12px;width:100%;background:var(--surface2);color:var(--text2);border:1px solid var(--border)">Annulla</button>
+                  </div>
+              `;
+              document.body.appendChild(modal);
+          }
+
+          modal.querySelector('.modal-content h3 strong').textContent = name;
+
+          // Set level input range from piece data attributes
+          const levelInput = document.getElementById('piece-level-input');
+          const minLevel = parseInt(element.dataset.minLevel, 10) || 1;
+          const maxLevel = parseInt(element.dataset.maxLevel, 10) || 9;
+          levelInput.min = minLevel;
+          levelInput.max = maxLevel;
+          levelInput.value = minLevel;
+
+          // Update label to show valid range
+          const levelLabel = modal.querySelector('label[for="piece-level-input"]');
+          if (levelLabel) {
+              levelLabel.textContent = `A che livello lo hai? (${minLevel}–${maxLevel})`;
+          }
+
+          modal.classList.add('show');
+          levelInput.focus();
+      }
+
+      function confirmAddPiece(status) {
+          if (!_pendingPieceAction) return;
+
+          const { element, slot, name } = _pendingPieceAction;
+          const levelInput = document.getElementById('piece-level-input');
+          const level = parseInt(levelInput.value, 10) || 1;
+
+          let craft = false;
+          let locked = false;
+
+          if (status === 'craft') {
+              craft = true;
+              locked = false;
+          } else if (status === 'owned') {
+              craft = false;
+              locked = false;
+          } else if (status === 'locked') {
+              craft = false;
+              locked = true;
+          }
+
+          closeCraftConfirmationModal();
+          addPiece(slot, name, craft, level, locked);
+      }
+
+      function closeCraftConfirmationModal() {
+          const modal = document.getElementById('craft-confirmation-modal');
+          if (modal) {
+              modal.classList.remove('show');
+          }
+          _pendingPieceAction = null;
+      }
+
+      // Close craft modal on Escape key or backdrop click
+      document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') closeCraftConfirmationModal();
+      });
+      document.addEventListener('click', function(e) {
+          const modal = document.getElementById('craft-confirmation-modal');
+          if (modal && modal.classList.contains('show') && e.target === modal) {
+              closeCraftConfirmationModal();
+          }
+      });
+
+      function addPiece(slot, name, craft, level, locked) {
+          const payload = {
+              slot: slot,
+              name: name,
+              action: 'add',
+              craft: craft,
+              level: level,
+              locked: locked
+          };
+
+          fetch('/api/toggle-piece', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+          })
+          .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+          .then(d => {
+              if (d.error) throw new Error(d.error);
+              updateAllSections(d);
+              toast(`✓ Pezzo aggiunto: ${name}`, 'success');
+          })
+          .catch(e => toast(`✗ Errore: ${e.message}`, 'error'));
+      }
+
+      function removePiece(slot, name, onSuccess) {
+          const payload = {
+              slot: slot,
+              name: name,
+              action: 'remove'
+          };
+
+          fetch('/api/toggle-piece', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+          })
+          .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+          .then(d => {
+              if (d.error) throw new Error(d.error);
+              updateAllSections(d);
+              if (onSuccess) {
+                  onSuccess();
+              } else {
+                  toast(`✓ Pezzo rimosso: ${name}`, 'success');
+              }
+          })
+          .catch(e => toast(`✗ Errore: ${e.message}`, 'error'));
+      }
+
+      // Update inventory section after toggle
+      function filterPieces(query) {
+          const q = query.toLowerCase().trim();
+          document.querySelectorAll('#pieces-grid .piece-card').forEach(card => {
+              const name = (card.dataset.name || card.textContent).toLowerCase();
+              card.style.display = !q || name.includes(q) ? '' : 'none';
+          });
+          // Hide slot sections that have no visible cards
+          document.querySelectorAll('#pieces-grid .pieces-slot').forEach(slot => {
+              const visible = slot.querySelectorAll('.piece-card:not([style*="display: none"])').length;
+              slot.style.display = visible > 0 ? '' : 'none';
+          });
+      }
+
+      function updateInventoryManager(d) {
+          const inventoryBody = document.getElementById('inventory-body');
+          if (!inventoryBody || !d.all_pieces) return;
+
+          const SLOT_DISPLAY_NAMES = {
+              'chest_pieces': 'Armatura — Petto',
+              'wrist_pieces': 'Armatura — Polsi',
+              'waist_pieces': 'Armatura — Cintura',
+              'axe_attachments': 'Arma — Ascia Leviathan',
+              'blades_attachments': 'Arma — Lame del Caos',
+              'spear_attachments': 'Arma — Lancia Draupnir',
+              'shield_attachments': 'Arma — Scudo'
+          };
+
+          let html = '';
+          for (const [slotKey, displayName] of Object.entries(SLOT_DISPLAY_NAMES)) {
+              const pieces = d.all_pieces[slotKey] || [];
+              if (pieces.length === 0) continue;
+
+              html += `<div class="pieces-slot">
+                  <h3>${escAttr(displayName)}</h3>
+                  <div class="pieces-list">`;
+
+              pieces.forEach(piece => {
+                  const cardClass = piece.locked ? 'locked' : (piece.owned ? 'owned' : 'not-owned');
+                  const clickAttr = 'onclick="togglePiece(this)"';
+                  const displayLevel = piece.current_level != null ? piece.current_level : piece.min_level;
+                  html += `<div class="piece-card ${cardClass}"
+                               data-slot="${escAttr(slotKey)}"
+                               data-name="${escAttr(piece.name)}"
+                               data-locked="${piece.locked}"
+                               data-min-level="${piece.min_level}"
+                               data-max-level="${piece.max_level}"
+                               ${clickAttr}>
+                          <div class="piece-name">${escAttr(piece.name)}</div>
+                          <div class="piece-level">LVL ${Number(displayLevel).toFixed(1)}</div>
+                      </div>`;
+              });
+
+              html += '</div></div>';
+          }
+
+          inventoryBody.querySelector('.pieces-grid').innerHTML = html;
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+         Section toggle init
+         ═══════════════════════════════════════════════════════════ */
+      document.querySelectorAll('.section-header').forEach(hdr => {
+          const sec = hdr.parentElement;
+          const tog = hdr.querySelector('.toggle');
+          if (tog) tog.textContent = sec.classList.contains('collapsed') ? '▶' : '▼';
+          new MutationObserver(() => {
+              if (tog) tog.textContent = sec.classList.contains('collapsed') ? '▶' : '▼';
+          }).observe(sec, { attributes: true, attributeFilter: ['class'] });
+      });
+
+
+      // Load saved stat preferences from server data (passed by Jinja2)
+      loadStatPreferences({{ stat_preferences | tojson }});
+      populatePresetDropdown({{ stat_presets | tojson }});
+    </script>
+  </body>
 </html>
