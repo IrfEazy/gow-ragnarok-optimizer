@@ -10,6 +10,7 @@ PACKAGE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = PACKAGE_DIR.parent
 DATA_DIR = PROJECT_ROOT / "data"
 CONFIG_PATH = PROJECT_ROOT / "config.yaml"
+WEB_INVENTORY_PATH = PROJECT_ROOT / "web_inventory.yaml"
 TEMPLATES_DIR = PACKAGE_DIR / "templates"
 
 

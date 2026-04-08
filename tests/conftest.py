@@ -1,7 +1,9 @@
 """Pytest configuration for safe test execution."""
 
-import pytest
 from pathlib import Path
+
+import pytest
+
 from gow_optimizer import config as config_module
 from gow_optimizer.paths import PROJECT_ROOT
 
@@ -66,6 +68,11 @@ def protect_config_yaml(tmp_path, monkeypatch):
 
     monkeypatch.setattr(paths_module, "CONFIG_PATH", config_path)
     monkeypatch.setattr(config_module, "CONFIG_PATH", config_path)
+
+    # Also redirect WEB_INVENTORY_PATH to tmp_path so tests don't touch the real file
+    web_inv_path = tmp_path / "web_inventory.yaml"
+    monkeypatch.setattr(paths_module, "WEB_INVENTORY_PATH", web_inv_path)
+    monkeypatch.setattr(config_module, "WEB_INVENTORY_PATH", web_inv_path)
 
     yield
 
