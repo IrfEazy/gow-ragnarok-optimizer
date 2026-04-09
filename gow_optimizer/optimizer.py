@@ -1,11 +1,31 @@
 """Ottimizzatore build: inventario, upgrade chain, Pareto, solver."""
 
 import math
+import re
 from collections import Counter
 
 import pandas as pd
 
 from gow_optimizer.scraper import STAT_COLS
+
+# ─── Column name constants ──────────────────────────────────
+
+PIECE_NAME_COL = "Piece Name"
+PIECE_TYPE_COL = "Piece Type"
+WEAPON_NAME_COL = "Weapon Name"
+CATEGORY_COL = "Category"
+TOTAL_STATS_COL = "Total Stats"
+LEVEL_COL = "Level"
+UPGRADE_HACK_COL = "Upgrade_Hacksilver"
+
+# Weapon category constants
+LEVIATHAN_AXE = "Leviathan Axe"
+BLADES_OF_CHAOS = "Blades of Chaos"
+DRAUPNIR_SPEAR = "Draupnir Spear"
+SHIELD = "Shield"
+
+ARMOR_TYPES = ["Chest", "Wrist", "Waist"]
+WEAPON_CATEGORIES = [LEVIATHAN_AXE, BLADES_OF_CHAOS, DRAUPNIR_SPEAR, SHIELD]
 
 # ─── Multi-objective scoring ────────────────────────────────
 
@@ -82,10 +102,10 @@ def parse_inventory_from_config(cfg):
         + _parse(cfg.get("waist_pieces", []), "Waist")
     )
     w_inventory = (
-        _parse(cfg.get("axe_attachments", []), "Leviathan Axe")
-        + _parse(cfg.get("blades_attachments", []), "Blades of Chaos")
-        + _parse(cfg.get("spear_attachments", []), "Draupnir Spear")
-        + _parse(cfg.get("shield_attachments", []), "Shield")
+        _parse(cfg.get("axe_attachments", []), LEVIATHAN_AXE)
+        + _parse(cfg.get("blades_attachments", []), BLADES_OF_CHAOS)
+        + _parse(cfg.get("spear_attachments", []), DRAUPNIR_SPEAR)
+        + _parse(cfg.get("shield_attachments", []), SHIELD)
     )
     return inventory, w_inventory
 
@@ -97,9 +117,9 @@ def build_available_df(all_pieces_df, inventory):
     filters = []
     for piece_name, max_lvl, piece_type, _ in inventory:
         mask = (
-            (all_pieces_df["Piece Name"] == piece_name)
-            & (all_pieces_df["Piece Type"] == piece_type)
-            & (all_pieces_df["Level"] <= max_lvl)
+            (all_pieces_df[PIECE_NAME_COL] == piece_name)
+            & (all_pieces_df[PIECE_TYPE_COL] == piece_type)
+            & (all_pieces_df[LEVEL_COL] <= max_lvl)
         )
         filters.append(mask)
     return all_pieces_df[pd.concat(filters, axis=1).any(axis=1)].copy()
@@ -112,15 +132,44 @@ def build_weapon_available_df(all_weapons_df, w_inventory):
     w_filters = []
     for wname, max_lvl, cat, _ in w_inventory:
         mask = (
-            (all_weapons_df["Weapon Name"] == wname)
-            & (all_weapons_df["Category"] == cat)
-            & (all_weapons_df["Level"] <= max_lvl)
+            (all_weapons_df[WEAPON_NAME_COL] == wname)
+            & (all_weapons_df[CATEGORY_COL] == cat)
+            & (all_weapons_df[LEVEL_COL] <= max_lvl)
         )
         w_filters.append(mask)
     return all_weapons_df[pd.concat(w_filters, axis=1).any(axis=1)].copy()
 
 
 # ─── Build attuale ──────────────────────────────────────────
+
+
+def _compute_item_score(row, target_stats):
+    """Score a single item row by target_stats (sum) or Total Stats."""
+    if target_stats:
+        return sum(
+            v if pd.notna(v) else 0
+            for v in (row.get(s, 0) for s in target_stats)
+        )
+    return row[TOTAL_STATS_COL]
+
+
+def _find_best_item_in_slot(items_in_slot, df, name_col, cat_col, cat_value, target_stats):
+    """Find the best item in a slot by score. Returns (row_copy, name, lvl) or None."""
+    best_item = None
+    best_score = -1
+    for name, lvl, _ in items_in_slot:
+        row = df[
+            (df[name_col] == name)
+            & (df[cat_col] == cat_value)
+            & (df[LEVEL_COL] == lvl)
+        ]
+        if row.empty:
+            continue
+        score = _compute_item_score(row.iloc[0], target_stats)
+        if score > best_score:
+            best_score = score
+            best_item = (row.iloc[0].copy(), name, lvl)
+    return best_item
 
 
 def collect_current_build(
@@ -130,101 +179,41 @@ def collect_current_build(
 
     If target_stats is provided, selects best item per slot by summing those specific stats.
     Otherwise, selects by Total Stats (original behavior).
-
-    Args:
-        target_stats: Optional list of stat names to optimize (e.g., ["Strength", "Defense"]).
-                     If None, uses Total Stats.
     """
     armor_current = []
-    for pt in ["Chest", "Wrist", "Waist"]:
-        # Collect all items in inventory for this piece type
+    for pt in ARMOR_TYPES:
         items_in_slot = [
             (name, lvl, craft)
             for name, lvl, t, craft in inventory
             if t == pt and not craft
         ]
-
         if not items_in_slot:
             continue
-
-        # Find best item by selected stats or Total Stats
-        best_item = None
-        best_score = -1
-        slot_label = f"Armatura — {pt}"
-
-        for name, lvl, _ in items_in_slot:
-            row = available_df[
-                (available_df["Piece Name"] == name)
-                & (available_df["Piece Type"] == pt)
-                & (available_df["Level"] == lvl)
-            ]
-            if row.empty:
-                continue
-
-            # Compute score based on target_stats or Total Stats
-            if target_stats:
-                # Sum selected stats, treating NaN as 0
-                score = sum(
-                    v if pd.notna(v) else 0
-                    for v in (row.iloc[0].get(s, 0) for s in target_stats)
-                )
-            else:
-                score = row.iloc[0]["Total Stats"]
-
-            if score > best_score:
-                best_score = score
-                best_item = (row.iloc[0].copy(), name, lvl)
-
+        best_item = _find_best_item_in_slot(
+            items_in_slot, available_df, PIECE_NAME_COL, PIECE_TYPE_COL, pt, target_stats
+        )
         if best_item:
             r, name, lvl = best_item
-            r["Slot"] = slot_label
+            r["Slot"] = f"Armatura — {pt}"
             r["Item Name"] = name
             r["Item Level"] = lvl
             armor_current.append(r)
 
     weapon_current = []
-    for cat in ["Leviathan Axe", "Blades of Chaos", "Draupnir Spear", "Shield"]:
-        # Collect all items in inventory for this weapon category
+    for cat in WEAPON_CATEGORIES:
         items_in_slot = [
             (name, lvl, craft)
             for name, lvl, c, craft in w_inventory
             if c == cat and not craft
         ]
-
         if not items_in_slot:
             continue
-
-        # Find best item by selected stats or Total Stats
-        best_item = None
-        best_score = -1
-        slot_label = f"Arma — {cat}"
-
-        for name, lvl, _ in items_in_slot:
-            row = w_available_df[
-                (w_available_df["Weapon Name"] == name)
-                & (w_available_df["Category"] == cat)
-                & (w_available_df["Level"] == lvl)
-            ]
-            if row.empty:
-                continue
-
-            # Compute score based on target_stats or Total Stats
-            if target_stats:
-                # Sum selected stats, treating NaN as 0
-                score = sum(
-                    v if pd.notna(v) else 0
-                    for v in (row.iloc[0].get(s, 0) for s in target_stats)
-                )
-            else:
-                score = row.iloc[0]["Total Stats"]
-
-            if score > best_score:
-                best_score = score
-                best_item = (row.iloc[0].copy(), name, lvl)
-
+        best_item = _find_best_item_in_slot(
+            items_in_slot, w_available_df, WEAPON_NAME_COL, CATEGORY_COL, cat, target_stats
+        )
         if best_item:
             r, name, lvl = best_item
-            r["Slot"] = slot_label
+            r["Slot"] = f"Arma — {cat}"
             r["Item Name"] = name
             r["Item Level"] = lvl
             weapon_current.append(r)
@@ -239,19 +228,19 @@ def get_upgrade_chain_with_mats(
     df, name_col, name, cat_col, cat, current_lvl, resource_budget, mat_aliases
 ):
     upg_cols = [
-        c for c in df.columns if c.startswith("Upgrade_") and c != "Upgrade_Hacksilver"
+        c for c in df.columns if c.startswith("Upgrade_") and c != UPGRADE_HACK_COL
     ]
-    item_df = df[(df[name_col] == name) & (df[cat_col] == cat)].sort_values("Level")
+    item_df = df[(df[name_col] == name) & (df[cat_col] == cat)].sort_values(LEVEL_COL)
     chain = []
     cum_hack = 0
     cum_mats = Counter()
 
     for _, r in item_df.iterrows():
-        if r["Level"] <= current_lvl:
+        if r[LEVEL_COL] <= current_lvl:
             continue
         hack = (
-            int(r.get("Upgrade_Hacksilver", 0))
-            if pd.notna(r.get("Upgrade_Hacksilver", 0))
+            int(r.get(UPGRADE_HACK_COL, 0))
+            if pd.notna(r.get(UPGRADE_HACK_COL, 0))
             else 0
         )
         level_mats = {}
@@ -276,30 +265,24 @@ def get_upgrade_chain_with_mats(
         # Extract per-stat dict for this item at this level
         per_stat = {col: r.get(col, 0) for col in STAT_COLS}
 
-        chain.append((r["Level"], r["Total Stats"], cum_hack, dict(cum_mats), per_stat))
+        chain.append((r[LEVEL_COL], r[TOTAL_STATS_COL], cum_hack, dict(cum_mats), per_stat))
 
     return chain
+
+
+def _score_option(score_fn, per_stat_or_total_stats):
+    """Score an option using score_fn if available, otherwise return the value directly."""
+    if score_fn is not None:
+        return score_fn(per_stat_or_total_stats)
+    return per_stat_or_total_stats
 
 
 def build_slot_options_with_mats(
     items_with_chains, score_fn=None, current_per_stat=None
 ):
-    """Build upgrade options for a slot, optionally using a multi-objective score function.
-
-    Args:
-        items_with_chains: List of (name, lvl, stats, chain, needs_craft) tuples.
-        score_fn: Optional function that takes per_stat dict and returns a score.
-                 If None, uses Total Stats (original behavior).
-        current_per_stat: Optional dict of {stat_name: value} for current item. Used to score
-                         the no-action option when score_fn is provided.
-
-    Returns:
-        List of (hack, score, label, mats) tuples representing upgrade options.
-    """
+    """Build upgrade options for a slot, optionally using a multi-objective score function."""
     current_best = max((s for _, _, s, _, _ in items_with_chains), default=0)
 
-    # When score_fn is provided (multi-objective), score the no-action option using score_fn
-    # Otherwise use current_best (Total Stats) for backwards compatibility
     if score_fn is not None and current_per_stat is not None:
         no_action_score = score_fn(current_per_stat)
     else:
@@ -308,20 +291,11 @@ def build_slot_options_with_mats(
     options = [(0, no_action_score, "— nessuna azione —", {})]
 
     for item_name, item_lvl, item_stats, chain, needs_craft in items_with_chains:
-        other_best = max(
-            (s for n, _, s, _, _ in items_with_chains if n != item_name), default=0
-        )
         for target_lvl, target_stats, hack, mats, per_stat in chain:
             lvl_label = int(target_lvl) if target_lvl == int(target_lvl) else target_lvl
-
-            # Compute the resulting score
-            if score_fn is not None:
-                # Multi-objective: use geometric mean score of selected stat gains
-                resulting_score = score_fn(per_stat)
-            else:
-                # Original behavior: use Total Stats, comparing against other items in same slot
-                resulting_score = target_stats
-
+            resulting_score = _score_option(
+                score_fn, per_stat if score_fn is not None else target_stats
+            )
             craft_tag = "★craft+" if needs_craft else ""
             options.append(
                 (
@@ -343,54 +317,42 @@ def pareto_frontier_with_mats(options):
     return frontier
 
 
-def solve_with_resources(slot_pareto_dict, budget_hack, resource_budget, mat_aliases):
-    """Solve resource-constrained multi-choice knapsack via ILP (scipy.optimize.milp)."""
-    import numpy as np
-    from scipy.optimize import LinearConstraint, milp
-    from scipy.sparse import csc_array
-
-    slots = list(slot_pareto_dict.keys())
-    if not slots:
-        return -1, {}
-
-    # Flatten all options: build flat arrays of hack costs, scores, labels, mats
-    slot_opts = []  # list of list of (hack, score, label, mats)
+def _build_slot_opts(slot_pareto_dict, slots, budget_hack):
+    """Filter feasible options per slot within hacksilver budget."""
+    slot_opts = []
     for slot in slots:
         feasible = [
-            (h, s, l, m) for h, s, l, m in slot_pareto_dict[slot] if h <= budget_hack
+            (h, s, lbl, m)
+            for h, s, lbl, m in slot_pareto_dict[slot]
+            if h <= budget_hack
         ]
         if not feasible:
             feasible = [(0, 0, "— nessuna azione —", {})]
         slot_opts.append(feasible)
+    return slot_opts
 
-    # Collect all material names
-    all_mats = set()
-    for opts in slot_opts:
-        for _, _, _, m in opts:
-            all_mats.update(m.keys())
-    mat_list = sorted(all_mats)
-    mat_idx = {m: i for i, m in enumerate(mat_list)}
 
-    # Build flat variable arrays
+def _build_ilp_arrays(slot_opts, slots, mat_list, mat_idx):
+    """Build numpy arrays for the ILP formulation."""
+    import numpy as np
+
     n_vars = sum(len(opts) for opts in slot_opts)
-    c = np.zeros(n_vars)  # objective (negate for minimization)
-    hack_row = np.zeros(n_vars)  # hacksilver costs
+    obj = np.zeros(n_vars)
+    hack_row = np.zeros(n_vars)
     mat_rows = np.zeros((len(mat_list), n_vars)) if mat_list else np.zeros((0, n_vars))
 
-    var_map = []  # (slot_index, option_index) for each variable
+    var_map = []
     offset = 0
     for si, opts in enumerate(slot_opts):
-        for oi, (hack, score, label, mats) in enumerate(opts):
+        for oi, (hack, score, _label, mats) in enumerate(opts):
             vi = offset + oi
-            c[vi] = -score  # minimize negative score = maximize score
+            obj[vi] = -score
             hack_row[vi] = hack
             for mat_name, qty in mats.items():
                 mat_rows[mat_idx[mat_name], vi] = qty
             var_map.append((si, oi))
         offset += len(opts)
 
-    # Constraints: exactly one option per slot
-    # Σ_i x[s][i] = 1 for each slot s
     eq_rows = np.zeros((len(slots), n_vars))
     offset = 0
     for si, opts in enumerate(slot_opts):
@@ -398,12 +360,35 @@ def solve_with_resources(slot_pareto_dict, budget_hack, resource_budget, mat_ali
             eq_rows[si, offset + oi] = 1
         offset += len(opts)
 
-    # Build constraint matrices
-    # 1) Slot equality constraints: row per slot, sum = 1
-    # 2) Hacksilver: sum <= budget_hack
-    # 3) Materials: sum per material <= available
-    ineq_A = np.vstack(
-        [hack_row.reshape(1, -1)] + ([mat_rows] if len(mat_list) > 0 else [])
+    return n_vars, obj, hack_row, mat_rows, eq_rows, var_map
+
+
+def solve_with_resources(slot_pareto_dict, budget_hack, resource_budget, mat_aliases):
+    """Solve resource-constrained multi-choice knapsack via ILP (scipy.optimize.milp)."""
+    import numpy as np
+    from scipy.optimize import Bounds, LinearConstraint, milp
+    from scipy.sparse import csc_array
+
+    slots = list(slot_pareto_dict.keys())
+    if not slots:
+        return -1, {}
+
+    slot_opts = _build_slot_opts(slot_pareto_dict, slots, budget_hack)
+
+    all_mats: set[str] = set()
+    for opts in slot_opts:
+        for _, _, _, m in opts:
+            all_mats.update(m.keys())
+    mat_list = sorted(all_mats)
+    mat_idx = {m: i for i, m in enumerate(mat_list)}
+
+    n_vars, obj, hack_row, mat_rows, eq_rows, var_map = _build_ilp_arrays(
+        slot_opts, slots, mat_list, mat_idx
+    )
+
+    # Inequality constraints: hacksilver + materials
+    ineq_matrix = np.vstack(
+        [hack_row.reshape(1, -1)] + ([mat_rows] if mat_list else [])
     )
     ineq_ub = np.array(
         [budget_hack]
@@ -412,17 +397,13 @@ def solve_with_resources(slot_pareto_dict, budget_hack, resource_budget, mat_ali
 
     constraints = [
         LinearConstraint(csc_array(eq_rows), lb=1, ub=1),
-        LinearConstraint(csc_array(ineq_A), lb=-np.inf, ub=ineq_ub),
+        LinearConstraint(csc_array(ineq_matrix), lb=-np.inf, ub=ineq_ub),  # type: ignore[arg-type]
     ]
 
-    integrality = np.ones(n_vars)  # all variables are integer (binary)
-    bounds = type("Bounds", (), {"lb": np.zeros(n_vars), "ub": np.ones(n_vars)})()
+    integrality = np.ones(n_vars)
+    bounds = Bounds(lb=0.0, ub=1.0)  # type: ignore[arg-type]
 
-    from scipy.optimize import Bounds as SpBounds
-
-    bounds = SpBounds(lb=np.zeros(n_vars), ub=np.ones(n_vars))
-
-    result = milp(c, constraints=constraints, integrality=integrality, bounds=bounds)
+    result = milp(obj, constraints=constraints, integrality=integrality, bounds=bounds)
 
     if not result.success:
         return -1, {}
@@ -445,6 +426,53 @@ def solve_with_resources(slot_pareto_dict, budget_hack, resource_budget, mat_ali
 # ─── Costruzione Pareto per tutti gli slot ──────────────────
 
 
+def _collect_slot_items(inv_entries, df, name_col, cat_col, cat_value,
+                        resource_budget, mat_aliases):
+    """Collect items and upgrade chains for one slot from inventory entries.
+
+    Returns (items, current_best_row) where items is a list of
+    (name, lvl, stats, chain, needs_craft) tuples.
+    """
+    items = []
+    current_best_row = None
+    for name, lvl, needs_craft in inv_entries:
+        if needs_craft:
+            effective_lvl = lvl - 1
+            stats = 0
+        else:
+            effective_lvl = lvl
+            row = df[
+                (df[name_col] == name)
+                & (df[cat_col] == cat_value)
+                & (df[LEVEL_COL] == lvl)
+            ]
+            if not row.empty:
+                stats = row.iloc[0][TOTAL_STATS_COL]
+                if current_best_row is None or stats > current_best_row[TOTAL_STATS_COL]:
+                    current_best_row = row.iloc[0]
+            else:
+                stats = 0
+        chain = get_upgrade_chain_with_mats(
+            df, name_col, name, cat_col, cat_value,
+            effective_lvl, resource_budget, mat_aliases,
+        )
+        items.append((name, lvl, stats, chain, needs_craft))
+    return items, current_best_row
+
+
+def _compute_slot_pareto(items, current_best_row, slot_label, score_fns):
+    """Compute Pareto frontier for a single slot."""
+    score_fn = (score_fns or {}).get(slot_label)
+    current_per_stat = None
+    if score_fn is not None and current_best_row is not None:
+        current_per_stat = {col: current_best_row.get(col, 0) for col in STAT_COLS}
+    return pareto_frontier_with_mats(
+        build_slot_options_with_mats(
+            items, score_fn=score_fn, current_per_stat=current_per_stat
+        )
+    )
+
+
 def build_all_pareto(
     inventory,
     w_inventory,
@@ -454,114 +482,27 @@ def build_all_pareto(
     mat_aliases,
     score_fns=None,
 ):
-    """Build Pareto frontier for all slots.
-
-    Args:
-        score_fns: Optional dict mapping slot_label -> score_fn for multi-objective optimization.
-                  If None, uses original Total Stats-based scoring.
-    """
+    """Build Pareto frontier for all slots."""
     slot_pareto = {}
 
-    for pt in ["Chest", "Wrist", "Waist"]:
-        items = []
-        current_best_row = None
-        for name, lvl, t, needs_craft in inventory:
-            if t != pt:
-                continue
-            if needs_craft:
-                effective_lvl = lvl - 1
-                stats = 0
-            else:
-                effective_lvl = lvl
-                row = all_pieces_df[
-                    (all_pieces_df["Piece Name"] == name)
-                    & (all_pieces_df["Piece Type"] == pt)
-                    & (all_pieces_df["Level"] == lvl)
-                ]
-                if not row.empty:
-                    stats = row.iloc[0]["Total Stats"]
-                    # Track the best current item for scoring no-action option
-                    if (
-                        current_best_row is None
-                        or stats > current_best_row["Total Stats"]
-                    ):
-                        current_best_row = row.iloc[0]
-                else:
-                    stats = 0
-            chain = get_upgrade_chain_with_mats(
-                all_pieces_df,
-                "Piece Name",
-                name,
-                "Piece Type",
-                pt,
-                effective_lvl,
-                resource_budget,
-                mat_aliases,
-            )
-            items.append((name, lvl, stats, chain, needs_craft))
-        slot_label = f"Armatura — {pt}"
-        score_fn = (score_fns or {}).get(slot_label)
-        # Compute current_per_stat for no-action option when score_fn is present
-        current_per_stat = None
-        if score_fn is not None and current_best_row is not None:
-            current_per_stat = {col: current_best_row.get(col, 0) for col in STAT_COLS}
-        slot_pareto[slot_label] = pareto_frontier_with_mats(
-            build_slot_options_with_mats(
-                items, score_fn=score_fn, current_per_stat=current_per_stat
-            )
+    for pt in ARMOR_TYPES:
+        entries = [(n, lv, cr) for n, lv, t, cr in inventory if t == pt]
+        items, best_row = _collect_slot_items(
+            entries, all_pieces_df, PIECE_NAME_COL, PIECE_TYPE_COL, pt,
+            resource_budget, mat_aliases,
         )
+        slot_label = f"Armatura — {pt}"
+        slot_pareto[slot_label] = _compute_slot_pareto(items, best_row, slot_label, score_fns)
 
-    for cat in ["Leviathan Axe", "Blades of Chaos", "Draupnir Spear", "Shield"]:
-        items = []
-        current_best_row = None
-        for name, lvl, c, needs_craft in w_inventory:
-            if c != cat:
-                continue
-            if needs_craft:
-                effective_lvl = lvl - 1
-                stats = 0
-            else:
-                effective_lvl = lvl
-                row = all_weapons_df[
-                    (all_weapons_df["Weapon Name"] == name)
-                    & (all_weapons_df["Category"] == cat)
-                    & (all_weapons_df["Level"] == lvl)
-                ]
-                if not row.empty:
-                    stats = row.iloc[0]["Total Stats"]
-                    # Track the best current item for scoring no-action option
-                    if (
-                        current_best_row is None
-                        or stats > current_best_row["Total Stats"]
-                    ):
-                        current_best_row = row.iloc[0]
-                else:
-                    stats = 0
-            chain = get_upgrade_chain_with_mats(
-                all_weapons_df,
-                "Weapon Name",
-                name,
-                "Category",
-                cat,
-                effective_lvl,
-                resource_budget,
-                mat_aliases,
-            )
-            items.append((name, lvl, stats, chain, needs_craft))
+    for cat in WEAPON_CATEGORIES:
+        entries = [(n, lv, cr) for n, lv, c, cr in w_inventory if c == cat]
+        items, best_row = _collect_slot_items(
+            entries, all_weapons_df, WEAPON_NAME_COL, CATEGORY_COL, cat,
+            resource_budget, mat_aliases,
+        )
         if items:
             slot_label = f"Arma — {cat}"
-            score_fn = (score_fns or {}).get(slot_label)
-            # Compute current_per_stat for no-action option when score_fn is present
-            current_per_stat = None
-            if score_fn is not None and current_best_row is not None:
-                current_per_stat = {
-                    col: current_best_row.get(col, 0) for col in STAT_COLS
-                }
-            slot_pareto[slot_label] = pareto_frontier_with_mats(
-                build_slot_options_with_mats(
-                    items, score_fn=score_fn, current_per_stat=current_per_stat
-                )
-            )
+            slot_pareto[slot_label] = _compute_slot_pareto(items, best_row, slot_label, score_fns)
 
     return slot_pareto
 
@@ -572,15 +513,15 @@ def build_all_pareto(
 def _get_per_level_cost(df, name_col, name, cat_col, cat, level, mat_aliases):
     """Return (hack, mats_dict) for a single level upgrade to given level."""
     upg_cols = [
-        c for c in df.columns if c.startswith("Upgrade_") and c != "Upgrade_Hacksilver"
+        c for c in df.columns if c.startswith("Upgrade_") and c != UPGRADE_HACK_COL
     ]
-    row = df[(df[name_col] == name) & (df[cat_col] == cat) & (df["Level"] == level)]
+    row = df[(df[name_col] == name) & (df[cat_col] == cat) & (df[LEVEL_COL] == level)]
     if row.empty:
         return 0, {}
     r = row.iloc[0]
     hack = (
-        int(r.get("Upgrade_Hacksilver", 0))
-        if pd.notna(r.get("Upgrade_Hacksilver", 0))
+        int(r.get(UPGRADE_HACK_COL, 0))
+        if pd.notna(r.get(UPGRADE_HACK_COL, 0))
         else 0
     )
     mats = {}
@@ -592,55 +533,42 @@ def _get_per_level_cost(df, name_col, name, cat_col, cat, level, mat_aliases):
     return hack, mats
 
 
+def _int_if_whole(value):
+    """Convert float to int if it's a whole number."""
+    return int(value) if value == int(value) else value
+
+
+def _resolve_slot_df(slot, all_pieces_df, all_weapons_df):
+    """Determine DataFrame and column names based on slot label."""
+    if slot.startswith("Armatura"):
+        return all_pieces_df, PIECE_NAME_COL, PIECE_TYPE_COL, slot.replace("Armatura — ", "")
+    return all_weapons_df, WEAPON_NAME_COL, CATEGORY_COL, slot.replace("Arma — ", "")
+
+
 def decompose_plan_to_steps(opt_actions, all_pieces_df, all_weapons_df, mat_aliases):
-    """Decompose multi-level upgrade actions into individual per-level steps.
-
-    Args:
-        opt_actions: list of dicts with keys {slot, hack, stats, label, mats}
-        all_pieces_df: DataFrame of armor pieces
-        all_weapons_df: DataFrame of weapon attachments
-        mat_aliases: dict for material name normalization
-
-    Returns:
-        The same opt_actions list, each augmented with a "steps" key containing
-        a list of per-level steps: [{from_level, to_level, hack, mats, label}, ...]
-        Single-level upgrades get exactly one step.
-    """
-    import re
+    """Decompose multi-level upgrade actions into individual per-level steps."""
+    _label_re = re.compile(r"^(★craft\+)?(.+?) (\d+(?:\.\d+)?)→(\d+(?:\.\d+)?)$")
 
     for action in opt_actions:
-        label = action["label"]
-        match = re.match(r"^(★craft\+)?(.+?) (\d+(?:\.\d+)?)→(\d+(?:\.\d+)?)$", label)
+        match = _label_re.match(action["label"])
         if not match:
             action["steps"] = []
             continue
 
         craft_prefix = match.group(1) or ""
         piece_name = match.group(2)
-        from_level = float(match.group(3))
-        to_level = float(match.group(4))
-        # Normalize to int when whole number
-        from_level = int(from_level) if from_level == int(from_level) else from_level
-        to_level = int(to_level) if to_level == int(to_level) else to_level
-        slot = action["slot"]
+        from_level = _int_if_whole(float(match.group(3)))
+        to_level = _int_if_whole(float(match.group(4)))
 
-        # Determine which DataFrame and columns to use
-        if slot.startswith("Armatura"):
-            df = all_pieces_df
-            name_col, cat_col = "Piece Name", "Piece Type"
-            cat = slot.replace("Armatura — ", "")
-        else:
-            df = all_weapons_df
-            name_col, cat_col = "Weapon Name", "Category"
-            cat = slot.replace("Arma — ", "")
+        df, name_col, cat_col, cat = _resolve_slot_df(
+            action["slot"], all_pieces_df, all_weapons_df
+        )
 
-        # Walk level by level, collecting all intermediate levels
         item_levels = (
             df[(df[name_col] == piece_name) & (df[cat_col] == cat)]
-            .sort_values("Level")["Level"]
+            .sort_values(LEVEL_COL)[LEVEL_COL]
             .tolist()
         )
-        # Filter to levels in (from_level, to_level]
         target_levels = [lv for lv in item_levels if from_level < lv <= to_level]
 
         steps = []
@@ -649,21 +577,16 @@ def decompose_plan_to_steps(opt_actions, all_pieces_df, all_weapons_df, mat_alia
             hack, mats = _get_per_level_cost(
                 df, name_col, piece_name, cat_col, cat, lv, mat_aliases
             )
-            step_cp = craft_prefix if len(steps) == 0 else ""
-            lv_display = int(lv) if lv == int(lv) else lv
-            prev_display = (
-                int(prev_level) if prev_level == int(prev_level) else prev_level
-            )
-            step_label = f"{step_cp}{piece_name} {prev_display}→{lv_display}"
-            steps.append(
-                {
-                    "from_level": prev_display,
-                    "to_level": lv_display,
-                    "hack": hack,
-                    "mats": dict(sorted(mats.items())) if mats else {},
-                    "label": step_label,
-                }
-            )
+            step_cp = craft_prefix if not steps else ""
+            lv_display = _int_if_whole(lv)
+            prev_display = _int_if_whole(prev_level)
+            steps.append({
+                "from_level": prev_display,
+                "to_level": lv_display,
+                "hack": hack,
+                "mats": dict(sorted(mats.items())) if mats else {},
+                "label": f"{step_cp}{piece_name} {prev_display}→{lv_display}",
+            })
             prev_level = lv
 
         action["steps"] = steps
@@ -688,15 +611,12 @@ def compute_shopping_list(
     total_hack = 0
 
     for name, lvl, pt, needs_craft in inventory:
-        if needs_craft:
-            effective_lvl = lvl - 1
-        else:
-            effective_lvl = lvl
+        effective_lvl = (lvl - 1) if needs_craft else lvl
         chain = get_upgrade_chain_with_mats(
             all_pieces_df,
-            "Piece Name",
+            PIECE_NAME_COL,
             name,
-            "Piece Type",
+            PIECE_TYPE_COL,
             pt,
             effective_lvl,
             _INF_BUDGET,
@@ -709,15 +629,12 @@ def compute_shopping_list(
             total_mats.update(cum_mats)
 
     for name, lvl, cat, needs_craft in w_inventory:
-        if needs_craft:
-            effective_lvl = lvl - 1
-        else:
-            effective_lvl = lvl
+        effective_lvl = (lvl - 1) if needs_craft else lvl
         chain = get_upgrade_chain_with_mats(
             all_weapons_df,
-            "Weapon Name",
+            WEAPON_NAME_COL,
             name,
-            "Category",
+            CATEGORY_COL,
             cat,
             effective_lvl,
             {},
