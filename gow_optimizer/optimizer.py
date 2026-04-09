@@ -397,7 +397,7 @@ def solve_with_resources(slot_pareto_dict, budget_hack, resource_budget, mat_ali
 
     constraints = [
         LinearConstraint(csc_array(eq_rows), lb=1, ub=1),
-        LinearConstraint(csc_array(ineq_matrix), ub=ineq_ub),  # type: ignore[arg-type]
+        LinearConstraint(csc_array(ineq_matrix), lb=-np.inf, ub=ineq_ub),  # type: ignore[arg-type]
     ]
 
     integrality = np.ones(n_vars)
