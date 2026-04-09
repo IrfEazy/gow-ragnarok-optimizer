@@ -28,6 +28,13 @@ from gow_optimizer.config import (
     save_web_inventory,
 )
 from gow_optimizer.optimizer import (
+    ARMOR_TYPES,
+    CATEGORY_COL,
+    PIECE_NAME_COL,
+    PIECE_TYPE_COL,
+    TOTAL_STATS_COL,
+    WEAPON_CATEGORIES,
+    WEAPON_NAME_COL,
     build_all_pareto,
     build_available_df,
     build_weapon_available_df,
@@ -45,19 +52,9 @@ from gow_optimizer.scraper import STAT_COLS, load_csvs
 
 logger = logging.getLogger(__name__)
 
-ARMOR_TYPES = ["Chest", "Wrist", "Waist"]
-WEAPON_CATEGORIES = ["Leviathan Axe", "Blades of Chaos", "Draupnir Spear", "Shield"]
-WEAPON_CATEGORIES_WITH_UPGRADES = [
-    "Leviathan Axe",
-    "Blades of Chaos",
-    "Draupnir Spear",
-    "Shield",
-]
-PIECE_TYPE_COL = "Piece Type"
-CATEGORY_COL = "Category"
-TOTAL_STATS_COL = "Total Stats"
 ITEM_NAME_COL = "Item Name"
 ITEM_LEVEL_COL = "Item Level"
+_MISSING_PRESET_NAME = "Missing preset_name"
 
 
 # In-memory undo stack for upgrade operations (lost on server restart)
@@ -114,8 +111,8 @@ def _get_craft_status_from_inventory(inventory, item_name, piece_type):
 
 def _serialize_best_item(record, target_stats=None, craft_flag=False):
     # Handle rows from CSV data (use "Piece Name") or processed rows (use "Item Name")
-    name_col = ITEM_NAME_COL if ITEM_NAME_COL in record else "Piece Name"
-    name_col = name_col if name_col in record else "Weapon Name"  # For weapons
+    name_col = ITEM_NAME_COL if ITEM_NAME_COL in record else PIECE_NAME_COL
+    name_col = name_col if name_col in record else WEAPON_NAME_COL  # For weapons
     level_col = ITEM_LEVEL_COL if ITEM_LEVEL_COL in record else "Level"
 
     # If target_stats specified, show only those stats; otherwise show all > 0
@@ -151,7 +148,7 @@ def _build_best_armor(armor_current, target_stats=None, inventory=None):
         craft_status = False
         if inventory:
             craft_status = _get_craft_status_from_inventory(
-                inventory, best["Item Name"], armor_type
+                inventory, best[ITEM_NAME_COL], armor_type
             )
         best_armor[armor_type] = _serialize_best_item(
             best, target_stats=target_stats, craft_flag=craft_status
@@ -179,7 +176,7 @@ def _build_best_weapons(weapon_current, target_stats=None, w_inventory=None):
         craft_status = False
         if w_inventory:
             craft_status = _get_craft_status_from_inventory(
-                w_inventory, best["Item Name"], category
+                w_inventory, best[ITEM_NAME_COL], category
             )
         best_weapons[category] = _serialize_best_item(
             best, target_stats=target_stats, craft_flag=craft_status
@@ -394,7 +391,7 @@ def _collect_blocked_armor(inventory, all_pieces_df, resource_budget, mat_aliase
     return _collect_blocked_items(
         inventory,
         all_pieces_df,
-        name_column="Piece Name",
+        name_column=PIECE_NAME_COL,
         group_column=PIECE_TYPE_COL,
         groups=ARMOR_TYPES,
         resource_budget=resource_budget,
@@ -406,9 +403,9 @@ def _collect_blocked_weapons(w_inventory, all_weapons_df, resource_budget, mat_a
     return _collect_blocked_items(
         w_inventory,
         all_weapons_df,
-        name_column="Weapon Name",
+        name_column=WEAPON_NAME_COL,
         group_column=CATEGORY_COL,
-        groups=WEAPON_CATEGORIES_WITH_UPGRADES,
+        groups=WEAPON_CATEGORIES,
         resource_budget=resource_budget,
         mat_aliases=mat_aliases,
     )
@@ -560,6 +557,155 @@ def safe_resource_update(resources, deduction):
 
 _compute_cache: dict = {"hash": None, "result": None}
 
+_SLOT_TYPE_MAP = {
+    "chest_pieces": "Chest",
+    "wrist_pieces": "Wrist",
+    "waist_pieces": "Waist",
+}
+_SLOT_CAT_MAP = {
+    "axe_attachments": "Leviathan Axe",
+    "blades_attachments": "Blades of Chaos",
+    "spear_attachments": "Draupnir Spear",
+    "shield_attachments": "Shield",
+}
+
+
+def _build_all_pieces_display(web_data, all_pieces_df, all_weapons_df):
+    """Build display data for the Inventory Manager UI."""
+    from gow_optimizer.scraper import extract_all_pieces
+
+    all_pieces_csv = extract_all_pieces()
+
+    piece_data_map = {}
+    for slot_key in PIECE_KEYS:
+        for piece in web_data.get(slot_key, []):
+            piece_data_map[(slot_key, piece.get("name"))] = {
+                "owned": not piece.get("craft", True) and not piece.get("locked", False),
+                "locked": piece.get("locked", False),
+                "current_level": piece.get("level"),
+            }
+
+    max_levels = {}
+    for slot_key in PIECE_KEYS:
+        for name, min_lv in all_pieces_csv.get(slot_key, []):
+            if slot_key in _SLOT_CAT_MAP:
+                lvs = all_weapons_df[all_weapons_df[WEAPON_NAME_COL] == name]["Level"]
+            else:
+                pt = _SLOT_TYPE_MAP.get(slot_key, "")
+                lvs = all_pieces_df[
+                    (all_pieces_df[PIECE_NAME_COL] == name)
+                    & (all_pieces_df[PIECE_TYPE_COL] == pt)
+                ]["Level"]
+            max_levels[(slot_key, name)] = int(lvs.max()) if not lvs.empty else min_lv
+
+    _default_piece = {"owned": False, "locked": False, "current_level": None}
+    result = {}
+    for slot_key in PIECE_KEYS:
+        result[slot_key] = [
+            {
+                "name": name,
+                "min_level": level,
+                "max_level": max_levels.get((slot_key, name), level),
+                **piece_data_map.get((slot_key, name), _default_piece),
+            }
+            for name, level in sorted(
+                all_pieces_csv.get(slot_key, []), key=lambda x: x[0]
+            )
+        ]
+    return result
+
+
+def _safe_int(val):
+    return int(val) if pd.notna(val) else 0
+
+
+def _sum_item_stats(items):
+    """Sum stats across multiple items, returning a dict keyed by STAT_COLS."""
+    totals = dict.fromkeys(STAT_COLS, 0)
+    for item in items:
+        for col in STAT_COLS:
+            totals[col] += _safe_int(item.get(col, 0))
+    return totals
+
+
+def _apply_upgrade_delta(optimized_stats, all_current, slot, target_row):
+    """Subtract current slot item stats and add target row stats."""
+    for item in all_current:
+        if item.get("Slot") == slot:
+            for col in STAT_COLS:
+                optimized_stats[col] -= _safe_int(item.get(col, 0))
+            break
+    for col in STAT_COLS:
+        optimized_stats[col] += _safe_int(target_row.get(col, 0))
+
+
+def _compute_stat_deltas(armor_current, weapon_current, optimal_plan,
+                         all_pieces_df, all_weapons_df):
+    """Compute per-stat delta between current build and optimized build."""
+    all_current = armor_current + weapon_current
+    current_stats = _sum_item_stats(all_current)
+
+    optimized_stats = dict(current_stats)
+    for action in optimal_plan.get("opt_actions", []):
+        parsed = _parse_upgrade_label(action["label"])
+        if parsed is None:
+            continue
+        target_row = _lookup_target_row(
+            action["slot"], parsed, all_pieces_df, all_weapons_df
+        )
+        if target_row is None:
+            continue
+        _apply_upgrade_delta(optimized_stats, all_current, action["slot"], target_row)
+
+    return {
+        col: optimized_stats[col] - current_stats[col]
+        for col in STAT_COLS
+        if optimized_stats[col] != current_stats[col]
+    }
+
+
+def _lookup_target_row(slot, parsed, all_pieces_df, all_weapons_df):
+    """Look up the target row for an upgrade action. Returns Series or None."""
+    if slot.startswith("Armatura"):
+        cat = slot.replace("Armatura — ", "")
+        row = all_pieces_df[
+            (all_pieces_df[PIECE_NAME_COL] == parsed["piece_name"])
+            & (all_pieces_df[PIECE_TYPE_COL] == cat)
+            & (all_pieces_df["Level"] == parsed["to_level"])
+        ]
+    else:
+        cat = slot.replace("Arma — ", "")
+        row = all_weapons_df[
+            (all_weapons_df[WEAPON_NAME_COL] == parsed["piece_name"])
+            & (all_weapons_df[CATEGORY_COL] == cat)
+            & (all_weapons_df["Level"] == parsed["to_level"])
+        ]
+    return row.iloc[0] if not row.empty else None
+
+
+def _build_score_fns(target_stats, armor_current, weapon_current):
+    """Build score_fns dict for upgrade optimization using actual current build as baseline."""
+    stat_weights = load_stat_weights()
+    if not target_stats:
+        return None, stat_weights
+
+    score_fns = {}
+    slot_items = [
+        (ARMOR_TYPES, "Armatura", armor_current),
+        (WEAPON_CATEGORIES, "Arma", weapon_current),
+    ]
+    for categories, prefix, items in slot_items:
+        for cat in categories:
+            slot_label = f"{prefix} — {cat}"
+            baseline = dict.fromkeys(STAT_COLS, 0)
+            for item in items:
+                if slot_label in item.get("Slot", ""):
+                    baseline = {col: item.get(col, 0) for col in STAT_COLS}
+                    break
+            score_fns[slot_label] = make_score_fn(target_stats, baseline, weights=stat_weights)
+
+    return score_fns, stat_weights
+
 
 def _compute_all(web_data=None, target_stats=None):
     """Run the full pipeline. Uses web_inventory.yaml if no data given.
@@ -627,36 +773,10 @@ def _compute_all(web_data=None, target_stats=None):
     craft_armor = [(n, l, pt) for n, l, pt, c in inventory if c]
     craft_weapons = [(n, l, cat) for n, l, cat, c in w_inventory if c]
 
-    # Build score_fns dict for upgrade optimization using actual current build as baseline
-    stat_weights = load_stat_weights()
-    score_fns = None
-    if target_stats:
-        score_fns = {}
-        # Compute per-stat baseline for each armor slot (from current build)
-        for pt in ARMOR_TYPES:
-            slot_label = f"Armatura — {pt}"
-            baseline = {col: 0 for col in STAT_COLS}
-            for item in armor_current:
-                if f"Armatura — {pt}" in item.get("Slot", ""):
-                    for col in STAT_COLS:
-                        baseline[col] = item.get(col, 0)
-                    break
-            score_fns[slot_label] = make_score_fn(
-                target_stats, baseline, weights=stat_weights
-            )
-
-        # Compute per-stat baseline for each weapon slot (from current build)
-        for cat in WEAPON_CATEGORIES_WITH_UPGRADES:
-            slot_label = f"Arma — {cat}"
-            baseline = {col: 0 for col in STAT_COLS}
-            for item in weapon_current:
-                if f"Arma — {cat}" in item.get("Slot", ""):
-                    for col in STAT_COLS:
-                        baseline[col] = item.get(col, 0)
-                    break
-            score_fns[slot_label] = make_score_fn(
-                target_stats, baseline, weights=stat_weights
-            )
+    # Build score_fns for upgrade optimization
+    score_fns, stat_weights = _build_score_fns(
+        target_stats, armor_current, weapon_current
+    )
 
     slot_pareto = build_all_pareto(
         inventory,
@@ -691,114 +811,15 @@ def _compute_all(web_data=None, target_stats=None):
     stat_presets = load_stat_presets()
     stat_preferences = load_stat_preferences() or []
 
-    # Build all_pieces display data for Inventory Manager UI
-    from gow_optimizer.config import PIECE_KEYS
-    from gow_optimizer.scraper import extract_all_pieces
-
-    all_pieces_csv = extract_all_pieces()
-    # Map (slot_key, name) to piece data: owned status, locked status
-    piece_data_map = {}
-    for slot_key in PIECE_KEYS:
-        for piece in web_data.get(slot_key, []):
-            piece_name = piece.get("name")
-            is_locked = piece.get("locked", False)
-            is_craft = piece.get("craft", True)
-            is_owned = not is_craft and not is_locked
-            piece_data_map[(slot_key, piece_name)] = {
-                "owned": is_owned,
-                "locked": is_locked,
-                "current_level": piece.get("level"),
-            }
-
-    # Pre-compute max levels from CSV data
-    _max_levels = {}
-    _slot_type_map = {
-        "chest_pieces": "Chest",
-        "wrist_pieces": "Wrist",
-        "waist_pieces": "Waist",
-    }
-    _slot_cat_map = {
-        "axe_attachments": "Leviathan Axe",
-        "blades_attachments": "Blades of Chaos",
-        "spear_attachments": "Draupnir Spear",
-        "shield_attachments": "Shield",
-    }
-    for slot_key in PIECE_KEYS:
-        for name, min_lv in all_pieces_csv.get(slot_key, []):
-            if slot_key in _slot_cat_map:
-                lvs = all_weapons_df[all_weapons_df["Weapon Name"] == name]["Level"]
-            else:
-                pt = _slot_type_map.get(slot_key, "")
-                lvs = all_pieces_df[
-                    (all_pieces_df["Piece Name"] == name)
-                    & (all_pieces_df["Piece Type"] == pt)
-                ]["Level"]
-            _max_levels[(slot_key, name)] = int(lvs.max()) if not lvs.empty else min_lv
-
-    all_pieces_display = {}
-    for slot_key in PIECE_KEYS:
-        all_pieces_display[slot_key] = [
-            {
-                "name": name,
-                "min_level": level,
-                "max_level": _max_levels.get((slot_key, name), level),
-                **piece_data_map.get(
-                    (slot_key, name),
-                    {"owned": False, "locked": False, "current_level": None},
-                ),
-            }
-            for name, level in sorted(
-                all_pieces_csv.get(slot_key, []), key=lambda x: x[0]
-            )
-        ]
+    all_pieces_display = _build_all_pieces_display(
+        web_data, all_pieces_df, all_weapons_df
+    )
 
     # ── Per-stat delta: current build vs optimized build ──
-    current_stats = {col: 0 for col in STAT_COLS}
-    for item in armor_current + weapon_current:
-        for col in STAT_COLS:
-            v = item.get(col, 0)
-            current_stats[col] += int(v) if pd.notna(v) else 0
-
-    optimized_stats = dict(current_stats)
-    for action in optimal_plan.get("opt_actions", []):
-        parsed = _parse_upgrade_label(action["label"])
-        if parsed is None:
-            continue
-        slot = action["slot"]
-        piece_name = parsed["piece_name"]
-        to_level = parsed["to_level"]
-        if slot.startswith("Armatura"):
-            cat = slot.replace("Armatura — ", "")
-            target_row = all_pieces_df[
-                (all_pieces_df["Piece Name"] == piece_name)
-                & (all_pieces_df["Piece Type"] == cat)
-                & (all_pieces_df["Level"] == to_level)
-            ]
-        else:
-            cat = slot.replace("Arma — ", "")
-            target_row = all_weapons_df[
-                (all_weapons_df["Weapon Name"] == piece_name)
-                & (all_weapons_df["Category"] == cat)
-                & (all_weapons_df["Level"] == to_level)
-            ]
-        if target_row.empty:
-            continue
-        # Subtract current best in this slot, add target
-        for item in armor_current + weapon_current:
-            if item.get("Slot") == slot:
-                for col in STAT_COLS:
-                    v = item.get(col, 0)
-                    optimized_stats[col] -= int(v) if pd.notna(v) else 0
-                break
-        for col in STAT_COLS:
-            v = target_row.iloc[0].get(col, 0)
-            optimized_stats[col] += int(v) if pd.notna(v) else 0
-
-    stat_deltas = {
-        col: optimized_stats[col] - current_stats[col]
-        for col in STAT_COLS
-        if optimized_stats[col] - current_stats[col] != 0
-    }
+    stat_deltas = _compute_stat_deltas(
+        armor_current, weapon_current, optimal_plan,
+        all_pieces_df, all_weapons_df,
+    )
     optimal_plan["stat_deltas"] = stat_deltas
 
     result = {
@@ -874,31 +895,376 @@ def _apply_upgrade_to_inventory(web_data, slot, label):
     return True
 
 
+def _init_inventory():
+    """Auto-initialize all pieces in config on startup."""
+    try:
+        from gow_optimizer.config import ensure_all_pieces_in_config
+
+        counts = ensure_all_pieces_in_config()
+        if counts["armor_added"] > 0 or counts["weapons_added"] > 0:
+            logger.info(
+                "Inventory initialized: added %d armor pieces, %d weapon attachments",
+                counts["armor_added"],
+                counts["weapons_added"],
+            )
+    except Exception as exc:
+        logger.error("Failed to initialize inventory: %s", exc)
+
+
+def _handle_recalc():
+    payload = request.get_json(force=True)
+    budget = payload.get("resource_budget")
+    target_stats = payload.get("target_stats")
+    web_data = load_web_inventory()
+    if budget:
+        web_data["resource_budget"] = coerce_resource_budget(budget)
+    return jsonify(_compute_all(web_data=web_data, target_stats=target_stats))
+
+
+def _handle_save_inventory():
+    payload = request.get_json(force=True)
+    web_data = load_web_inventory()
+    web_data["resource_budget"] = coerce_resource_budget(
+        payload.get("resource_budget", {})
+    )
+    save_web_inventory(web_data)
+    return jsonify(_compute_all(web_data=web_data))
+
+
+def _handle_apply_upgrade():
+    payload = request.get_json(force=True)
+    label = str(payload.get("label", ""))
+    slot = str(payload.get("slot", ""))
+
+    try:
+        hack_cost = int(payload.get("hack", 0))
+        mats_cost = {
+            str(mat): int(qty) for mat, qty in payload.get("mats", {}).items()
+        }
+    except (AttributeError, TypeError, ValueError):
+        return jsonify({"error": "Payload upgrade non valido."}), 400
+
+    if hack_cost < 0 or any(qty < 0 for qty in mats_cost.values()):
+        return jsonify(
+            {"error": "I costi dell'upgrade devono essere non negativi."}
+        ), 400
+
+    web_data = load_web_inventory()
+    budget = web_data.get("resource_budget", {})
+
+    _undo_stack.append(deepcopy(web_data))
+    if len(_undo_stack) > _UNDO_MAX:
+        _undo_stack.pop(0)
+
+    if not _apply_upgrade_to_inventory(web_data, slot, label):
+        _undo_stack.pop()
+        return jsonify(
+            {"error": "Upgrade non valido o non presente in inventario."}
+        ), 400
+
+    if not _has_sufficient_resources(budget, hack_cost, mats_cost):
+        _undo_stack.pop()
+        return jsonify(
+            {"error": "Risorse insufficienti per applicare l'upgrade."}
+        ), 400
+
+    budget["Hacksilver"] = budget.get("Hacksilver", 0) - hack_cost
+    for mat, qty in mats_cost.items():
+        budget[mat] = budget.get(mat, 0) - qty
+    web_data["resource_budget"] = budget
+
+    save_web_inventory(web_data)
+    data = _compute_all(web_data=web_data)
+    data["undo_available"] = len(_undo_stack) > 0
+    return jsonify(data)
+
+
+def _handle_undo_upgrade():
+    if not _undo_stack:
+        return jsonify({"error": "Nessuna azione da annullare."}), 400
+    previous_state = _undo_stack.pop()
+    save_web_inventory(previous_state)
+    data = _compute_all(web_data=previous_state)
+    data["undo_available"] = len(_undo_stack) > 0
+    return jsonify(data)
+
+
+def _handle_import_build():
+    payload = request.get_json(force=True)
+    imported_data = import_build(payload)
+    current = load_web_inventory()
+    for key in PIECE_KEYS:
+        if not imported_data.get(key):
+            imported_data[key] = current.get(key, [])
+    imported_data.setdefault("resource_budget", current.get("resource_budget", {}))
+    save_web_inventory(imported_data)
+    return jsonify(_compute_all(web_data=imported_data))
+
+
+def _handle_stat_preferences():
+    payload = request.get_json(force=True)
+    target_stats = payload.get("target_stats")
+    if target_stats is not None and not isinstance(target_stats, list):
+        return jsonify({"error": "target_stats must be null or a list"}), 400
+    save_stat_preferences(target_stats)
+    web_data = load_web_inventory()
+    data = _compute_all(web_data=web_data, target_stats=target_stats)
+    data["stat_preferences"] = target_stats or []
+    return jsonify(data)
+
+
+def _handle_stat_weights():
+    payload = request.get_json(force=True)
+    weights = payload.get("weights", {})
+    if not isinstance(weights, dict):
+        return jsonify({"error": "weights must be a dict"}), 400
+    clean = {str(k): max(1, min(5, int(v))) for k, v in weights.items()}
+    save_stat_weights(clean)
+    target_stats = load_stat_preferences()
+    data = _compute_all(target_stats=target_stats)
+    data["stat_preferences"] = target_stats or []
+    data["stat_weights"] = clean
+    return jsonify(data)
+
+
+def _handle_stat_presets():
+    payload = request.get_json(force=True)
+    action = payload.get("action", "").lower()
+    preset_name = payload.get("preset_name", "").strip()
+    current_stats = payload.get("current_stats")
+
+    if not action:
+        return jsonify({"error": "Missing action"}), 400
+
+    try:
+        return _dispatch_stat_preset_action(action, preset_name, current_stats)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except KeyError as exc:
+        return jsonify({"error": str(exc)}), 404
+    except Exception:
+        logger.exception("Unhandled exception in stat-presets handler")
+        return jsonify({"error": "Server error"}), 500
+
+
+def _dispatch_stat_preset_action(action, preset_name, current_stats):
+    """Dispatch stat preset action (list/save/load/delete)."""
+    if action == "list":
+        return jsonify({"stat_presets": load_stat_presets()}), 200
+    if action not in ("save", "load", "delete"):
+        return jsonify({"error": f"Unknown action: {action}"}), 400
+    if not preset_name:
+        return jsonify({"error": _MISSING_PRESET_NAME}), 400
+
+    if action == "save":
+        return _preset_save(preset_name, current_stats)
+    if action == "load":
+        return _preset_load(preset_name)
+    return _preset_delete(preset_name)
+
+
+def _preset_save(preset_name, current_stats):
+    if not isinstance(current_stats, (list, type(None))):
+        return jsonify({"error": "current_stats must be list or null"}), 400
+    save_current_as_preset(preset_name, current_stats)
+    web_data = load_web_inventory()
+    data = _compute_all(web_data=web_data, target_stats=current_stats)
+    data["stat_presets"] = load_stat_presets()
+    data["stat_preferences"] = current_stats or []
+    return jsonify(data), 200
+
+
+def _preset_load(preset_name):
+    presets = load_stat_presets()
+    if preset_name not in presets:
+        return jsonify({"error": f"Preset '{preset_name}' not found"}), 404
+    loaded_stats = presets[preset_name]
+    save_stat_preferences(loaded_stats)
+    web_data = load_web_inventory()
+    data = _compute_all(web_data=web_data, target_stats=loaded_stats)
+    data["stat_presets"] = presets
+    data["stat_preferences"] = loaded_stats or []
+    return jsonify(data), 200
+
+
+def _preset_delete(preset_name):
+    delete_preset(preset_name)
+    web_data = load_web_inventory()
+    current_prefs = load_stat_preferences()
+    data = _compute_all(web_data=web_data, target_stats=current_prefs)
+    data["stat_presets"] = load_stat_presets()
+    return jsonify(data), 200
+
+
+def _handle_build_slots_get():
+    slots = load_build_slots()
+    return jsonify({"slots": list_build_slots(slots)})
+
+
+def _handle_build_slots_post():
+    payload = request.get_json(force=True)
+    action = payload.get("action", "").lower()
+    slot_name = payload.get("name", "")
+
+    if not slot_name or not action:
+        return jsonify({"error": "Missing action or slot name"}), 400
+
+    slots = load_build_slots()
+    try:
+        return _dispatch_build_slot_action(action, slot_name, slots)
+    except KeyError as exc:
+        return jsonify({"error": f"Build slot not found: {exc}"}), 404
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 400
+
+
+def _dispatch_build_slot_action(action, slot_name, slots):
+    if action == "create":
+        web_data = load_web_inventory()
+        slots = create_build_slot(slot_name, web_data, slots)
+        save_build_slots(slots)
+        return jsonify({"message": f"Slot '{slot_name}' created"})
+    if action == "load":
+        loaded_data = load_build_slot(slot_name, slots)
+        save_web_inventory(loaded_data)
+        return jsonify(_compute_all(web_data=loaded_data))
+    if action == "delete":
+        slots = delete_build_slot(slot_name, slots)
+        save_build_slots(slots)
+        return jsonify({"message": f"Slot '{slot_name}' deleted"})
+    return jsonify({"error": f"Unknown action: {action}"}), 400
+
+
+def _handle_shopping_list():
+    web_data = load_web_inventory()
+    st = _load_static()
+    inventory, w_inventory = _build_inventory_from_web(web_data)
+    resource_budget = web_data.get("resource_budget", {})
+    total_hack, total_mats = compute_shopping_list(
+        inventory,
+        w_inventory,
+        st["all_pieces_df"],
+        st["all_weapons_df"],
+        st["mat_aliases"],
+    )
+    items = [
+        {
+            "name": mat,
+            "needed": needed,
+            "available": resource_budget.get(mat, 0),
+            "deficit": max(0, needed - resource_budget.get(mat, 0)),
+        }
+        for mat, needed in sorted(total_mats.items())
+    ]
+    hack_available = resource_budget.get("Hacksilver", 0)
+    return jsonify({
+        "total_hack": total_hack,
+        "hack_available": hack_available,
+        "hack_deficit": max(0, total_hack - hack_available),
+        "materials": items,
+    })
+
+
+def _handle_toggle_piece():
+    payload = request.get_json(force=True)
+    slot = payload.get("slot", "")
+    name = payload.get("name", "")
+    action = payload.get("action", "").lower()
+    craft = payload.get("craft", True)
+    level = payload.get("level")
+    locked = payload.get("locked", False)
+
+    if not slot or not name or not action:
+        return jsonify({"error": "Missing slot, name, or action"}), 400
+
+    if slot not in PIECE_KEYS:
+        return jsonify({"error": f"Invalid slot: {slot}"}), 400
+
+    web_data = load_web_inventory()
+    try:
+        if action == "add":
+            return _toggle_piece_add(web_data, slot, name, craft, level, locked)
+        if action == "remove":
+            return _toggle_piece_remove(web_data, slot, name)
+        return jsonify({"error": f"Unknown action: {action}"}), 400
+    except Exception as exc:
+        logger.exception("Error in toggle-piece handler")
+        return jsonify({"error": str(exc)}), 500
+
+
+def _toggle_piece_add(web_data, slot, name, craft, level, locked):
+    from gow_optimizer.scraper import extract_all_pieces
+
+    all_pieces = extract_all_pieces()
+    piece_info = next((p for p in all_pieces.get(slot, []) if p[0] == name), None)
+    if piece_info is None:
+        return jsonify({"error": f"Piece '{name}' not found in {slot}"}), 400
+
+    piece_name, min_level = piece_info
+    current_pieces = web_data.get(slot, [])
+    existing_idx = next(
+        (i for i, p in enumerate(current_pieces) if p.get("name") == name),
+        None,
+    )
+
+    st = _load_static()
+    if slot in _SLOT_CAT_MAP:
+        _df = st["all_weapons_df"]
+        _levels = _df[_df[WEAPON_NAME_COL] == piece_name]["Level"].tolist()
+    else:
+        _df = st["all_pieces_df"]
+        _levels = _df[
+            (_df[PIECE_NAME_COL] == piece_name)
+            & (_df[PIECE_TYPE_COL] == _SLOT_TYPE_MAP.get(slot, ""))
+        ]["Level"].tolist()
+    max_level = int(max(_levels)) if _levels else min_level
+
+    if locked:
+        save_level = min_level
+    else:
+        save_level = level if level is not None else min_level
+        if save_level < min_level or save_level > max_level:
+            return jsonify({
+                "error": f"Livello {save_level} non valido per '{name}'. Range: {min_level}–{max_level}"
+            }), 400
+
+    new_piece = {
+        "name": piece_name,
+        "level": save_level,
+        "craft": bool(craft) if not locked else False,
+        "locked": bool(locked),
+    }
+
+    if existing_idx is not None:
+        current_pieces[existing_idx] = new_piece
+    else:
+        current_pieces.append(new_piece)
+    web_data[slot] = current_pieces
+
+    save_web_inventory(web_data)
+    target_stats = load_stat_preferences()
+    data = _compute_all(web_data=web_data, target_stats=target_stats)
+    data["stat_preferences"] = target_stats or []
+    return jsonify(data)
+
+
+def _toggle_piece_remove(web_data, slot, name):
+    current_pieces = web_data.get(slot, [])
+    web_data[slot] = [p for p in current_pieces if p.get("name") != name]
+    save_web_inventory(web_data)
+    target_stats = load_stat_preferences()
+    data = _compute_all(web_data=web_data, target_stats=target_stats)
+    data["stat_preferences"] = target_stats or []
+    return jsonify(data)
+
+
 def create_app(test_config=None) -> Flask:
     app = Flask(__name__, template_folder=str(TEMPLATES_DIR))
 
     if test_config:
         app.config.update(test_config)
 
-    # Auto-initialize all pieces in config.yaml on startup
-    try:
-        from gow_optimizer.config import ensure_all_pieces_in_config
-
-        counts = ensure_all_pieces_in_config()
-        if counts["armor_added"] > 0 or counts["weapons_added"] > 0:
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.info(
-                "Inventory initialized: added %d armor pieces, %d weapon attachments",
-                counts["armor_added"],
-                counts["weapons_added"],
-            )
-    except Exception as e:
-        import logging
-
-        logger = logging.getLogger(__name__)
-        logger.error("Failed to initialize inventory: %s", e)
+    _init_inventory()
 
     @app.get("/")
     def index():
@@ -909,99 +1275,27 @@ def create_app(test_config=None) -> Flask:
 
     @app.route("/api/recalc", methods=["POST"])
     def api_recalc():
-        """Accept a modified resource budget and optional target stats for multi-objective optimization."""
-        payload = request.get_json(force=True)
-        budget = payload.get("resource_budget")
-        target_stats = payload.get("target_stats")
-        web_data = load_web_inventory()
-        if budget:
-            web_data["resource_budget"] = coerce_resource_budget(budget)
-        data = _compute_all(web_data=web_data, target_stats=target_stats)
-        return jsonify(data)
+        return _handle_recalc()
 
     @app.route("/api/save-inventory", methods=["POST"])
     def api_save_inventory():
-        """Persist modified resources and return recalculated data."""
-        payload = request.get_json(force=True)
-        web_data = load_web_inventory()
-        web_data["resource_budget"] = coerce_resource_budget(
-            payload.get("resource_budget", {})
-        )
-        save_web_inventory(web_data)
-        data = _compute_all(web_data=web_data)
-        return jsonify(data)
+        return _handle_save_inventory()
 
     @app.route("/api/apply-upgrade", methods=["POST"])
     def api_apply_upgrade():
-        """Apply a step-by-step upgrade: deduct resources and update piece level."""
-        payload = request.get_json(force=True)
-        label = str(payload.get("label", ""))
-        slot = str(payload.get("slot", ""))
-
-        try:
-            hack_cost = int(payload.get("hack", 0))
-            mats_cost = {
-                str(mat): int(qty) for mat, qty in payload.get("mats", {}).items()
-            }
-        except (AttributeError, TypeError, ValueError):
-            return jsonify({"error": "Payload upgrade non valido."}), 400
-
-        if hack_cost < 0 or any(qty < 0 for qty in mats_cost.values()):
-            return jsonify(
-                {"error": "I costi dell'upgrade devono essere non negativi."}
-            ), 400
-
-        web_data = load_web_inventory()
-        budget = web_data.get("resource_budget", {})
-
-        # Snapshot state for undo before modifying anything
-        _undo_stack.append(deepcopy(web_data))
-        if len(_undo_stack) > _UNDO_MAX:
-            _undo_stack.pop(0)
-
-        if not _apply_upgrade_to_inventory(web_data, slot, label):
-            _undo_stack.pop()  # rollback snapshot if upgrade is invalid
-            return jsonify(
-                {"error": "Upgrade non valido o non presente in inventario."}
-            ), 400
-
-        if not _has_sufficient_resources(budget, hack_cost, mats_cost):
-            _undo_stack.pop()  # rollback snapshot if resources insufficient
-            return jsonify(
-                {"error": "Risorse insufficienti per applicare l'upgrade."}
-            ), 400
-
-        budget["Hacksilver"] = budget.get("Hacksilver", 0) - hack_cost
-        for mat, qty in mats_cost.items():
-            budget[mat] = budget.get(mat, 0) - qty
-        web_data["resource_budget"] = budget
-
-        save_web_inventory(web_data)
-        data = _compute_all(web_data=web_data)
-        data["undo_available"] = len(_undo_stack) > 0
-        return jsonify(data)
+        return _handle_apply_upgrade()
 
     @app.route("/api/undo-upgrade", methods=["POST"])
     def api_undo_upgrade():
-        """Undo last applied upgrade by restoring previous state."""
-        if not _undo_stack:
-            return jsonify({"error": "Nessuna azione da annullare."}), 400
-        previous_state = _undo_stack.pop()
-        save_web_inventory(previous_state)
-        data = _compute_all(web_data=previous_state)
-        data["undo_available"] = len(_undo_stack) > 0
-        return jsonify(data)
+        return _handle_undo_upgrade()
 
     @app.route("/api/export-build", methods=["POST"])
     def api_export_build():
-        """Export current build as JSON."""
         web_data = load_web_inventory()
-        exported = export_build(web_data)
-        return jsonify(exported)
+        return jsonify(export_build(web_data))
 
     @app.route("/api/export-build-csv", methods=["GET"])
     def api_export_build_csv():
-        """Export current build as CSV file."""
         web_data = load_web_inventory()
         csv_content = export_build_csv(web_data)
         return (
@@ -1015,355 +1309,41 @@ def create_app(test_config=None) -> Flask:
 
     @app.route("/api/import-build", methods=["POST"])
     def api_import_build():
-        """Import an exported build."""
-        payload = request.get_json(force=True)
-        imported_data = import_build(payload)
-
-        # Merge with current inventory to preserve structure for missing keys
-        current = load_web_inventory()
-        for key in PIECE_KEYS:
-            if not imported_data.get(key):
-                imported_data[key] = current.get(key, [])
-        imported_data.setdefault("resource_budget", current.get("resource_budget", {}))
-
-        save_web_inventory(imported_data)
-        data = _compute_all(web_data=imported_data)
-        return jsonify(data)
+        return _handle_import_build()
 
     @app.route("/api/share-build", methods=["POST"])
     def api_share_build():
-        """Generate shareable URL for current build."""
         web_data = load_web_inventory()
-        # In production, use request.host_url
         base_url = request.host_url.rstrip("/")
-        share_url = generate_shareable_url(base_url, web_data)
-        return jsonify({"url": share_url})
+        return jsonify({"url": generate_shareable_url(base_url, web_data)})
 
     @app.route("/api/stat-preferences", methods=["POST"])
     def api_save_stat_preferences():
-        """Save user's optimization stat preferences."""
-        payload = request.get_json(force=True)
-        target_stats = payload.get("target_stats")
-
-        # Validate target_stats is None or a list of strings
-        if target_stats is not None and not isinstance(target_stats, list):
-            return jsonify({"error": "target_stats must be null or a list"}), 400
-
-        save_stat_preferences(target_stats)
-
-        # Recalculate with new preferences
-        web_data = load_web_inventory()
-        data = _compute_all(web_data=web_data, target_stats=target_stats)
-        data["stat_preferences"] = target_stats or []
-        return jsonify(data)
+        return _handle_stat_preferences()
 
     @app.route("/api/stat-weights", methods=["POST"])
     def api_stat_weights():
-        """Save stat weights and recompute."""
-        payload = request.get_json(force=True)
-        weights = payload.get("weights", {})
-        if not isinstance(weights, dict):
-            return jsonify({"error": "weights must be a dict"}), 400
-        clean = {str(k): max(1, min(5, int(v))) for k, v in weights.items()}
-        save_stat_weights(clean)
-        target_stats = load_stat_preferences()
-        data = _compute_all(target_stats=target_stats)
-        data["stat_preferences"] = target_stats or []
-        data["stat_weights"] = clean
-        return jsonify(data)
+        return _handle_stat_weights()
 
     @app.route("/api/stat-presets", methods=["POST"])
     def api_manage_stat_presets():
-        """Create, load, delete, or list stat selection presets.
-
-        Expected JSON payload:
-        {
-            "action": "list|save|load|delete",
-            "preset_name": "Defensive" (required for save/load/delete),
-            "current_stats": ["Strength", "Defense"] (only for save action)
-        }
-        """
-        payload = request.get_json(force=True)
-        action = payload.get("action", "").lower()
-        preset_name = payload.get("preset_name", "").strip()
-        current_stats = payload.get("current_stats")
-
-        if not action:
-            return jsonify({"error": "Missing action"}), 400
-
-        try:
-            if action == "list":
-                presets = load_stat_presets()
-                return jsonify({"stat_presets": presets}), 200
-
-            elif action == "save":
-                if not preset_name:
-                    return jsonify({"error": "Missing preset_name"}), 400
-                if not isinstance(current_stats, (list, type(None))):
-                    return jsonify({"error": "current_stats must be list or null"}), 400
-
-                save_current_as_preset(preset_name, current_stats)
-
-                # Recalculate with saved stats
-                web_data = load_web_inventory()
-                data = _compute_all(web_data=web_data, target_stats=current_stats)
-                data["stat_presets"] = load_stat_presets()
-                data["stat_preferences"] = current_stats or []
-                return jsonify(data), 200
-
-            elif action == "load":
-                if not preset_name:
-                    return jsonify({"error": "Missing preset_name"}), 400
-
-                presets = load_stat_presets()
-                if preset_name not in presets:
-                    return jsonify({"error": f"Preset '{preset_name}' not found"}), 404
-
-                loaded_stats = presets[preset_name]
-                save_stat_preferences(loaded_stats)
-
-                # Recalculate with loaded stats
-                web_data = load_web_inventory()
-                data = _compute_all(web_data=web_data, target_stats=loaded_stats)
-                data["stat_presets"] = presets
-                data["stat_preferences"] = loaded_stats or []
-                return jsonify(data), 200
-
-            elif action == "delete":
-                if not preset_name:
-                    return jsonify({"error": "Missing preset_name"}), 400
-
-                delete_preset(preset_name)
-
-                # Return updated presets list
-                web_data = load_web_inventory()
-                current_prefs = load_stat_preferences()
-                data = _compute_all(web_data=web_data, target_stats=current_prefs)
-                data["stat_presets"] = load_stat_presets()
-                return jsonify(data), 200
-
-            else:
-                return jsonify({"error": f"Unknown action: {action}"}), 400
-
-        except ValueError as e:
-            return jsonify({"error": str(e)}), 400
-        except KeyError as e:
-            return jsonify({"error": str(e)}), 404
-        except Exception:
-            logging.getLogger(__name__).exception(
-                "Unhandled exception in stat-presets handler"
-            )
-            return jsonify({"error": "Server error"}), 500
+        return _handle_stat_presets()
 
     @app.route("/api/build-slots", methods=["GET"])
     def api_list_build_slots():
-        """List all saved build slots."""
-        slots = load_build_slots()
-        slot_list = list_build_slots(slots)
-        return jsonify({"slots": slot_list})
+        return _handle_build_slots_get()
 
     @app.route("/api/build-slots", methods=["POST"])
     def api_manage_build_slots():
-        """Create, load, or delete a build slot."""
-        payload = request.get_json(force=True)
-        action = payload.get("action", "").lower()
-        slot_name = payload.get("name", "")
-
-        if not slot_name or not action:
-            return jsonify({"error": "Missing action or slot name"}), 400
-
-        slots = load_build_slots()
-
-        try:
-            if action == "create":
-                web_data = load_web_inventory()
-                slots = create_build_slot(slot_name, web_data, slots)
-                save_build_slots(slots)
-                return jsonify({"message": f"Slot '{slot_name}' created"})
-
-            elif action == "load":
-                loaded_data = load_build_slot(slot_name, slots)
-                save_web_inventory(loaded_data)
-                data = _compute_all(web_data=loaded_data)
-                return jsonify(data)
-
-            elif action == "delete":
-                slots = delete_build_slot(slot_name, slots)
-                save_build_slots(slots)
-                return jsonify({"message": f"Slot '{slot_name}' deleted"})
-
-            else:
-                return jsonify({"error": f"Unknown action: {action}"}), 400
-
-        except KeyError as e:
-            return jsonify({"error": f"Build slot not found: {e}"}), 404
-        except Exception as e:
-            return jsonify({"error": str(e)}), 400
+        return _handle_build_slots_post()
 
     @app.route("/api/shopping-list", methods=["GET"])
     def api_shopping_list():
-        """Compute materials needed to max out all owned pieces."""
-        web_data = load_web_inventory()
-        st = _load_static()
-        inventory, w_inventory = _build_inventory_from_web(web_data)
-        resource_budget = web_data.get("resource_budget", {})
-        total_hack, total_mats = compute_shopping_list(
-            inventory,
-            w_inventory,
-            st["all_pieces_df"],
-            st["all_weapons_df"],
-            st["mat_aliases"],
-        )
-        items = []
-        for mat, needed in sorted(total_mats.items()):
-            available = resource_budget.get(mat, 0)
-            items.append(
-                {
-                    "name": mat,
-                    "needed": needed,
-                    "available": available,
-                    "deficit": max(0, needed - available),
-                }
-            )
-        hack_available = resource_budget.get("Hacksilver", 0)
-        return jsonify(
-            {
-                "total_hack": total_hack,
-                "hack_available": hack_available,
-                "hack_deficit": max(0, total_hack - hack_available),
-                "materials": items,
-            }
-        )
+        return _handle_shopping_list()
 
     @app.route("/api/toggle-piece", methods=["POST"])
     def api_toggle_piece():
-        """Add or remove a piece from inventory.
-
-        Payload:
-            {
-                "slot": "chest_pieces",  # or wrist_pieces, axe_attachments, etc.
-                "name": "Piece Name",
-                "action": "add" | "remove",
-                "craft": true | false,     # Only used when action=="add" and locked=false
-                "level": 1-9,              # Only used when action=="add" and locked=false (optional, defaults to min_level)
-                "locked": true | false     # Only used when action=="add" (optional, defaults to false)
-            }
-        """
-        payload = request.get_json(force=True)
-        slot = payload.get("slot", "")
-        name = payload.get("name", "")
-        action = payload.get("action", "").lower()
-        craft = payload.get("craft", True)
-        level = payload.get("level")
-        locked = payload.get("locked", False)
-
-        if not slot or not name or not action:
-            return jsonify({"error": "Missing slot, name, or action"}), 400
-
-        from gow_optimizer.config import PIECE_KEYS
-
-        if slot not in PIECE_KEYS:
-            return jsonify({"error": f"Invalid slot: {slot}"}), 400
-
-        web_data = load_web_inventory()
-
-        try:
-            if action == "add":
-                # Get the min level for this piece from CSV
-                from gow_optimizer.scraper import extract_all_pieces
-
-                all_pieces = extract_all_pieces()
-                pieces_in_slot = all_pieces.get(slot, [])
-                piece_info = next((p for p in pieces_in_slot if p[0] == name), None)
-
-                if piece_info is None:
-                    return jsonify(
-                        {"error": f"Piece '{name}' not found in {slot}"}
-                    ), 400
-
-                piece_name, min_level = piece_info
-
-                # Check if already in inventory — if so, update instead of reject
-                current_pieces = web_data.get(slot, [])
-                existing_idx = next(
-                    (i for i, p in enumerate(current_pieces) if p.get("name") == name),
-                    None,
-                )
-
-                # Determine valid level range from CSV data
-                st = _load_static()
-                if slot in (
-                    "axe_attachments",
-                    "blades_attachments",
-                    "spear_attachments",
-                    "shield_attachments",
-                ):
-                    _df = st["all_weapons_df"]
-                    _levels = _df[_df["Weapon Name"] == piece_name]["Level"].tolist()
-                else:
-                    _df = st["all_pieces_df"]
-                    _levels = _df[
-                        (_df["Piece Name"] == piece_name)
-                        & (
-                            _df["Piece Type"]
-                            == {
-                                "chest_pieces": "Chest",
-                                "wrist_pieces": "Wrist",
-                                "waist_pieces": "Waist",
-                            }.get(slot, "")
-                        )
-                    ]["Level"].tolist()
-                max_level = int(max(_levels)) if _levels else min_level
-
-                # Determine the level to save
-                if locked:
-                    # Locked pieces don't have a meaningful level yet
-                    save_level = min_level
-                else:
-                    # Use provided level or default to min_level
-                    save_level = level if level is not None else min_level
-                    if save_level < min_level or save_level > max_level:
-                        return jsonify(
-                            {
-                                "error": f"Livello {save_level} non valido per '{name}'. Range: {min_level}–{max_level}"
-                            }
-                        ), 400
-
-                new_piece = {
-                    "name": piece_name,
-                    "level": save_level,
-                    "craft": bool(craft) if not locked else False,
-                    "locked": bool(locked),
-                }
-
-                if existing_idx is not None:
-                    # Update existing piece in-place
-                    current_pieces[existing_idx] = new_piece
-                else:
-                    # Add new piece
-                    current_pieces.append(new_piece)
-                web_data[slot] = current_pieces
-
-            elif action == "remove":
-                # Remove the piece from inventory
-                current_pieces = web_data.get(slot, [])
-                web_data[slot] = [p for p in current_pieces if p.get("name") != name]
-
-            else:
-                return jsonify({"error": f"Unknown action: {action}"}), 400
-
-            # Persist and recalculate
-            save_web_inventory(web_data)
-            target_stats = load_stat_preferences()
-            data = _compute_all(web_data=web_data, target_stats=target_stats)
-            data["stat_preferences"] = target_stats or []
-            return jsonify(data)
-
-        except Exception as e:
-            import logging
-
-            logging.getLogger(__name__).exception("Error in toggle-piece handler")
-            return jsonify({"error": str(e)}), 500
+        return _handle_toggle_piece()
 
     return app
 
