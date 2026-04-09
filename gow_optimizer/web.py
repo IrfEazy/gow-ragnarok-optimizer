@@ -822,6 +822,14 @@ def _compute_all(web_data=None, target_stats=None):
     )
     optimal_plan["stat_deltas"] = stat_deltas
 
+    # When multi-objective score_fns are active, the solver's opt_total is on
+    # a geometric-mean scale, not Total Stats.  Recompute gain from the actual
+    # per-stat deltas so the UI always shows a meaningful Total Stats number.
+    real_stats_gain = sum(stat_deltas.values())
+    if real_stats_gain != optimal_plan.get("opt_gain", 0):
+        optimal_plan["opt_gain"] = real_stats_gain
+        optimal_plan["opt_total"] = int(grand_total) + real_stats_gain
+
     result = {
         "best_armor": best_armor,
         "best_weapons": best_weapons,
